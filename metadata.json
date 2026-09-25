@@ -1,0 +1,6 @@
+{
+  "name": "DCS Ammonia Plant Simulator",
+  "description": "Interactive 3D Digital Twin and DCS training simulator for Ammonia Production Process Plant with university learning mode, quizzes, and digital twin exploration",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

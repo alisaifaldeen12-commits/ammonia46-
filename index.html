@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DCS Ammonia Plant Simulator — Interactive 3D Digital Twin</title>
+  <meta name="description" content="Interactive 3D Digital Twin and DCS training simulator for Ammonia Production Process Plant with university learning mode, quizzes, and digital twin exploration">
+  <meta name="theme-color" content="#00c8ef">
+  <meta property="og:title" content="DCS Ammonia Plant Simulator — Interactive 3D Digital Twin">
+  <meta property="og:description" content="Interactive 3D Digital Twin and DCS training simulator for Ammonia Production Process Plant with university learning mode, quizzes, and digital twin exploration">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    // Early bootstrap for global navigation functions
+    window.toggleSidebar = function(force) {
+      var sidebar = document.getElementById('app-sidebar');
+      var backdrop = document.getElementById('app-sidebar-backdrop');
+      if (!sidebar) return;
+      var isMobile = window.innerWidth <= 900;
+      if (force !== undefined) {
+        if (isMobile) {
+          sidebar.classList.toggle('open', force);
+          if (backdrop) backdrop.classList.toggle('active', force);
+        } else {
+          sidebar.classList.toggle('collapsed', !force);
+        }
+        return;
+      }
+      if (isMobile) {
+        var willOpen = !sidebar.classList.contains('open');
+        sidebar.classList.toggle('open', willOpen);
+        if (backdrop) backdrop.classList.toggle('active', willOpen);
+      } else {
+        sidebar.classList.toggle('collapsed');
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --bg: #030c14;
+      --s1: #071522;
+      --s2: #0b1f33;
+      --s3: #0f2a45;
+      --border: #14304c;
+      --border-bright: #00c8ef;
+      --accent: #00c8ef;
+      --accent-glow: rgba(0, 200, 239, 0.35);
+      --success: #00e5aa;
+      --warn: #ff9800;
+      --danger: #ff3b30;
+      --text: #e0f2fe;
+      --text-dim: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top Brand & Mode Bar */
+    .app-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+      padding: 0 16px;
+      background: #05101a;
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: rgba(0, 200, 239, 0.12);
+      border: 1px solid var(--border-bright);
+      border-radius: 8px;
+    }
+
+    .brand-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-main {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: 0.3px;
+    }
+
+    .brand-sub {
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+
+    .top-mode-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+
+    .mode-nav-btn {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .mode-nav-btn:hover {
+      border-color: var(--accent);
+      background: var(--s3);
+      color: var(--accent);
+    }
+
+    .mode-nav-btn.active {
+      background: var(--accent);
+      color: #02080d;
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .mode-nav-btn.special-3d {
+      background: linear-gradient(135deg, rgba(0, 200, 239, 0.15), rgba(0, 229, 170, 0.15));
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .mode-nav-btn.special-3d:hover {
+      background: var(--success);
+      color: #02080d;
+      box-shadow: 0 0 12px rgba(0, 229, 170, 0.4);
+    }
+
+    /* Main Container */
+    .app-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+      min-height: 0;
+      height: 100%;
+    }
+
+    /* Sidebar Navigation */
+    .app-sidebar {
+      width: 280px;
+      background: var(--s1);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+      z-index: 90;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.2s ease, opacity 0.2s ease;
+    }
+
+    .app-sidebar.collapsed {
+      width: 0;
+      opacity: 0;
+      pointer-events: none;
+      border: none;
+      overflow: hidden;
+    }
+
+    .app-sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 89;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      cursor: pointer;
+    }
+
+    .app-sidebar-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .sidebar-toggle-btn {
+      background: rgba(0, 200, 239, 0.12);
+      border: 1px solid var(--border-bright);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      font-family: inherit;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: var(--accent);
+      color: #02080d;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .sb-header-ctrls {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: #061726;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .sb-ctrl-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid #1e3a56;
+      color: #cbd5e1;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .sb-ctrl-btn:hover {
+      background: rgba(0, 200, 239, 0.2);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .sb-ctrl-btn.close-btn {
+      background: rgba(255, 59, 48, 0.15);
+      border-color: rgba(255, 59, 48, 0.4);
+      color: #ff8a80;
+    }
+
+    .sb-ctrl-btn.close-btn:hover {
+      background: var(--danger);
+      color: #ffffff;
+      border-color: var(--danger);
+    }
+
+    .sb-section-title {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #7dd3fc;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 14px 6px;
+    }
+
+    .sb-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-right: 3px solid transparent;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: right;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      width: 100%;
+    }
+
+    .sb-btn:hover {
+      background: var(--s2);
+      color: #ffffff;
+      border-right-color: var(--accent);
+    }
+
+    .sb-btn.active {
+      background: rgba(0, 200, 239, 0.12);
+      color: var(--accent);
+      border-right-color: var(--accent);
+      font-weight: 800;
+    }
+
+    .sb-btn.highlight-iso {
+      background: rgba(0, 229, 170, 0.08);
+      border-right-color: var(--success);
+      color: #a7f3d0;
+    }
+
+    .sb-btn.highlight-iso:hover {
+      background: rgba(0, 229, 170, 0.18);
+      color: var(--success);
+    }
+
+    /* Mobile & Tablet Responsive Media Queries */
+    @media (max-width: 900px) {
+      .app-topbar {
+        padding: 0 10px;
+        height: 48px;
+      }
+      .brand-sub {
+        display: none;
+      }
+      .brand-main {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 160px;
+        font-size: 11.5px;
+      }
+      .brand-icon {
+        display: none;
+      }
+      .app-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 310px;
+        max-width: 86vw;
+        z-index: 200;
+        box-shadow: -8px 0 36px rgba(0, 0, 0, 0.85);
+        transform: translateX(105%);
+      }
+      .app-sidebar.open {
+        transform: translateX(0);
+      }
+      .app-sidebar.collapsed {
+        transform: translateX(105%);
+        width: 310px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    /* Content Area */
+    .app-content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      background: #02080e;
+      min-height: 0;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* App Stage Containers (2D, UnitOps, Operations Lab) */
+    .app-stage-container {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      flex: 1;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    #unitOpsStage {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      flex-direction: column !important;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      overscroll-behavior-y: contain;
+      background: #030a12;
+      color: #e2eef8;
+      direction: rtl;
+      box-sizing: border-box;
+    }
+
+    #operationsLabStage {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      background: #02070e;
+      box-sizing: border-box;
+    }
+
+    /* Primary Dashboard Viewport */
+    #dashboard-view {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      overscroll-behavior-y: contain;
+      padding: 24px 16px 90px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    /* Modern custom scrollbar */
+    #dashboard-view::-webkit-scrollbar {
+      width: 6px;
+    }
+    #dashboard-view::-webkit-scrollbar-track {
+      background: rgba(3, 10, 20, 0.4);
+    }
+    #dashboard-view::-webkit-scrollbar-thumb {
+      background: rgba(0, 200, 239, 0.35);
+      border-radius: 4px;
+    }
+    #dashboard-view::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 200, 239, 0.7);
+    }
+
+    @media (min-height: 850px) and (min-width: 901px) {
+      #dashboard-view {
+        justify-content: center;
+        padding-top: 20px;
+        padding-bottom: 30px;
+      }
+    }
+
+    .dash-hero-box {
+      max-width: 760px;
+      width: 100%;
+      background: var(--s1);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .dash-hero-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .dash-hero-desc {
+      font-size: 13px;
+      line-height: 1.7;
+      color: #cbd5e1;
+    }
+
+    .dash-scroll-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(0, 200, 239, 0.08);
+      border: 1px solid rgba(0, 200, 239, 0.25);
+      border-radius: 20px;
+      padding: 4px 14px;
+      margin-top: -6px;
+    }
+
+    .dash-scroll-indicator .arrow {
+      display: inline-block;
+      animation: bounceArrow 1.6s infinite ease-in-out;
+    }
+
+    @keyframes bounceArrow {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(3px); }
+    }
+
+    .dash-grid-btns {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .dash-action-card {
+      background: var(--s2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      color: var(--text);
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .dash-action-card:hover, .dash-action-card:active {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 200, 239, 0.2);
+    }
+
+    .dash-action-card.card-synloop {
+      border-color: var(--success);
+      background: linear-gradient(135deg, rgba(0, 229, 170, 0.08), rgba(0, 200, 239, 0.08));
+    }
+
+    .dash-action-card.card-synloop:hover, .dash-action-card.card-synloop:active {
+      box-shadow: 0 8px 24px rgba(0, 229, 170, 0.3);
+    }
+
+    .dash-card-icon {
+      font-size: 28px;
+    }
+
+    .dash-card-title {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .dash-card-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 640px) {
+      #dashboard-view {
+        padding: 16px 12px 110px;
+      }
+      .dash-hero-box {
+        padding: 20px 14px;
+        gap: 14px;
+        border-radius: 12px;
+      }
+      .dash-hero-title {
+        font-size: 17px;
+        line-height: 1.4;
+      }
+      .dash-hero-desc {
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .dash-grid-btns {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .dash-action-card {
+        padding: 12px 14px;
+        flex-direction: row;
+        text-align: right;
+        justify-content: flex-start;
+        gap: 12px;
+      }
+      .dash-action-card .dash-card-icon {
+        font-size: 28px;
+        flex-shrink: 0;
+      }
+      .dash-card-text-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: right;
+        gap: 2px;
+      }
+      .dash-card-title {
+        font-size: 12.5px;
+        line-height: 1.3;
+      }
+      .dash-card-sub {
+        font-size: 10.5px;
+        line-height: 1.35;
+      }
+    }
+
+    /* 3D Overlay Container */
+    #view3d-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      background: #010408;
+    }
+
+    #view3d-overlay.open {
+      display: flex;
+    }
+
+    /* 2D PFD Diagram Styles (DWG 6112P-100-100-00) */
+    .pfd-root-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      background: #030812;
+      color: #e2e8f0;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Cairo', system-ui, sans-serif;
+    }
+
+    .pfd-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 52px;
+      padding: 0 16px;
+      background: #06111f;
+      border-bottom: 1px solid #1e3a5f;
+      flex-shrink: 0;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .pfd-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pfd-badge {
+      background: rgba(0, 200, 239, 0.15);
+      border: 1px solid #00c8ef;
+      color: #00c8ef;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+
+    .pfd-main-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+
+    .pfd-sub-title {
+      font-size: 10px;
+      color: #94a3b8;
+    }
+
+    .pfd-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pfd-filter-tabs {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: #0b192c;
+      padding: 3px;
+      border-radius: 6px;
+      border: 1px solid #1e3a5f;
+    }
+
+    .pfd-ftab {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .pfd-ftab:hover {
+      color: #f8fafc;
+    }
+
+    .pfd-ftab.active {
+      background: #00c8ef;
+      color: #02080d;
+    }
+
+    .pfd-btn {
+      background: #0b1f33;
+      border: 1px solid #1e3a5f;
+      color: #e2e8f0;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .pfd-btn:hover {
+      background: #14304c;
+      border-color: #00c8ef;
+      color: #00c8ef;
+    }
+
+    .pfd-btn-close {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+
+    .pfd-btn-close:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .pfd-workspace-viewport {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+
+    .pfd-canvas-wrapper {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      background: #ffffff;
+    }
+
+    .pfd-canvas-wrapper:active {
+      cursor: grabbing;
+    }
+
+    .pfd-svg-element {
+      width: 100%;
+      height: 100%;
+      display: block;
+      text-rendering: geometricPrecision;
+      shape-rendering: geometricPrecision;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .pfd-zoom-indicator {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      color: #0f172a;
+      min-width: 42px;
+      text-align: center;
+      user-select: none;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Process Flow Lines & Real Solid Arrow Styling */
+    .pfd-pipe-anim {
+      /* Keep line continuous and solid without dashed dots */
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .pfd-pipe-flow-indicator {
+      fill: #0284c7;
+      stroke: #0f172a;
+      stroke-width: 1.2px;
+    }
+
+    /* Distinct Real Flow Chevron Arrows */
+    .pfd-flow-chevron {
+      transition: transform 0.2s ease;
+    }
+
+    .pfd-flow-arrow-marker {
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    /* Equipment Interactive States & High-Contrast Typography */
+    .pfd-eq-item {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pfd-eq-item text {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .pfd-eq-tag-badge {
+      stroke: #0f172a;
+      stroke-width: 1.5px;
+    }
+
+    .pfd-eq-tag-title,
+    .pfd-eq-tag-text {
+      font-family: 'IBM Plex Mono', 'Cairo', monospace, sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: subpixel-antialiased;
+    }
+
+    .pfd-eq-ar-name,
+    .pfd-eq-name-ar {
+      font-family: 'Cairo', 'Tajawal', sans-serif;
+      font-weight: 700;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: subpixel-antialiased;
+    }
+
+    .pfd-eq-nameplate {
+      fill: #ffffff !important;
+      stroke: #0f172a !important;
+      stroke-width: 2px !important;
+      rx: 5px;
+    }
+
+    .pfd-eq-item:hover path,
+    .pfd-eq-item:hover rect:not(.pfd-eq-nameplate),
+    .pfd-eq-item:hover circle,
+    .pfd-eq-item:hover polygon {
+      stroke: #0284c7 !important;
+      stroke-width: 2.5px !important;
+    }
+
+    .pfd-eq-item.selected path,
+    .pfd-eq-item.selected rect:not(.pfd-eq-nameplate),
+    .pfd-eq-item.selected circle,
+    .pfd-eq-item.selected polygon {
+      stroke: #ea580c !important;
+      stroke-width: 3.5px !important;
+    }
+
+    .pfd-eq-item.selected .pfd-eq-nameplate {
+      stroke: #ea580c !important;
+      stroke-width: 2.5px !important;
+    }
+
+    .pfd-stream-flag {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .pfd-stream-flag:hover {
+      transform: scale(1.15);
+    }
+
+    .pfd-zoom-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 50px;
+      height: 28px;
+      padding: 2px 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 800;
+      color: #0369a1;
+      background: #f0f9ff;
+      border: 1px solid #7dd3fc;
+      border-radius: 4px;
+      user-select: none;
+    }
+
+    /* Inspector Sidebar */
+    .pfd-inspector-sidebar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      bottom: 12px;
+      width: 340px;
+      background: rgba(7, 18, 33, 0.95);
+      border: 1px solid #1e3a5f;
+      border-radius: 10px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 30;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 16px;
+      animation: pfdSlideIn 0.2s ease;
+    }
+
+    .pfd-inspector-sidebar.active {
+      display: flex;
+    }
+
+    @keyframes pfdSlideIn {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .pfd-insp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .pfd-insp-tag {
+      font-size: 16px;
+      font-weight: 800;
+      color: #00c8ef;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .pfd-insp-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .pfd-insp-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+
+    .pfd-insp-name-ar {
+      font-size: 12px;
+      color: #38bdf8;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #1e3a5f;
+      padding-bottom: 8px;
+    }
+
+    .pfd-insp-section {
+      margin-bottom: 14px;
+    }
+
+    .pfd-insp-sec-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fbbf24;
+      margin-bottom: 6px;
+    }
+
+    .pfd-spec-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: #030a14;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #142842;
+    }
+
+    .pfd-spec-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      padding: 2px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    }
+
+    .pfd-spec-k {
+      color: #94a3b8;
+    }
+
+    .pfd-spec-v {
+      color: #e2e8f0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+    }
+
+    .pfd-spec-v.highlight {
+      color: #00c8ef;
+    }
+
+    .pfd-spec-v.cat {
+      color: #10b981;
+    }
+
+    .pfd-insp-desc {
+      font-size: 11px;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    .pfd-insp-list {
+      padding-right: 18px;
+      font-size: 10.5px;
+      line-height: 1.5;
+      color: #94a3b8;
+    }
+
+    /* Bottom Stream Table Drawer */
+    .pfd-stream-table-drawer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 380px;
+      background: #050d1a;
+      border-top: 2px solid #00c8ef;
+      box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.8);
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      animation: pfdDrawerUp 0.25s ease;
+    }
+
+    @keyframes pfdDrawerUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .pfd-std-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #09172a;
+      border-bottom: 1px solid #1e3a5f;
+    }
+
+    .pfd-std-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #00c8ef;
+    }
+
+    .pfd-std-close {
+      background: #14304c;
+      border: 1px solid #1e3a5f;
+      color: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .pfd-std-content {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .pfd-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .pfd-table th, .pfd-table td {
+      padding: 6px 8px;
+      border: 1px solid #1e3a5f;
+    }
+
+    .pfd-table th {
+      background: #0c1e36;
+      color: #38bdf8;
+      font-weight: 700;
+    }
+
+    .pfd-table tr:nth-child(even) {
+      background: #071324;
+    }
+
+    .pfd-trow-highlight {
+      background: rgba(0, 200, 239, 0.15) !important;
+      font-weight: 700;
+      color: #00c8ef;
+    }
+
+    .pfd-trow-sec {
+      background: rgba(251, 191, 36, 0.1) !important;
+      color: #fbbf24;
+      font-weight: 700;
+    }
+
+    /* ==========================================
+       PROFESSIONAL DCS GRAPHICS & CONTROLS CSS
+       ========================================== */
+    .dcs-kpi-ribbon {
+      display: flex;
+      align-items: center;
+      background: #040d18;
+      border-bottom: 1px solid #142a42;
+      padding: 5px 12px;
+      overflow-x: auto;
+      gap: 16px;
+      flex-shrink: 0;
+      scrollbar-width: thin;
+    }
+
+    .dcs-kpi-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .dcs-kpi-label {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .dcs-kpi-val {
+      color: #38bdf8;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 700;
+      background: #081628;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #1e3a5f;
+    }
+
+    .dcs-kpi-status-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .dcs-kpi-status-tag.norm {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border: 1px solid #10b981;
+    }
+
+    .dcs-toggle-sb-btn {
+      background: #0d2642;
+      border: 1px solid #00c8ef;
+      color: #00c8ef;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-weight: 700;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .dcs-toggle-sb-btn:hover {
+      background: #00c8ef;
+      color: #030a14;
+    }
+
+    /* DCS Dedicated Process Sections Sidebar */
+    .dcs-section-sidebar {
+      width: 320px;
+      background: #040c17;
+      border-left: 1px solid #173252;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+      z-index: 25;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.6);
+      transition: transform 0.25s ease, width 0.25s ease;
+    }
+
+    .dcs-section-sidebar:not(.open) {
+      width: 0;
+      display: none;
+    }
+
+    .dcs-sb-header {
+      padding: 10px 14px;
+      background: #071526;
+      border-bottom: 1px solid #173252;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dcs-sb-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #00c8ef;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dcs-sb-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .dcs-sb-close:hover {
+      color: #ef4444;
+    }
+
+    .dcs-sb-section {
+      padding: 10px 12px;
+      border-bottom: 1px solid #0e2034;
+    }
+
+    .dcs-sb-sec-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+
+    .dcs-sheets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .dcs-sheet-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      background: #071525;
+      border: 1px solid #152d47;
+      border-radius: 6px;
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: right;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .dcs-sheet-item:hover {
+      background: #0d2847;
+      border-color: #00c8ef;
+      color: #ffffff;
+    }
+
+    .dcs-sheet-item.active {
+      background: #00c8ef;
+      border-color: #00c8ef;
+      color: #030812;
+      font-weight: 800;
+      box-shadow: 0 0 12px rgba(0, 200, 239, 0.4);
+    }
+
+    .dcs-sh-dwg {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9.5px;
+      padding: 1px 4px;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 3px;
+    }
+
+    .dcs-sheet-item.active .dcs-sh-dwg {
+      background: #030812;
+      color: #00c8ef;
+    }
+
+    .dcs-eq-quick-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .dcs-eq-pill {
+      background: #081729;
+      border: 1px solid #19385c;
+      color: #7dd3fc;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .dcs-eq-pill:hover {
+      background: #00c8ef;
+      color: #020812;
+    }
+
+    .dcs-loops-quick-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dcs-loop-pill {
+      background: #071525;
+      border: 1px solid #142a42;
+      border-radius: 6px;
+      padding: 6px 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .dcs-loop-pill:hover {
+      background: #0d2642;
+      border-color: #38bdf8;
+    }
+
+    .dcs-loop-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 800;
+      font-size: 11px;
+      color: #38bdf8;
+    }
+
+    .dcs-loop-mode {
+      font-size: 9.5px;
+      font-weight: 800;
+      background: #10b981;
+      color: #020812;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .dcs-loop-desc {
+      font-size: 10px;
+      color: #94a3b8;
+      margin: 2px 0;
+    }
+
+    .dcs-loop-readout {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #cbd5e1;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .dcs-loop-readout b {
+      color: #fbbf24;
+    }
+
+    /* Fixed/Locked Canvas Style (Stabilization) */
+    .pfd-canvas-wrapper.locked-canvas {
+      cursor: default !important;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .dcs-btn-locked {
+      background: #00c8ef !important;
+      color: #030812 !important;
+      border-color: #00c8ef !important;
+      font-weight: 800 !important;
+    }
+
+    .dcs-canvas-lock-badge {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: rgba(4, 13, 24, 0.9);
+      border: 1px solid #00c8ef;
+      color: #00c8ef;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      z-index: 20;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* DCS Faceplate Modal */
+    .dcs-faceplate-modal {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 320px;
+      background: #081626;
+      border: 2px solid #00c8ef;
+      border-radius: 10px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      animation: pfdFaceplatePop 0.2s ease;
+    }
+
+    @keyframes pfdFaceplatePop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .dcs-fp-header {
+      background: #0e2844;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1a3c61;
+    }
+
+    .dcs-fp-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 800;
+      font-size: 14px;
+      color: #00c8ef;
+    }
+
+    .dcs-fp-mode-badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: #10b981;
+      color: #020812;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .dcs-fp-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .dcs-fp-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .dcs-fp-titles {
+      border-bottom: 1px solid #142840;
+      padding-bottom: 6px;
+    }
+
+    .dcs-fp-desc {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .dcs-fp-desc-ar {
+      font-size: 10.5px;
+      color: #38bdf8;
+    }
+
+    .dcs-fp-bars-row {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .dcs-fp-bargraph {
+      width: 44px;
+      height: 140px;
+      background: #030912;
+      border: 1px solid #19385c;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dcs-fp-bar-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, #00c8ef, #38bdf8);
+      transition: height 0.3s ease;
+    }
+
+    .dcs-fp-bar-sp-marker {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #ef4444;
+      z-index: 2;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    .dcs-fp-readouts {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      background: #040c17;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #142840;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .dcs-fp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+    }
+
+    .dcs-fp-row.sp-ctrl {
+      gap: 4px;
+    }
+
+    .dcs-fp-sp-input {
+      width: 60px;
+      background: #081628;
+      border: 1px solid #1e3a5f;
+      color: #fbbf24;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 4px;
+      text-align: center;
+      border-radius: 3px;
+    }
+
+    .dcs-fp-step-btn {
+      background: #14304c;
+      border: 1px solid #1e3a5f;
+      color: #cbd5e1;
+      width: 22px;
+      height: 22px;
+      font-weight: 800;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .dcs-fp-step-btn:hover {
+      background: #00c8ef;
+      color: #020812;
+    }
+
+    .dcs-fp-mode-selector {
+      display: flex;
+      gap: 4px;
+      background: #040c17;
+      padding: 3px;
+      border-radius: 6px;
+      border: 1px solid #142840;
+    }
+
+    .dcs-fp-mbtn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .dcs-fp-mbtn.active {
+      background: #10b981;
+      color: #020812;
+    }
+
+    .dcs-fp-range {
+      width: 100%;
+      accent-color: #00c8ef;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .pfd-ctrl-badge {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .pfd-ctrl-badge:hover {
+      transform: scale(1.15);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Topbar Header -->
+    <header class="app-topbar">
+      <div class="brand-group">
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="window.toggleSidebar()" title="إظهار/إخفاء قائمة الأقسام الجانبية">
+          <span>☰</span>
+          <span>الأقسام</span>
+        </button>
+        <div class="brand-icon">🏭</div>
+        <div class="brand-title">
+          <span class="brand-main">AMMONIA PRODUCTION 3D DIGITAL TWIN</span>
+          <span class="brand-sub">محاكي مجمع إنتاج الأمونيا الرقمي وتدريب غرف السيطرة DCS</span>
+        </div>
+      </div>
+
+      <nav class="top-mode-nav">
+        <button id="mode-pfd2d" class="mode-nav-btn special-3d" style="border-color:#00c8ef;background:rgba(0,200,239,0.15);color:#00c8ef;" onclick="window.openPlantDiagram2D()">
+          <span>📐</span> المخططات الهندسية 2D & DCS
+        </button>
+        <button id="mode-plant3d" class="mode-nav-btn special-3d" onclick="window.openPlant3D()">
+          <span>🌐</span> المصنع الشامل 3D
+        </button>
+        <button id="mode-synloop-3d" class="mode-nav-btn special-3d" onclick="window.openSection3D('sec_synloop', true)">
+          <span>⚛️</span> حلقة تخليق الأمونيا 3D
+        </button>
+        <button id="mode-co2-3d" class="mode-nav-btn" onclick="window.openSection3D('sec_co2', true)">
+          <span>🧪</span> إزالة CO₂ 3D
+        </button>
+        <button id="mode-k301-3d" class="mode-nav-btn" onclick="window.openSection3D('sec_k301', true)">
+          <span>⚡</span> ضاغط الغاز K-301 3D
+        </button>
+        <button id="mode-cr3d" class="mode-nav-btn" onclick="window.openControlRoom3D()">
+          <span>🎛</span> غرفة التحكم 3D
+        </button>
+        <button id="mode-uops" class="mode-nav-btn" onclick="window.openUnitOps()">
+          <span>📚</span> العمليات الموحدة
+        </button>
+        <button id="mode-opslab" class="mode-nav-btn" onclick="window.openOpsLab()">
+          <span>🔬</span> مختبر العمليات
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Workspace Body -->
+    <div class="app-body">
+      <!-- Backdrop for Mobile Sidebar -->
+      <div id="app-sidebar-backdrop" class="app-sidebar-backdrop" onclick="window.toggleSidebar(false)"></div>
+
+      <!-- Sidebar Navigation with Structured Chemical Engineering Sections -->
+      <aside class="app-sidebar" id="app-sidebar">
+        <div class="sb-header-ctrls">
+          <button class="sb-ctrl-btn close-btn" onclick="window.toggleSidebar(false)" title="إخفاء / إغلاق القائمة الجانبية">
+            <span>✕</span>
+            <span>إخفاء</span>
+          </button>
+          <button class="sb-ctrl-btn" onclick="window.closeAllOverlaysAndGoHome()" title="الرجوع للواجهة الرئيسية">
+            <span>🔙</span>
+            <span>الرئيسية</span>
+          </button>
+        </div>
+
+        <!-- Section 1: Gas Reforming & Shift -->
+        <div class="sb-section-title">1. قسم تحويل الغاز والإصلاح (Reforming & Shift)</div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('reform_100'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD 2D (فرن R-101 والمحولات)
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_reformer', true); window.toggleSidebar(false);">
+          <span>🔥</span> مجسم 3D معزول (فرن الإصلاح R-101)
+        </button>
+
+        <!-- Section 2: CO2 Removal -->
+        <div class="sb-section-title">2. قسم إزالة واستخلاص CO₂ (Catacarb)</div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('co2_200'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD 2D (أبراج T-201 / T-202)
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_co2', true); window.toggleSidebar(false);">
+          <span>🧪</span> مجسم 3D معزول (منظومة إزالة CO₂)
+        </button>
+
+        <!-- Section 3: Syngas Compression -->
+        <div class="sb-section-title">3. قسم ضواغط الغاز (Syngas Compression)</div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('comp_300'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD 2D (ضواغط K-301 / K-302 / K-303)
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_k301', true); window.toggleSidebar(false);">
+          <span>⚡</span> مجسم 3D معزول (ضاغط K-301 والتوربين)
+        </button>
+
+        <!-- Section 4: Ammonia Synthesis Loop -->
+        <div class="sb-section-title">4. حلقة تخليق الأمونيا والتبريد (Synloop & Refrig)</div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('synth_400'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD 2D (برج التخليق R-401 ومكثفاته)
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_synloop', true); window.toggleSidebar(false);">
+          <span>⚛️</span> مجسم 3D معزول (حلقة الأمونيا R-401)
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_refrigeration', true); window.toggleSidebar(false);">
+          <span>❄️</span> مجسم 3D (منظومة التثليج والتبريد)
+        </button>
+
+        <!-- Section 5: Urea & Finishing -->
+        <div class="sb-section-title">5. مجمع اليوريا والتحبيب (Urea Unit 500)</div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('urea_500'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD 2D (مفاعل اليوريا R-501 وبرج التحبيب)
+        </button>
+
+        <!-- Section 6: Steam & BFW -->
+        <div class="sb-section-title">6. شبكة مياه المراجل وتوليد البخار (Steam & BFW)</div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('steam_bfw'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD 2D (منظومة BFW ومراجل E-108/E-105)
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_steam', true); window.toggleSidebar(false);">
+          <span>💧</span> مجسم 3D (شبكة إنتاج البخار وغلاية E-108)
+        </button>
+
+        <!-- Section 7: Steam Header Distribution -->
+        <div class="sb-section-title">7. مجمعات توزيع البخار (Steam Headers S-65/39/12/3)</div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('steam_header'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD 2D (مجمعات البخار 4 ضغوط مع صمامات الاختزال)
+        </button>
+
+        <!-- Section 8: Storage & Utilities -->
+        <div class="sb-section-title">8. الخزانات والشحن والمرافق (Storage & Loading)</div>
+        <button class="sb-btn" onclick="window.openSection3D('sec_storage', true); window.toggleSidebar(false);">
+          <span>🛢️</span> خزانات الأمونيا الكروية F-401 (معزول 3D)
+        </button>
+
+        <div class="sb-section-title">الاستعراض الشامل وغرف السيطرة</div>
+        <button class="sb-btn" onclick="window.openPlant3D(); window.toggleSidebar(false);">
+          <span>🌐</span> استعراض المجمع بالكامل 3D (Full Plant)
+        </button>
+        <button class="sb-btn" onclick="window.openControlRoom3D(); window.toggleSidebar(false);">
+          <span>🎛</span> غرفة التحكم والمراقبة ثلاثية الأبعاد
+        </button>
+
+        <div class="sb-section-title">الوحدات التعليمية والاختبارات</div>
+        <button class="sb-btn" onclick="window.openUnitOps(); window.toggleSidebar(false);">
+          <span>📖</span> أطلس العمليات الموحدة Unit Operations
+        </button>
+        <button class="sb-btn" onclick="window.openOpsLab(); window.toggleSidebar(false);">
+          <span>📊</span> مختبر المحاكاة والحركية الكيميائية
+        </button>
+      </aside>
+
+      <!-- Central Content Area -->
+      <main class="app-content-area" id="app-content-area">
+        <!-- Dashboard Hero / Landing View -->
+        <div id="dashboard-view">
+          <div class="dash-hero-box">
+            <div style="font-size:36px;">🏭</div>
+            <div class="dash-hero-title">المحاكي الرقمي لمجمع تصنيع الأمونيا (3D Digital Twin)</div>
+            <div class="dash-hero-desc">
+              نظام محاكاة وهندسة تفاعلية بتقنية التوأم الرقمي ثلاثي الأبعاد 3D لكافة أقسام المصنع،
+              بما فيها حلقة تخليق الأمونيا R-401، فرن الإصلاح R-101، أبراج إزالة CO₂ كاتاكارب، وضواغط غاز التخليق K-301 مع غرف السيطرة ومختبر العمليات.
+            </div>
+
+            <div class="dash-scroll-indicator">
+              <span>تصفح كافة الأقسام والمخططات الهندسية</span>
+              <span class="arrow">↓</span>
+            </div>
+
+            <div class="dash-grid-btns">
+              <button class="dash-action-card card-synloop" style="border-color:#00c8ef;background:linear-gradient(135deg, rgba(0, 200, 239, 0.15), rgba(56, 189, 248, 0.15));" onclick="window.openPlantDiagram2D()">
+                <span class="dash-card-icon">📐</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">المخطط الهندسي 2D (PFD 6112P)</span>
+                  <span class="dash-card-sub">رسم تدفق العمليات الدقيق لقسم تحويل الغاز والإصلاح وموازنة المواد</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card card-synloop" onclick="window.openPlant3D()">
+                <span class="dash-card-icon">🌐</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">المصنع الشامل 3D</span>
+                  <span class="dash-card-sub">استعراض كافة الوحدات والمعدات وتدفق الموائع</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openSection3D('sec_synloop', true)">
+                <span class="dash-card-icon">⚛️</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">عزل حلقة الأمونيا R-401 3D</span>
+                  <span class="dash-card-sub">عزل المنظومة مع جولة تفاعلية 360°</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openSection3D('sec_reformer', true)">
+                <span class="dash-card-icon">🔥</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">قسم تحويل الغاز والإصلاح 3D</span>
+                  <span class="dash-card-sub">أنابيب المحفز والاحتراق الداخلي</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openSection3D('sec_co2', true)">
+                <span class="dash-card-icon">🧪</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">عزل قسم إزالة CO₂ كاتاكارب</span>
+                  <span class="dash-card-sub">أبراج الامتصاص والتجريد والمضخات</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openSection3D('sec_k301', true)">
+                <span class="dash-card-icon">⚡</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">ضاغط غاز التخليق K-301 3D</span>
+                  <span class="dash-card-sub">المراحل الأربع والتوربين البخاري KT-301</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openControlRoom3D()">
+                <span class="dash-card-icon">🎛</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">غرفة التحكم والمراقبة 3D</span>
+                  <span class="dash-card-sub">لوحات الإنذار والسيطرة الميدانية</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openUnitOps()">
+                <span class="dash-card-icon">📖</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">أطلس العمليات الموحدة</span>
+                  <span class="dash-card-sub">لوحات التحكم PID ومنحنيات الاستجابة</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openOpsLab()">
+                <span class="dash-card-icon">📊</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">مختبر المحاكاة والعمليات</span>
+                  <span class="dash-card-sub">حسابات كيميائية وسيناريوهات طوارئ وإنترلوك</span>
+                </div>
+              </button>
+
+              <button class="dash-action-card" onclick="window.openSection3D('sec_storage', true)">
+                <span class="dash-card-icon">🛢️</span>
+                <div class="dash-card-text-wrap">
+                  <span class="dash-card-title">خزانات الأمونيا F-401 3D</span>
+                  <span class="dash-card-sub">الخزانات الكروية ومنظومة التحميل والتصدير</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3D Overlay Target Container -->
+        <div id="view3d-overlay" class="view3d-overlay" style="display:none;"></div>
+
+        <!-- 2D Process Flow Diagram Container (PFD 6112P-100-100-00) -->
+        <div id="diagram2dStage" class="app-stage-container" style="display:none;width:100%;height:100%;"></div>
+
+        <!-- Unit Operations Container -->
+        <div id="unitOpsStage" class="app-stage-container" style="display:none;width:100%;height:100%;"></div>
+
+        <!-- Operations Lab Container -->
+        <div id="operationsLabStage" class="app-stage-container" style="display:none;width:100%;height:100%;"></div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
