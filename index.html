@@ -14,45 +14,142 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
   <script>
-    // Early bootstrap for global navigation functions
+    // Early bootstrap for global navigation and 3D functions to prevent undefined errors before module load
     window.toggleSidebar = function(force) {
       var sidebar = document.getElementById('app-sidebar');
       var backdrop = document.getElementById('app-sidebar-backdrop');
       if (!sidebar) return;
       var isMobile = window.innerWidth <= 900;
-      if (force !== undefined) {
-        if (isMobile) {
-          sidebar.classList.toggle('open', force);
-          if (backdrop) backdrop.classList.toggle('active', force);
-        } else {
-          sidebar.classList.toggle('collapsed', !force);
-        }
-        return;
-      }
       if (isMobile) {
-        var willOpen = !sidebar.classList.contains('open');
+        var willOpen = force !== undefined ? force : !sidebar.classList.contains('open');
         sidebar.classList.toggle('open', willOpen);
         if (backdrop) backdrop.classList.toggle('active', willOpen);
       } else {
-        sidebar.classList.toggle('collapsed');
+        // On Desktop / Tablet: Persistent Unified Right Sidebar
+        if (force === true) {
+          sidebar.classList.remove('collapsed');
+        } else if (force === undefined) {
+          sidebar.classList.toggle('collapsed');
+        }
       }
+    };
+
+    window._pendingNavCalls = window._pendingNavCalls || [];
+    window.openSection3D = function(sec, isSplash) {
+      if (typeof window._tsOpenSection3D === 'function') {
+        return window._tsOpenSection3D(sec, isSplash);
+      }
+      window._pendingNavCalls.push({ fn: 'openSection3D', args: [sec, isSplash] });
+    };
+    window.open3D = function(mode, sec) {
+      if (typeof window._tsOpen3D === 'function') {
+        return window._tsOpen3D(mode, sec);
+      }
+      window._pendingNavCalls.push({ fn: 'open3D', args: [mode, sec] });
+    };
+    window.openPlant3D = function() {
+      if (typeof window._tsOpenPlant3D === 'function') {
+        return window._tsOpenPlant3D();
+      }
+      window._pendingNavCalls.push({ fn: 'openPlant3D', args: [] });
+    };
+    window.openControlRoom3D = function() {
+      if (typeof window._tsOpenControlRoom3D === 'function') {
+        return window._tsOpenControlRoom3D();
+      }
+      window._pendingNavCalls.push({ fn: 'openControlRoom3D', args: [] });
+    };
+    window.close3D = function() {
+      if (typeof window._tsClose3D === 'function') {
+        return window._tsClose3D();
+      }
+      window._pendingNavCalls.push({ fn: 'close3D', args: [] });
+    };
+    window.openOpsLab = function() {
+      if (typeof window._opslabInit === 'function') {
+        return window._opslabInit();
+      }
+      window._pendingNavCalls.push({ fn: 'openOpsLab', args: [] });
+    };
+    window.openUnitOps = function() {
+      if (typeof window._uopsInit === 'function') {
+        return window._uopsInit();
+      }
+      window._pendingNavCalls.push({ fn: 'openUnitOps', args: [] });
+    };
+    window.openPlantDiagram2D = function() {
+      if (typeof window._tsOpenPlantDiagram2D === 'function') {
+        return window._tsOpenPlantDiagram2D();
+      }
+      window._pendingNavCalls.push({ fn: 'openPlantDiagram2D', args: [] });
+    };
+    window.openSection2D = function(sheetId) {
+      if (typeof window._tsOpenSection2D === 'function') {
+        return window._tsOpenSection2D(sheetId);
+      }
+      window._pendingNavCalls.push({ fn: 'openSection2D', args: [sheetId] });
+    };
+    window.openSection100Exam = function(tab) {
+      if (typeof window._tsOpenSection100Exam === 'function') {
+        return window._tsOpenSection100Exam(tab);
+      }
+      window._pendingNavCalls.push({ fn: 'openSection100Exam', args: [tab] });
+    };
+    window.openSection200Exam = function(tab) {
+      if (typeof window._tsOpenSection200Exam === 'function') {
+        return window._tsOpenSection200Exam(tab);
+      }
+      window._pendingNavCalls.push({ fn: 'openSection200Exam', args: [tab] });
+    };
+    window.openSection300Exam = function(tab) {
+      if (typeof window._tsOpenSection300Exam === 'function') {
+        return window._tsOpenSection300Exam(tab);
+      }
+      window._pendingNavCalls.push({ fn: 'openSection300Exam', args: [tab] });
+    };
+    window.openSection400Exam = function(tab, idx) {
+      if (typeof window._tsOpenSection400Exam === 'function') {
+        return window._tsOpenSection400Exam(tab, idx);
+      }
+      window._pendingNavCalls.push({ fn: 'openSection400Exam', args: [tab, idx] });
+    };
+    window.openK302Exam = function(tab, idx) {
+      if (typeof window._tsOpenK302Exam === 'function') {
+        return window._tsOpenK302Exam(tab, idx);
+      }
+      window._pendingNavCalls.push({ fn: 'openK302Exam', args: [tab, idx] });
+    };
+    window.openK303Exam = function(tab, idx) {
+      if (typeof window._tsOpenK303Exam === 'function') {
+        return window._tsOpenK303Exam(tab, idx);
+      }
+      window._pendingNavCalls.push({ fn: 'openK303Exam', args: [tab, idx] });
+    };
+    window.dismissAuthGate = function() {
+      console.warn("Guest mode bypass disabled. Google sign-in is mandatory.");
+    };
+    window.closeAllOverlaysAndGoHome = function() {
+      if (typeof window._tsCloseAllOverlaysAndGoHome === 'function') {
+        return window._tsCloseAllOverlaysAndGoHome();
+      }
+      window._pendingNavCalls.push({ fn: 'closeAllOverlaysAndGoHome', args: [] });
     };
   </script>
 
   <style>
     :root {
-      --bg: #030c14;
-      --s1: #071522;
-      --s2: #0b1f33;
-      --s3: #0f2a45;
-      --border: #14304c;
-      --border-bright: #00c8ef;
-      --accent: #00c8ef;
-      --accent-glow: rgba(0, 200, 239, 0.35);
-      --success: #00e5aa;
-      --warn: #ff9800;
-      --danger: #ff3b30;
-      --text: #e0f2fe;
+      --bg: #0b0c10;
+      --s1: #12141a;
+      --s2: #1a1c24;
+      --s3: #222530;
+      --border: rgba(255, 255, 255, 0.12);
+      --border-bright: #38bdf8;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --success: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
       --text-dim: #94a3b8;
     }
 
@@ -67,7 +164,8 @@
     html, body {
       width: 100%;
       height: 100%;
-      background: var(--bg);
+      background: linear-gradient(180deg, rgba(12, 12, 16, 0.2) 0%, rgba(10, 10, 14, 0.5) 100%),
+                  url('/assets/aistudio/6792AD2B-23C4-4AFB-8B30-FA8A0230F451_64ea52e4.png') center/cover no-repeat fixed;
       color: var(--text);
       font-family: 'Cairo', system-ui, -apple-system, sans-serif;
       overflow: hidden;
@@ -91,8 +189,9 @@
       justify-content: space-between;
       height: 52px;
       padding: 0 16px;
-      background: #05101a;
-      border-bottom: 1px solid var(--border);
+      background: rgba(14, 16, 22, 0.92);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
       z-index: 100;
       flex-shrink: 0;
       gap: 12px;
@@ -195,14 +294,16 @@
 
     /* Sidebar Navigation */
     .app-sidebar {
-      width: 280px;
-      background: var(--s1);
-      border-left: 1px solid var(--border);
+      width: 300px;
+      background: rgba(16, 18, 24, 0.95);
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
       flex-shrink: 0;
       z-index: 90;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), width 0.2s ease, opacity 0.2s ease;
     }
 
@@ -257,12 +358,12 @@
 
     .sb-header-ctrls {
       padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      background: #061726;
+      background: rgba(18, 20, 28, 0.98);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -303,12 +404,46 @@
     }
 
     .sb-section-title {
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 800;
       color: #7dd3fc;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       padding: 14px 14px 6px;
+    }
+
+    .sb-section-title.clickable {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: rgba(14, 165, 233, 0.08);
+      border: 1px solid rgba(14, 165, 233, 0.22);
+      border-radius: 6px;
+      margin: 10px 10px 4px;
+      padding: 8px 12px;
+      color: #e0f2fe;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .sb-section-title.clickable:hover {
+      background: rgba(14, 165, 233, 0.22);
+      border-color: #00c8ef;
+      color: #38bdf8;
+      box-shadow: 0 0 10px rgba(0, 200, 239, 0.25);
+      transform: translateX(-2px);
+    }
+
+    .sb-sec-badge {
+      font-size: 9.5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(0, 229, 170, 0.15);
+      color: #00e5aa;
+      border: 1px solid rgba(0, 229, 170, 0.35);
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .sb-btn {
@@ -401,48 +536,10 @@
       flex-direction: column;
       overflow: hidden;
       position: relative;
-      background: #02080e;
+      background: transparent;
       min-height: 0;
       height: 100%;
       width: 100%;
-    }
-
-    /* App Stage Containers (2D, UnitOps, Operations Lab) */
-    .app-stage-container {
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      flex: 1;
-      box-sizing: border-box;
-      position: relative;
-    }
-
-    #unitOpsStage {
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      flex-direction: column !important;
-      overflow-y: auto !important;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
-      overscroll-behavior-y: contain;
-      background: #030a12;
-      color: #e2eef8;
-      direction: rtl;
-      box-sizing: border-box;
-    }
-
-    #operationsLabStage {
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
-      background: #02070e;
-      box-sizing: border-box;
     }
 
     /* Primary Dashboard Viewport */
@@ -463,6 +560,9 @@
       padding: 24px 16px 90px;
       text-align: center;
       box-sizing: border-box;
+      background: linear-gradient(180deg, rgba(12, 12, 16, 0.15) 0%, rgba(10, 10, 14, 0.45) 100%),
+                  url('/assets/aistudio/6792AD2B-23C4-4AFB-8B30-FA8A0230F451_64ea52e4.png') center/cover no-repeat fixed;
+      position: relative;
     }
 
     /* Modern custom scrollbar */
@@ -489,19 +589,93 @@
     }
 
     .dash-hero-box {
-      max-width: 760px;
+      max-width: 820px;
       width: 100%;
-      background: var(--s1);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 28px 24px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      background: transparent;
+      border: none;
+      padding: 0;
+      box-shadow: none;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 16px;
       margin: 0 auto;
       box-sizing: border-box;
+    }
+
+    .dash-header-card {
+      background: rgba(16, 18, 24, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 20px 22px;
+      width: 100%;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .founder-badge-banner {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(217, 119, 6, 0.12));
+      border: 1px solid rgba(245, 158, 11, 0.55);
+      border-radius: 14px;
+      padding: 12px 18px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+      text-align: right;
+    }
+
+    .founder-portrait-frame {
+      width: 76px;
+      height: 76px;
+      border-radius: 12px;
+      border: 2px solid #fbbf24;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      flex-shrink: 0;
+    }
+
+    .founder-portrait-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .founder-badge-icon {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .founder-badge-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 2px;
+    }
+
+    .founder-badge-tag {
+      font-size: 11px;
+      font-weight: 800;
+      color: #fbbf24;
+      letter-spacing: 0.5px;
+    }
+
+    .founder-badge-name-en {
+      font-family: 'IBM Plex Mono', 'Cairo', monospace, sans-serif;
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .founder-badge-name-ar {
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
     }
 
     .dash-hero-title {
@@ -800,6 +974,10 @@
       overflow: hidden;
       cursor: grab;
       background: #ffffff;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .pfd-canvas-wrapper:active {
@@ -1658,13 +1836,16 @@
   </style>
 </head>
 <body>
+  <!-- Fullscreen Google Sign-In Gate Screen -->
+  <div id="auth-login-gate" class="auth-gate-screen" style="display: none;"></div>
+
   <div id="app">
     <!-- Topbar Header -->
     <header class="app-topbar">
       <div class="brand-group">
-        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="window.toggleSidebar()" title="إظهار/إخفاء قائمة الأقسام الجانبية">
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" onclick="window.toggleSidebar()" title="إظهار/إخفاء القائمة الجانبية الموحدة">
           <span>☰</span>
-          <span>الأقسام</span>
+          <span>القائمة الجانبية</span>
         </button>
         <div class="brand-icon">🏭</div>
         <div class="brand-title">
@@ -1673,32 +1854,8 @@
         </div>
       </div>
 
-      <nav class="top-mode-nav">
-        <button id="mode-pfd2d" class="mode-nav-btn special-3d" style="border-color:#00c8ef;background:rgba(0,200,239,0.15);color:#00c8ef;" onclick="window.openPlantDiagram2D()">
-          <span>📐</span> المخططات الهندسية 2D & DCS
-        </button>
-        <button id="mode-plant3d" class="mode-nav-btn special-3d" onclick="window.openPlant3D()">
-          <span>🌐</span> المصنع الشامل 3D
-        </button>
-        <button id="mode-synloop-3d" class="mode-nav-btn special-3d" onclick="window.openSection3D('sec_synloop', true)">
-          <span>⚛️</span> حلقة تخليق الأمونيا 3D
-        </button>
-        <button id="mode-co2-3d" class="mode-nav-btn" onclick="window.openSection3D('sec_co2', true)">
-          <span>🧪</span> إزالة CO₂ 3D
-        </button>
-        <button id="mode-k301-3d" class="mode-nav-btn" onclick="window.openSection3D('sec_k301', true)">
-          <span>⚡</span> ضاغط الغاز K-301 3D
-        </button>
-        <button id="mode-cr3d" class="mode-nav-btn" onclick="window.openControlRoom3D()">
-          <span>🎛</span> غرفة التحكم 3D
-        </button>
-        <button id="mode-uops" class="mode-nav-btn" onclick="window.openUnitOps()">
-          <span>📚</span> العمليات الموحدة
-        </button>
-        <button id="mode-opslab" class="mode-nav-btn" onclick="window.openOpsLab()">
-          <span>🔬</span> مختبر العمليات
-        </button>
-      </nav>
+      <!-- Firebase Gmail Auth & Live User Counter Widget -->
+      <div id="firebase-auth-container"></div>
     </header>
 
     <!-- Main Workspace Body -->
@@ -1706,7 +1863,7 @@
       <!-- Backdrop for Mobile Sidebar -->
       <div id="app-sidebar-backdrop" class="app-sidebar-backdrop" onclick="window.toggleSidebar(false)"></div>
 
-      <!-- Sidebar Navigation with Structured Chemical Engineering Sections -->
+      <!-- Sidebar Navigation with 3 Clean Categories -->
       <aside class="app-sidebar" id="app-sidebar">
         <div class="sb-header-ctrls">
           <button class="sb-ctrl-btn close-btn" onclick="window.toggleSidebar(false)" title="إخفاء / إغلاق القائمة الجانبية">
@@ -1714,189 +1871,186 @@
             <span>إخفاء</span>
           </button>
           <button class="sb-ctrl-btn" onclick="window.closeAllOverlaysAndGoHome()" title="الرجوع للواجهة الرئيسية">
-            <span>🔙</span>
+            <span>🏠</span>
             <span>الرئيسية</span>
+          </button>
+          <button class="sb-ctrl-btn close-btn" id="sidebar-logout-btn" title="تسجيل الخروج لاختبار شاشة الدخول بـ Google">
+            <span>🚪</span>
+            <span>خروج</span>
           </button>
         </div>
 
-        <!-- Section 1: Gas Reforming & Shift -->
-        <div class="sb-section-title">1. قسم تحويل الغاز والإصلاح (Reforming & Shift)</div>
-        <button class="sb-btn highlight-iso" onclick="window.openSection2D('reform_100'); window.toggleSidebar(false);">
-          <span>📐</span> مخطط PFD 2D (فرن R-101 والمحولات)
+        <!-- SEARCH BAR FILTER -->
+        <div class="sb-search-wrap" style="padding: 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: rgba(12, 14, 20, 0.95); position: sticky; top: 48px; z-index: 9;">
+          <div style="position: relative; display: flex; align-items: center;">
+            <span style="position: absolute; right: 10px; font-size: 13px; color: var(--accent); pointer-events: none;">🔍</span>
+            <input
+              type="text"
+              id="sidebar-search-input"
+              placeholder="بحث عن أقسام 3D، أسئلة، مخططات PFD..."
+              aria-label="البحث في القائمة الجانبية"
+              style="width: 100%; padding: 8px 32px 8px 28px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; color: #ffffff; font-size: 11.5px; font-family: inherit; outline: none; transition: all 0.2s ease;"
+            />
+            <button id="sidebar-search-clear" style="position: absolute; left: 8px; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; display: none; padding: 2px 4px;" title="مسح البحث">✕</button>
+          </div>
+          <div id="sidebar-search-count" style="font-size: 10px; color: var(--accent); margin-top: 4px; display: none; text-align: right; padding: 0 2px; font-weight: 700;"></div>
+        </div>
+
+        <!-- CATEGORY 1: QUESTION BANKS & EXAMS -->
+        <div class="sb-section-title" style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);border-radius:6px;margin:8px 10px 4px;padding:8px 12px;font-size:12px;font-weight:800;">
+          📝 بنوك الأسئلة والاختبارات
+        </div>
+        <button class="sb-btn" style="border-color:#f59e0b;color:#fbbf24;font-weight:bold;background:rgba(245,158,11,0.12);" onclick="window.openSection100Exam('exam'); window.toggleSidebar(false);">
+          <span>🔥</span> بنك الـ 100 سؤال (الإصلاح والتحويل 100)
         </button>
-        <button class="sb-btn" onclick="window.openSection3D('sec_reformer', true); window.toggleSidebar(false);">
-          <span>🔥</span> مجسم 3D معزول (فرن الإصلاح R-101)
+        <button class="sb-btn" style="border-color:#00e5aa;color:#00e5aa;font-weight:bold;background:rgba(0,229,170,0.12);" onclick="window.openSection200Exam('exam'); window.toggleSidebar(false);">
+          <span>🧪</span> بنك الـ 100 سؤال (إزالة CO₂ كاتاكارب 200)
+        </button>
+        <button class="sb-btn" style="border-color:#ffeb3b;color:#fef08a;font-weight:bold;background:rgba(255,235,59,0.12);" onclick="window.openSection300Exam('exam'); window.toggleSidebar(false);">
+          <span>⚡</span> بنك الـ 100 سؤال (ضاغط K-301 والتوربين)
+        </button>
+        <button class="sb-btn" style="border-color:#0284c7;color:#38bdf8;font-weight:bold;background:rgba(2,132,199,0.12);" onclick="window.openK302Exam('exam'); window.toggleSidebar(false);">
+          <span>💨</span> بنك الـ 100 سؤال (ضاغط هواء العمليات K-302)
+        </button>
+        <button class="sb-btn" style="border-color:#d97706;color:#fbbf24;font-weight:bold;background:rgba(217,119,6,0.12);" onclick="window.openK303Exam('exam'); window.toggleSidebar(false);">
+          <span>🔥</span> بنك الـ 100 سؤال (ضاغط الغاز الطبيعي K-303)
+        </button>
+        <button class="sb-btn" style="border-color:#a855f7;color:#d8b4fe;font-weight:bold;background:rgba(168,85,247,0.12);" onclick="window.openSection400Exam('exam'); window.toggleSidebar(false);">
+          <span>❄️</span> بنك الـ 100 سؤال (تخليق الأمونيا وتبريد K-401)
         </button>
 
-        <!-- Section 2: CO2 Removal -->
-        <div class="sb-section-title">2. قسم إزالة واستخلاص CO₂ (Catacarb)</div>
-        <button class="sb-btn highlight-iso" onclick="window.openSection2D('co2_200'); window.toggleSidebar(false);">
-          <span>📐</span> مخطط PFD 2D (أبراج T-201 / T-202)
+        <!-- CATEGORY 2: 3D ANIMATIONS & VIRTUAL TWIN -->
+        <div class="sb-section-title" style="background:rgba(0,200,239,0.12);color:#00c8ef;border:1px solid rgba(0,200,239,0.3);border-radius:6px;margin:14px 10px 4px;padding:8px 12px;font-size:12px;font-weight:800;">
+          🎬 العرض ثلاثي الأبعاد (3D Animations)
+        </div>
+        <button class="sb-btn" onclick="window.openSection3D('sec_reformer', true); window.toggleSidebar(false);">
+          <span>🔥</span> قسم الإصلاح والتحويل 3D (R-101)
         </button>
         <button class="sb-btn" onclick="window.openSection3D('sec_co2', true); window.toggleSidebar(false);">
-          <span>🧪</span> مجسم 3D معزول (منظومة إزالة CO₂)
-        </button>
-
-        <!-- Section 3: Syngas Compression -->
-        <div class="sb-section-title">3. قسم ضواغط الغاز (Syngas Compression)</div>
-        <button class="sb-btn highlight-iso" onclick="window.openSection2D('comp_300'); window.toggleSidebar(false);">
-          <span>📐</span> مخطط PFD 2D (ضواغط K-301 / K-302 / K-303)
+          <span>🧪</span> قسم إزالة CO₂ كاتاكارب 3D (T-201/202)
         </button>
         <button class="sb-btn" onclick="window.openSection3D('sec_k301', true); window.toggleSidebar(false);">
-          <span>⚡</span> مجسم 3D معزول (ضاغط K-301 والتوربين)
-        </button>
-
-        <!-- Section 4: Ammonia Synthesis Loop -->
-        <div class="sb-section-title">4. حلقة تخليق الأمونيا والتبريد (Synloop & Refrig)</div>
-        <button class="sb-btn highlight-iso" onclick="window.openSection2D('synth_400'); window.toggleSidebar(false);">
-          <span>📐</span> مخطط PFD 2D (برج التخليق R-401 ومكثفاته)
+          <span>⚡</span> ضاغط غاز التخليق K-301 والتوربين 3D
         </button>
         <button class="sb-btn" onclick="window.openSection3D('sec_synloop', true); window.toggleSidebar(false);">
-          <span>⚛️</span> مجسم 3D معزول (حلقة الأمونيا R-401)
+          <span>⚛️</span> حلقة تخليق الأمونيا R-401 3D
         </button>
         <button class="sb-btn" onclick="window.openSection3D('sec_refrigeration', true); window.toggleSidebar(false);">
-          <span>❄️</span> مجسم 3D (منظومة التثليج والتبريد)
-        </button>
-
-        <!-- Section 5: Urea & Finishing -->
-        <div class="sb-section-title">5. مجمع اليوريا والتحبيب (Urea Unit 500)</div>
-        <button class="sb-btn highlight-iso" onclick="window.openSection2D('urea_500'); window.toggleSidebar(false);">
-          <span>📐</span> مخطط PFD 2D (مفاعل اليوريا R-501 وبرج التحبيب)
-        </button>
-
-        <!-- Section 6: Steam & BFW -->
-        <div class="sb-section-title">6. شبكة مياه المراجل وتوليد البخار (Steam & BFW)</div>
-        <button class="sb-btn highlight-iso" onclick="window.openSection2D('steam_bfw'); window.toggleSidebar(false);">
-          <span>📐</span> مخطط PFD 2D (منظومة BFW ومراجل E-108/E-105)
-        </button>
-        <button class="sb-btn" onclick="window.openSection3D('sec_steam', true); window.toggleSidebar(false);">
-          <span>💧</span> مجسم 3D (شبكة إنتاج البخار وغلاية E-108)
-        </button>
-
-        <!-- Section 7: Steam Header Distribution -->
-        <div class="sb-section-title">7. مجمعات توزيع البخار (Steam Headers S-65/39/12/3)</div>
-        <button class="sb-btn highlight-iso" onclick="window.openSection2D('steam_header'); window.toggleSidebar(false);">
-          <span>📐</span> مخطط PFD 2D (مجمعات البخار 4 ضغوط مع صمامات الاختزال)
-        </button>
-
-        <!-- Section 8: Storage & Utilities -->
-        <div class="sb-section-title">8. الخزانات والشحن والمرافق (Storage & Loading)</div>
-        <button class="sb-btn" onclick="window.openSection3D('sec_storage', true); window.toggleSidebar(false);">
-          <span>🛢️</span> خزانات الأمونيا الكروية F-401 (معزول 3D)
-        </button>
-
-        <div class="sb-section-title">الاستعراض الشامل وغرف السيطرة</div>
-        <button class="sb-btn" onclick="window.openPlant3D(); window.toggleSidebar(false);">
-          <span>🌐</span> استعراض المجمع بالكامل 3D (Full Plant)
+          <span>❄️</span> منظومة التثليج والتبريد K-401 3D
         </button>
         <button class="sb-btn" onclick="window.openControlRoom3D(); window.toggleSidebar(false);">
-          <span>🎛</span> غرفة التحكم والمراقبة ثلاثية الأبعاد
+          <span>🎛</span> غرفة التحكم والمراقبة DCS 3D
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_steam', true); window.toggleSidebar(false);">
+          <span>💧</span> شبكة وتوليد البخار E-108 3D
+        </button>
+        <button class="sb-btn" onclick="window.openSection3D('sec_storage', true); window.toggleSidebar(false);">
+          <span>🛢️</span> خزانات الأمونيا F-401 3D
+        </button>
+        <button class="sb-btn highlight-iso" style="border-color:#38bdf8;background:rgba(0,200,239,0.18);color:#ffffff;font-weight:800;" onclick="window.openSection3D('sec_cooling_tower', true); window.toggleSidebar(false);">
+          <span>🌊</span> برج التبريد ومضخات P-A..J والمكثف E711 3D
         </button>
 
-        <div class="sb-section-title">الوحدات التعليمية والاختبارات</div>
+        <!-- CATEGORY 3: 2D PFD DIAGRAMS -->
+        <div class="sb-section-title" style="background:rgba(0,229,170,0.12);color:#00e5aa;border:1px solid rgba(0,229,170,0.3);border-radius:6px;margin:14px 10px 4px;padding:8px 12px;font-size:12px;font-weight:800;">
+          📐 المخططات ثنائية الأبعاد (2D PFD)
+        </div>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('reform_100'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD - تحويل الغاز والإصلاح (Unit 100)
+        </button>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('co2_200'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD - إزالة CO₂ كاتاكارب (Unit 200)
+        </button>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('comp_300'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD - ضواغط الغاز والهواء (Unit 300)
+        </button>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('synth_400'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD - تخليق الأمونيا والتبريد (Unit 400)
+        </button>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('urea_500'); window.toggleSidebar(false);">
+          <span>📐</span> مخطط PFD - مجمع اليوريا والتحبيب (Unit 500)
+        </button>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('steam_bfw'); window.toggleSidebar(false);">
+          <span>💧</span> مخطط PFD - منظومة B.F.W ومياه المراجل (E-108/E-105)
+        </button>
+        <button class="sb-btn highlight-iso" onclick="window.openSection2D('steam_header'); window.toggleSidebar(false);">
+          <span>💨</span> مخطط PFD - مجمعات توزيع البخار وصمامات PRDS
+        </button>
+
+        <!-- CATEGORY 4: ATLAS & OPERATIONS LAB -->
+        <div class="sb-section-title" style="background:rgba(168,85,247,0.12);color:#d8b4fe;border:1px solid rgba(168,85,247,0.3);border-radius:6px;margin:14px 10px 4px;padding:8px 12px;font-size:12px;font-weight:800;">
+          📖 أطلس ومختبر العمليات الكيميائية
+        </div>
         <button class="sb-btn" onclick="window.openUnitOps(); window.toggleSidebar(false);">
-          <span>📖</span> أطلس العمليات الموحدة Unit Operations
+          <span>📖</span> أطلس العمليات الموحدة Unit Operations Atlas
         </button>
         <button class="sb-btn" onclick="window.openOpsLab(); window.toggleSidebar(false);">
-          <span>📊</span> مختبر المحاكاة والحركية الكيميائية
+          <span>📊</span> مختبر المحاكاة والحركية الكيميائية Operations Lab
         </button>
+
+        <!-- NO SEARCH RESULTS FOUND CONTAINER -->
+        <div id="sidebar-no-results" style="display: none; padding: 24px 16px; text-align: center; color: var(--text-dim); font-size: 12px;">
+          <div style="font-size: 28px; margin-bottom: 8px;">🔍</div>
+          <div style="font-weight: 700; color: #ffffff; margin-bottom: 4px;">لا توجد نتائج تطابق البحث</div>
+          <div style="font-size: 11px; color: #94a3b8; line-height: 1.5;">جرب البحث بكلمات مثل:<br><span style="color: var(--accent);">"100", "K-301", "R-101", "PFD", "3D", "كاتاكارب"</span></div>
+        </div>
       </aside>
 
       <!-- Central Content Area -->
       <main class="app-content-area" id="app-content-area">
+      <main class="app-content-area" id="app-content-area">
         <!-- Dashboard Hero / Landing View -->
         <div id="dashboard-view">
           <div class="dash-hero-box">
-            <div style="font-size:36px;">🏭</div>
-            <div class="dash-hero-title">المحاكي الرقمي لمجمع تصنيع الأمونيا (3D Digital Twin)</div>
-            <div class="dash-hero-desc">
-              نظام محاكاة وهندسة تفاعلية بتقنية التوأم الرقمي ثلاثي الأبعاد 3D لكافة أقسام المصنع،
-              بما فيها حلقة تخليق الأمونيا R-401، فرن الإصلاح R-101، أبراج إزالة CO₂ كاتاكارب، وضواغط غاز التخليق K-301 مع غرف السيطرة ومختبر العمليات.
+            <!-- Founder Branding Banner with Photo -->
+            <div class="founder-badge-banner">
+              <div class="founder-portrait-frame">
+                <img src="/assets/aistudio/IMG_1672_574a69ee.jpeg" alt="Eng.Ali Saif Aldeen Haider Alnawfal" class="founder-portrait-img" />
+              </div>
+              <div class="founder-badge-info">
+                <span class="founder-badge-tag">🏛️ المؤسس والمهندس المطور | Founder & Lead Engineer</span>
+                <span class="founder-badge-name-en">Eng.Ali Saif Aldeen Haider Alnawfal</span>
+                <span class="founder-badge-name-ar">م. علي سيف الدين حيدر النوفل</span>
+                <span style="font-size:10.5px;color:#38bdf8;margin-top:2px;font-weight:700;">الهيئة العامة للمهندسين الكيميائيين في البصرة</span>
+              </div>
             </div>
 
-            <div class="dash-scroll-indicator">
-              <span>تصفح كافة الأقسام والمخططات الهندسية</span>
-              <span class="arrow">↓</span>
+            <!-- Title & Overview Card -->
+            <div class="dash-header-card">
+              <div style="font-size:36px;margin-bottom:4px;">🏭</div>
+              <div class="dash-hero-title" style="font-size:20px;font-weight:800;color:#38bdf8;">المحاكي الرقمي لمجمع تصنيع الأمونيا (3D Digital Twin)</div>
+              <div class="dash-hero-desc" style="font-size:13px;line-height:1.7;color:#f1f5f9;margin-top:8px;">
+                نظام محاكاة وهندسة تفاعلية بتقنية التوأم الرقمي ثلاثي الأبعاد 3D لكافة أقسام المصنع،
+                بما فيها حلقة تخليق الأمونيا R-401، فرن الإصلاح R-101، أبراج إزالة CO₂ كاتاكارب، وضواغط غاز التخليق K-301 مع غرف السيطرة ومختبر العمليات.
+              </div>
             </div>
 
-            <div class="dash-grid-btns">
-              <button class="dash-action-card card-synloop" style="border-color:#00c8ef;background:linear-gradient(135deg, rgba(0, 200, 239, 0.15), rgba(56, 189, 248, 0.15));" onclick="window.openPlantDiagram2D()">
-                <span class="dash-card-icon">📐</span>
+            <!-- Prominent Google Sign-In & Live User Count Card -->
+            <div id="hero-auth-container" style="width:100%;"></div>
+
+            <!-- Clean 3 Launchpad Cards directly on background image -->
+            <div class="dash-grid-btns" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; width: 100%; margin-top: 6px;">
+              <button class="dash-action-card" style="border-color:rgba(245, 158, 11, 0.7);background:rgba(18, 20, 28, 0.85);backdrop-filter:blur(12px);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.6);" onclick="window.toggleSidebar(true)">
+                <span class="dash-card-icon" style="font-size:32px;">📝</span>
                 <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">المخطط الهندسي 2D (PFD 6112P)</span>
-                  <span class="dash-card-sub">رسم تدفق العمليات الدقيق لقسم تحويل الغاز والإصلاح وموازنة المواد</span>
+                  <span class="dash-card-title" style="color:#fbbf24;font-size:15px;font-weight:800;">بنوك الأسئلة والاختبارات</span>
+                  <span class="dash-card-sub" style="font-size:11.5px;color:#fef08a;">تضم بنوك الـ 100 سؤال التخصصية الشاملة لكافة أقسام المصنع والضواغط</span>
                 </div>
               </button>
 
-              <button class="dash-action-card card-synloop" onclick="window.openPlant3D()">
-                <span class="dash-card-icon">🌐</span>
+              <button class="dash-action-card" style="border-color:rgba(0, 200, 239, 0.7);background:rgba(18, 20, 26, 0.85);backdrop-filter:blur(12px);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.6);" onclick="window.openPlant3D()">
+                <span class="dash-card-icon" style="font-size:32px;">🏭</span>
                 <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">المصنع الشامل 3D</span>
-                  <span class="dash-card-sub">استعراض كافة الوحدات والمعدات وتدفق الموائع</span>
+                  <span class="dash-card-title" style="color:#00c8ef;font-size:15px;font-weight:800;">المصنع التفاعلي 3D (Plant 3D)</span>
+                  <span class="dash-card-sub" style="font-size:11.5px;color:#bae6fd;">استعراض مجمع تصنيع الأمونيا التفاعلي ثلاثي الأبعاد</span>
                 </div>
               </button>
 
-              <button class="dash-action-card" onclick="window.openSection3D('sec_synloop', true)">
-                <span class="dash-card-icon">⚛️</span>
+              <button class="dash-action-card" style="border-color:rgba(16, 185, 129, 0.7);background:rgba(18, 20, 26, 0.85);backdrop-filter:blur(12px);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.6);" onclick="window.openPlantDiagram2D()">
+                <span class="dash-card-icon" style="font-size:32px;">📐</span>
                 <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">عزل حلقة الأمونيا R-401 3D</span>
-                  <span class="dash-card-sub">عزل المنظومة مع جولة تفاعلية 360°</span>
-                </div>
-              </button>
-
-              <button class="dash-action-card" onclick="window.openSection3D('sec_reformer', true)">
-                <span class="dash-card-icon">🔥</span>
-                <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">قسم تحويل الغاز والإصلاح 3D</span>
-                  <span class="dash-card-sub">أنابيب المحفز والاحتراق الداخلي</span>
-                </div>
-              </button>
-
-              <button class="dash-action-card" onclick="window.openSection3D('sec_co2', true)">
-                <span class="dash-card-icon">🧪</span>
-                <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">عزل قسم إزالة CO₂ كاتاكارب</span>
-                  <span class="dash-card-sub">أبراج الامتصاص والتجريد والمضخات</span>
-                </div>
-              </button>
-
-              <button class="dash-action-card" onclick="window.openSection3D('sec_k301', true)">
-                <span class="dash-card-icon">⚡</span>
-                <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">ضاغط غاز التخليق K-301 3D</span>
-                  <span class="dash-card-sub">المراحل الأربع والتوربين البخاري KT-301</span>
-                </div>
-              </button>
-
-              <button class="dash-action-card" onclick="window.openControlRoom3D()">
-                <span class="dash-card-icon">🎛</span>
-                <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">غرفة التحكم والمراقبة 3D</span>
-                  <span class="dash-card-sub">لوحات الإنذار والسيطرة الميدانية</span>
-                </div>
-              </button>
-
-              <button class="dash-action-card" onclick="window.openUnitOps()">
-                <span class="dash-card-icon">📖</span>
-                <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">أطلس العمليات الموحدة</span>
-                  <span class="dash-card-sub">لوحات التحكم PID ومنحنيات الاستجابة</span>
-                </div>
-              </button>
-
-              <button class="dash-action-card" onclick="window.openOpsLab()">
-                <span class="dash-card-icon">📊</span>
-                <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">مختبر المحاكاة والعمليات</span>
-                  <span class="dash-card-sub">حسابات كيميائية وسيناريوهات طوارئ وإنترلوك</span>
-                </div>
-              </button>
-
-              <button class="dash-action-card" onclick="window.openSection3D('sec_storage', true)">
-                <span class="dash-card-icon">🛢️</span>
-                <div class="dash-card-text-wrap">
-                  <span class="dash-card-title">خزانات الأمونيا F-401 3D</span>
-                  <span class="dash-card-sub">الخزانات الكروية ومنظومة التحميل والتصدير</span>
+                  <span class="dash-card-title" style="color:#10b981;font-size:15px;font-weight:800;">المخططات ثنائية الأبعاد 2D</span>
+                  <span class="dash-card-sub" style="font-size:11.5px;color:#a7f3d0;">خرائط تدفق العمليات PFD وموازنات الموائغ لجميع الأقسام</span>
                 </div>
               </button>
             </div>

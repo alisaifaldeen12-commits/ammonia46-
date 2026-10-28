@@ -268,6 +268,26 @@ export class PlantDiagram2D {
               <button id="pfd-btn-zoom-100" class="pfd-btn" style="min-width:32px;padding:3px 6px;font-size:11px;font-weight:700;" title="العرض الطبيعي 1:1">1:1</button>
             </div>
 
+            <button id="pfd-btn-sec100-exam" class="pfd-btn" style="border-color:#f59e0b;color:#fbbf24;background:rgba(245,158,11,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال للقسم 1 (تحويل الغاز والإصلاح والميثانايتر)">
+              <span>🔥</span> أسئلة القسم 1
+            </button>
+
+            <button id="pfd-btn-sec200-exam" class="pfd-btn" style="border-color:#00e5aa;color:#00e5aa;background:rgba(0,229,170,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال للقسم 2 (إزالة واستخلاص CO2 كاتاكارب)">
+              <span>🧪</span> أسئلة القسم 2
+            </button>
+
+            <button id="pfd-btn-k302-exam" class="pfd-btn" style="border-color:#0284c7;color:#38bdf8;background:rgba(2,132,199,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال لضاغط هواء العمليات K-302 ومبرداته">
+              <span>💨</span> أسئلة K-302
+            </button>
+
+            <button id="pfd-btn-k303-exam" class="pfd-btn" style="border-color:#d97706;color:#fbbf24;background:rgba(217,119,6,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال لضاغط الغاز الطبيعي K-303 ومبرد E-308">
+              <span>🔥</span> أسئلة K-303
+            </button>
+
+            <button id="pfd-btn-open-3d" class="pfd-btn" style="background:#ff9800;color:#02080d;font-weight:bold;border:1px solid #ffb74d;" title="الانتقال للمجسم ثلاثي الأبعاد 3D لهذا القسم">
+              <span>🔥</span> المجسم 3D
+            </button>
+
             <button id="pfd-btn-stream-table" class="pfd-btn" title="عرض جدول موازنة المواد والغازات">
               <span>📊</span> جدول المسارات
             </button>
@@ -954,6 +974,48 @@ export class PlantDiagram2D {
       });
     }
 
+    // Direct Jump to 3D Digital Twin Button
+    const btnOpen3D = document.getElementById('pfd-btn-open-3d');
+    if (btnOpen3D) {
+      btnOpen3D.addEventListener('click', () => {
+        const secMap: Record<string, string> = {
+          reform_100: 'sec_reformer',
+          co2_200: 'sec_co2',
+          comp_300: 'sec_k301',
+          synth_400: 'sec_synloop',
+          urea_500: 'sec_storage',
+          steam_bfw: 'sec_steam',
+          steam_header: 'sec_steam'
+        };
+        const targetSec = secMap[this.currentSheet] || 'sec_reformer';
+        if ((window as any).openSection3D) {
+          (window as any).openSection3D(targetSec, true);
+        }
+      });
+    }
+
+    // Exam Bank Triggers
+    document.getElementById('pfd-btn-sec100-exam')?.addEventListener('click', () => {
+      if ((window as any).openSection100Exam) {
+        (window as any).openSection100Exam('exam');
+      }
+    });
+    document.getElementById('pfd-btn-sec200-exam')?.addEventListener('click', () => {
+      if ((window as any).openSection200Exam) {
+        (window as any).openSection200Exam('exam');
+      }
+    });
+    document.getElementById('pfd-btn-k302-exam')?.addEventListener('click', () => {
+      if ((window as any).openK302Exam) {
+        (window as any).openK302Exam('exam');
+      }
+    });
+    document.getElementById('pfd-btn-k303-exam')?.addEventListener('click', () => {
+      if ((window as any).openK303Exam) {
+        (window as any).openK303Exam('exam');
+      }
+    });
+
     // High-Definition Zoom & Centering Buttons
     document.getElementById('pfd-btn-zoom-in')?.addEventListener('click', () => this.zoom(1.25));
     document.getElementById('pfd-btn-zoom-out')?.addEventListener('click', () => this.zoom(0.8));
@@ -1054,6 +1116,102 @@ export class PlantDiagram2D {
         if (canvasWrapper) canvasWrapper.style.cursor = 'grab';
       }
     });
+
+    // Touch Gestures: Smooth 1-Finger Pan & 2-Finger Pinch Zoom for mobile & tablets
+    let touchStartDist = 0;
+    let touchStartZoom = 1.0;
+    let touchMidX = 0;
+    let touchMidY = 0;
+    let isPinching = false;
+    let touchDragStartClientX = 0;
+    let touchDragStartClientY = 0;
+
+    canvasWrapper.addEventListener('touchstart', (e: TouchEvent) => {
+      if (this.isLocked) return;
+      if (e.touches.length === 1) {
+        isPinching = false;
+        this.isDragging = true;
+        this.dragMoved = false;
+        touchDragStartClientX = e.touches[0].clientX;
+        touchDragStartClientY = e.touches[0].clientY;
+        this.startMouseX = e.touches[0].clientX;
+        this.startMouseY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        isPinching = true;
+        this.isDragging = false;
+        this.dragMoved = true;
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        touchStartDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        touchStartZoom = this.currentZoom;
+        touchMidX = (t1.clientX + t2.clientX) / 2;
+        touchMidY = (t1.clientY + t2.clientY) / 2;
+      }
+    }, { passive: false });
+
+    canvasWrapper.addEventListener('touchmove', (e: TouchEvent) => {
+      if (this.isLocked || !this.svgElem) return;
+      // Prevent browser viewport scrolling/zooming
+      if (e.cancelable) e.preventDefault();
+
+      if (e.touches.length === 1 && this.isDragging && !isPinching) {
+        const dxScreen = e.touches[0].clientX - this.startMouseX;
+        const dyScreen = e.touches[0].clientY - this.startMouseY;
+        const totalDist = Math.hypot(e.touches[0].clientX - touchDragStartClientX, e.touches[0].clientY - touchDragStartClientY);
+        if (totalDist > 4) {
+          this.dragMoved = true;
+          const rect = this.svgElem.getBoundingClientRect();
+          const scaleX = this.vbW / (rect.width || 1);
+          const scaleY = this.vbH / (rect.height || 1);
+          this.vbX -= dxScreen * scaleX;
+          this.vbY -= dyScreen * scaleY;
+          this.startMouseX = e.touches[0].clientX;
+          this.startMouseY = e.touches[0].clientY;
+          this.clampViewBox();
+          this.applyViewBox();
+        }
+      } else if (e.touches.length === 2 && isPinching) {
+        this.dragMoved = true;
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        if (touchStartDist > 5) {
+          const factor = currentDist / touchStartDist;
+          const targetZoom = Math.min(Math.max(touchStartZoom * factor, 0.4), 4.5);
+          
+          const rect = this.svgElem.getBoundingClientRect();
+          const clientXRatio = (touchMidX - rect.left) / (rect.width || 1);
+          const clientYRatio = (touchMidY - rect.top) / (rect.height || 1);
+
+          const cursorSvgX = this.vbX + clientXRatio * this.vbW;
+          const cursorSvgY = this.vbY + clientYRatio * this.vbH;
+
+          const newW = this.baseW / targetZoom;
+          const newH = this.baseH / targetZoom;
+
+          this.vbX = cursorSvgX - clientXRatio * newW;
+          this.vbY = cursorSvgY - clientYRatio * newH;
+          this.vbW = newW;
+          this.vbH = newH;
+          this.currentZoom = targetZoom;
+
+          this.clampViewBox();
+          this.applyViewBox();
+        }
+      }
+    }, { passive: false });
+
+    canvasWrapper.addEventListener('touchend', (e: TouchEvent) => {
+      if (e.touches.length === 0) {
+        this.isDragging = false;
+        isPinching = false;
+      } else if (e.touches.length === 1) {
+        isPinching = false;
+        this.isDragging = true;
+        this.startMouseX = e.touches[0].clientX;
+        this.startMouseY = e.touches[0].clientY;
+      }
+    }, { passive: true });
 
     // Ultra-High-Definition Wheel Zoom with Exact Cursor Anchoring
     canvasWrapper.addEventListener('wheel', (e: WheelEvent) => {

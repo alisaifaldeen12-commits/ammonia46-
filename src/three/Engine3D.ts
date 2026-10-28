@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { ControlRoom3D, Hotspot3D } from './ControlRoom3D';
 import { AmmoniaPlant3D } from './AmmoniaPlant3D';
 import { EquipmentInfo, MASTER_EQUIPMENT_DATA } from './PlantDiagramData';
@@ -46,6 +47,13 @@ export class Engine3D {
   private splashAngle: number = 0;
   private splashSpeed: number = 0.42;
 
+  // Touch & Pointer Gesture Tracking to prevent accidental selection during drag/orbit
+  private pointerStartX: number = 0;
+  private pointerStartY: number = 0;
+  private pointerStartTime: number = 0;
+  private isPointerDragging: boolean = false;
+  private lastTouchRaycastTime: number = 0;
+
   constructor(container: HTMLElement) {
     this.container = container;
 
@@ -59,55 +67,75 @@ export class Engine3D {
     this.camera = new THREE.PerspectiveCamera(48, aspect, 0.5, 3000);
     this.camera.position.set(0, 65, 140);
 
-    // 3. Renderer with logarithmicDepthBuffer for zero z-fighting and rock-solid precision
+    // 3. High precision WebGL Renderer with ACES Tone Mapping & PBR Environment
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
       powerPreference: 'high-performance',
-      logarithmicDepthBuffer: true
+      logarithmicDepthBuffer: false
     });
-    this.renderer.setSize(container.clientWidth, container.clientHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.25));
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.08;
+    this.renderer.shadowMap.enabled = !isMobile;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.autoUpdate = false;
+    this.renderer.shadowMap.needsUpdate = true;
     this.renderer.domElement.style.touchAction = 'none';
     this.renderer.domElement.style.outline = 'none';
 
     container.appendChild(this.renderer.domElement);
 
-    // 4. Orbit Controls (Full 360° rotation enabled + Auto-Rotate)
+    // Procedural PBR Studio Environment Reflections
+    const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+    pmremGenerator.compileEquirectangularShader();
+    this.scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmremGenerator.dispose();
+
+    // 4. Orbit Controls (Tuned for ultra-smooth touch & pointer manipulation)
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.05;
-    this.controls.maxPolarAngle = Math.PI / 2 + 0.05;
+    this.controls.dampingFactor = 0.08;
+    this.controls.screenSpacePanning = true; // Natural screen-space panning across mobile and desktop
+    this.controls.maxPolarAngle = Math.PI / 2 - 0.02; // Prevent camera dipping under ground
     this.controls.minPolarAngle = 0.05;
-    this.controls.minDistance = 2.0;
-    this.controls.maxDistance = 800;
+    this.controls.minDistance = 3.0;
+    this.controls.maxDistance = 1000;
     this.controls.enableZoom = true;
     this.controls.enableRotate = true;
     this.controls.enablePan = true;
+    this.controls.rotateSpeed = 0.75; // Balanced, non-twitchy rotation
+    this.controls.zoomSpeed = 0.95;   // Controlled zoom
+    this.controls.panSpeed = 0.8;    // Stable two-finger panning
     this.controls.autoRotate = false;
-    this.controls.autoRotateSpeed = 1.2;
+    this.controls.autoRotateSpeed = 1.0;
     this.controls.touches = {
       ONE: THREE.TOUCH.ROTATE,
       TWO: THREE.TOUCH.DOLLY_PAN,
     };
     this.controls.listenToKeyEvents(window);
 
-    // Stop programmatic camera lerp / splash orbit when user manually interacts
-    this.controls.addEventListener('start', () => {
-      this.isCameraLerping = false;
-      this.isSplashOrbiting = false;
-    });
-    this.controls.target.set(0, 18.0, 20);
-
-    // Stop automated camera lerp/splash immediately when user interacts
-    this.controls.addEventListener('start', () => {
+    const stopAutomatedMotion = () => {
       this.isCameraLerping = false;
       this.isSplashOrbiting = false;
       this.controls.autoRotate = false;
+    };
+
+    // OrbitControls event listeners
+    this.controls.addEventListener('start', () => {
+      stopAutomatedMotion();
+      this.isPointerDragging = true;
     });
 
+    this.controls.addEventListener('end', () => {
+      setTimeout(() => {
+        this.isPointerDragging = false;
+      }, 80);
+    });
+
+    this.controls.target.set(0, 18.0, 20);
     this.controls.update();
 
     // 5. Lighting
@@ -127,26 +155,58 @@ export class Engine3D {
     window.addEventListener('resize', this.onWindowResize.bind(this));
     this.renderer.domElement.addEventListener('click', this.onClick.bind(this));
 
-    // Touch tap detection without interfering with orbit drag
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
+    // Pointer events (handles mouse and pen)
+    this.renderer.domElement.addEventListener('pointerdown', (e: PointerEvent) => {
+      stopAutomatedMotion();
+      this.pointerStartX = e.clientX;
+      this.pointerStartY = e.clientY;
+      this.pointerStartTime = performance.now();
+      this.isPointerDragging = false;
+    });
 
+    this.renderer.domElement.addEventListener('pointermove', (e: PointerEvent) => {
+      if (e.buttons > 0 || e.pointerType === 'touch') {
+        const dist = Math.hypot(e.clientX - this.pointerStartX, e.clientY - this.pointerStartY);
+        if (dist > 8) {
+          this.isPointerDragging = true;
+          stopAutomatedMotion();
+        }
+      }
+    });
+
+    // Touch events (mobile/tablet devices)
     this.renderer.domElement.addEventListener('touchstart', (e: TouchEvent) => {
+      stopAutomatedMotion();
       if (e.touches.length === 1) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        touchStartTime = performance.now();
+        this.pointerStartX = e.touches[0].clientX;
+        this.pointerStartY = e.touches[0].clientY;
+        this.pointerStartTime = performance.now();
+        this.isPointerDragging = false;
+      } else {
+        // Multi-touch is always pinch or pan
+        this.isPointerDragging = true;
+      }
+    }, { passive: true });
+
+    this.renderer.domElement.addEventListener('touchmove', (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        this.isPointerDragging = true;
+      } else if (e.touches.length === 1) {
+        const dist = Math.hypot(e.touches[0].clientX - this.pointerStartX, e.touches[0].clientY - this.pointerStartY);
+        if (dist > 8) {
+          this.isPointerDragging = true;
+        }
       }
     }, { passive: true });
 
     this.renderer.domElement.addEventListener('touchend', (e: TouchEvent) => {
-      if (e.changedTouches.length === 1) {
-        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        const dt = performance.now() - touchStartTime;
-        // If it was a quick tap without significant dragging (< 10px movement in < 300ms)
-        if (dx < 12 && dy < 12 && dt < 350) {
+      if (e.changedTouches.length === 1 && !this.isPointerDragging) {
+        const dx = Math.abs(e.changedTouches[0].clientX - this.pointerStartX);
+        const dy = Math.abs(e.changedTouches[0].clientY - this.pointerStartY);
+        const dt = performance.now() - this.pointerStartTime;
+        // Clean single tap detection
+        if (dx < 10 && dy < 10 && dt < 400) {
+          this.lastTouchRaycastTime = performance.now();
           this.handlePointerRaycast(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
         }
       }
@@ -165,13 +225,20 @@ export class Engine3D {
     this.hemiLight.position.set(0, 60, 0);
     this.scene.add(this.hemiLight);
 
-    // 3. Main Directional Sun Light
-    this.sunLight = new THREE.DirectionalLight(0xffaa44, 2.5);
-    this.sunLight.position.set(70, 55, 60);
-    this.sunLight.castShadow = true;
-    this.sunLight.shadow.mapSize.width = 2048;
-    this.sunLight.shadow.mapSize.height = 2048;
-    this.sunLight.shadow.bias = -0.0008;
+    // 3. Main Directional Sun Light with High-Resolution Soft Shadows
+    this.sunLight = new THREE.DirectionalLight(0xffedd5, 2.6);
+    this.sunLight.position.set(90, 110, 80);
+    const isMobileLight = typeof window !== 'undefined' && (window.innerWidth < 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    this.sunLight.castShadow = !isMobileLight;
+    this.sunLight.shadow.mapSize.width = isMobileLight ? 512 : 1024;
+    this.sunLight.shadow.mapSize.height = isMobileLight ? 512 : 1024;
+    this.sunLight.shadow.camera.near = 10;
+    this.sunLight.shadow.camera.far = 400;
+    this.sunLight.shadow.camera.left = -150;
+    this.sunLight.shadow.camera.right = 150;
+    this.sunLight.shadow.camera.top = 150;
+    this.sunLight.shadow.camera.bottom = -150;
+    this.sunLight.shadow.bias = -0.0003;
     this.sunLight.shadow.normalBias = 0.02;
     this.scene.add(this.sunLight);
 
@@ -184,6 +251,13 @@ export class Engine3D {
     const frontLight = new THREE.DirectionalLight(0xffeedd, 0.9);
     frontLight.position.set(0, 35, 70);
     this.scene.add(frontLight);
+  }
+
+  // Request shadow map recalculation on demand (conserves massive GPU render cycles)
+  public requestShadowUpdate() {
+    if (this.renderer && this.renderer.shadowMap) {
+      this.renderer.shadowMap.needsUpdate = true;
+    }
   }
 
   // Switch Environment Lighting Mode
@@ -210,6 +284,7 @@ export class Engine3D {
       this.sunLight.color.setHex(0x4466aa);
       this.sunLight.intensity = 0.7;
     }
+    this.requestShadowUpdate();
   }
 
   // Toggle X-Ray Inspection View
@@ -282,6 +357,7 @@ export class Engine3D {
       this.plant.isolateSection(null);
       this.flyToPosition(new THREE.Vector3(0, 40, 95), new THREE.Vector3(0, 5, 20));
     }
+    this.requestShadowUpdate();
   }
 
   public focusSection(sectionId: string, onFocus?: (info: any) => void) {
@@ -299,41 +375,71 @@ export class Engine3D {
     this.controlRoom.group.visible = false;
     this.plant.group.visible = true;
 
-    if (sectionId === 'sec_reformer' || sectionId === 'sec_primary_reformer') {
-      this.plant.isolateSection('sec_reformer');
-    } else if (sectionId === 'sec_synloop' || sectionId === 'section_4' || sectionId === 'sec_synth') {
-      this.plant.isolateSection('sec_synloop');
-    } else if (sectionId === 'sec_co2') {
-      this.plant.isolateSection('sec_co2');
-    } else if (sectionId === 'sec_k301') {
-      this.plant.isolateSection('sec_k301');
-    } else if (sectionId === 'sec_steam' || sectionId === 'sec_steam_utility') {
-      this.plant.isolateSection('sec_steam');
+    const isSecFullComplex = sectionId === 'sec_full_complex' || sectionId === 'full_complex' || sectionId === 'full_plant_complex';
+    const isSec1 = sectionId === 'sec_reformer' || sectionId === 'sec_primary_reformer' || sectionId === 'reform';
+    const isSecSynloop = sectionId === 'sec_synloop' || sectionId === 'sec_synth' || sectionId === 'synth_400' || sectionId === 'section_4' || sectionId === 'sec_loop';
+    const isSecCO2 = sectionId === 'sec_co2' || sectionId === 'sec_catacarb' || sectionId === 'co2' || sectionId === 'section_3';
+    const isSecK301 = sectionId === 'sec_k301' || sectionId === 'sec_compressor' || sectionId === 'sec_syngas' || sectionId === 'k301' || sectionId === 'section_5';
+    const isSecSteam = sectionId === 'sec_steam' || sectionId === 'sec_steam_utility' || sectionId === 'steam' || sectionId === 'section_9';
+    const isSecRefrig = sectionId === 'sec_refrigeration' || sectionId === 'sec_k401' || sectionId === 'k401ref';
+    const isSecStorage = sectionId === 'sec_storage' || sectionId === 'storage' || sectionId === 'section_8';
+    const isSecCooling = sectionId === 'sec_cooling_tower' || sectionId === 'cooling_tower' || sectionId === 'sec_cooling' || sectionId === 'cooling';
+
+    if (isSecFullComplex) {
+      this.plant.isolateSection('sec_full_complex');
+      this.renderer.shadowMap.enabled = false;
     } else {
-      this.plant.isolateSection(null);
-      this.stopSplashOrbit();
+      this.renderer.shadowMap.enabled = true;
+      if (isSecCooling) {
+        this.plant.isolateSection('sec_cooling_tower');
+      } else if (isSec1) {
+        this.plant.isolateSection('sec_reformer');
+      } else if (isSecSynloop) {
+        this.plant.isolateSection('sec_synloop');
+      } else if (isSecCO2) {
+        this.plant.isolateSection('sec_co2');
+      } else if (isSecK301) {
+        this.plant.isolateSection('sec_k301');
+      } else if (isSecSteam) {
+        this.plant.isolateSection('sec_steam');
+      } else if (isSecRefrig) {
+        this.plant.isolateSection('sec_refrigeration');
+      } else if (isSecStorage) {
+        this.plant.isolateSection('sec_storage');
+      } else {
+        this.plant.isolateSection(null);
+        this.stopSplashOrbit();
+      }
+    }
+    if (!isSecFullComplex) {
+      this.requestShadowUpdate();
     }
 
     const sectionMap: Record<string, { cam: THREE.Vector3; target: THREE.Vector3; eqId?: string; title: string; stepIdx?: number }> = {
+      sec_full_complex: { cam: new THREE.Vector3(0, 160.0, 390.0), target: new THREE.Vector3(0, 20.0, 0), title: '🏭 المعمل الشامل 3D (دمج برج التبريد + القسم 1 + القسم 2 + الضاغطات + القسم 4)' },
+      full_complex: { cam: new THREE.Vector3(0, 160.0, 390.0), target: new THREE.Vector3(0, 20.0, 0), title: '🏭 المعمل الشامل 3D (دمج برج التبريد + القسم 1 + القسم 2 + الضاغطات + القسم 4)' },
       overview: { cam: new THREE.Vector3(0, 48, 80), target: new THREE.Vector3(0, 6.0, 10), title: 'استعراض مجمع تصنيع الأمونيا بالكامل 3D (Full Plant Complex)' },
       all: { cam: new THREE.Vector3(0, 48, 80), target: new THREE.Vector3(0, 6.0, 10), title: 'استعراض مجمع تصنيع الأمونيا بالكامل 3D (Full Plant Complex)' },
       plant_overview: { cam: new THREE.Vector3(0, 48, 80), target: new THREE.Vector3(0, 6.0, 10), title: 'استعراض مجمع تصنيع الأمونيا بالكامل 3D (Full Plant Complex)' },
       sec_desulf: { cam: new THREE.Vector3(15, 14, -4), target: new THREE.Vector3(15, 4.0, -22), eqId: 'r-102ab', title: '1. إزالة الكبريت وضغط الغاز الطبيعي (V-115 / R-102AB)', stepIdx: 2 },
       sec_feed: { cam: new THREE.Vector3(-45, 12, -18), target: new THREE.Vector3(-45, 3.5, -35), eqId: 'v-115', title: '1. استلام الغاز الطبيعي والضغط (V-115)', stepIdx: 0 },
-      sec_reformer: { cam: new THREE.Vector3(-28, 20, -2), target: new THREE.Vector3(-28, 6.0, -22), eqId: 'r-101', title: '🔥 مجسم قسم تحويل الغاز والإصلاح الأولي 3D (Reforming Unit - Isolated)', stepIdx: 3 },
-      sec_primary_reformer: { cam: new THREE.Vector3(-28, 20, -2), target: new THREE.Vector3(-28, 6.0, -22), eqId: 'r-101', title: '🔥 مجسم قسم تحويل الغاز والإصلاح الأولي 3D (Reforming Unit - Isolated)', stepIdx: 3 },
-      sec_secondary_reformer: { cam: new THREE.Vector3(-45, 22, -3), target: new THREE.Vector3(-45, 7.0, -22), eqId: 'r-103', title: '3. المصلح الثانوي وغلاية البخار (Secondary Reformer R-103 & E-108)', stepIdx: 4 },
-      sec_shift: { cam: new THREE.Vector3(-28, 14, 8), target: new THREE.Vector3(-28, 4.5, -9), eqId: 'r-104', title: '4. مفاعلات التحويل (CO Shift HTS R-104 & LTS R-105)', stepIdx: 6 },
-      sec_co2: { cam: new THREE.Vector3(-48, 36, 26), target: new THREE.Vector3(-48, 14.0, 4), eqId: 't-201', title: '5. امتصاص وإزالة CO₂ (Catacarb Absorber T-201 & Stripper T-202)', stepIdx: 8 },
+      sec_reformer: { cam: new THREE.Vector3(0, 36.0, 85.0), target: new THREE.Vector3(0, 16.0, -15.0), eqId: 'r-101', title: '🔥 مجسم قسم تحويل الغاز والإصلاح والأفران ومفاعلات التحويل 3D (Unit 100)', stepIdx: 3 },
+      sec_primary_reformer: { cam: new THREE.Vector3(0, 24.0, 32.0), target: new THREE.Vector3(0, 16.0, -14.0), eqId: 'r-101', title: '🔥 فرن الإصلاح الأولي الرئيسي R-101 (288 أنبوب إشعاعي)', stepIdx: 3 },
+      sec_secondary_reformer: { cam: new THREE.Vector3(32, 28.0, 28.0), target: new THREE.Vector3(32, 18.0, -14.0), eqId: 'r-103', title: '3. المصلح الثانوي الأوتوثيرمال R-103 وغلاية البخار E-108 / V-102A', stepIdx: 4 },
+      sec_shift: { cam: new THREE.Vector3(56, 26.0, 52.0), target: new THREE.Vector3(56, 14.0, 4.0), eqId: 'r-104', title: '4. مفاعلات تحويل أول أكسيد الكربون HTS R-104 & LTS R-105', stepIdx: 6 },
+      sec_co2: { cam: new THREE.Vector3(0, 105.0, 235.0), target: new THREE.Vector3(0, 32.0, 25.0), eqId: 't-201', title: '5. امتصاص وإزالة CO₂ (Catacarb Absorber T-201 & Stripper T-202)', stepIdx: 8 },
       sec_methanation: { cam: new THREE.Vector3(-5, 14, 33), target: new THREE.Vector3(-5, 4.0, 17), eqId: 'r-106', title: '6. مفاعل الميثانايتر للتنقية النهائية (Methanator R-106)', stepIdx: 9 },
-      sec_compressor: { cam: new THREE.Vector3(16, 16, 42), target: new THREE.Vector3(16, 3.5, 23), eqId: 'k-301', title: '7. ضواغط غاز التخليق والهواء والغاز (K-301 / K-302 / K-303 / K-501)', stepIdx: 10 },
-      sec_syngas: { cam: new THREE.Vector3(16, 16, 42), target: new THREE.Vector3(16, 3.5, 23), eqId: 'k-301', title: '7. ضاغط غاز التخليق الرئيسي (K-301)', stepIdx: 10 },
-      sec_synloop: { cam: new THREE.Vector3(40, 26, 66), target: new THREE.Vector3(40, 12.0, 46), eqId: 'r-401', title: '8. برج تخليق الأمونيا وحلقة التفاعل (Ammonia Converter R-401)', stepIdx: 12 },
-      sec_refrigeration: { cam: new THREE.Vector3(-4, 14, 52), target: new THREE.Vector3(-4, 3.5, 36), eqId: 'e-405', title: '9. منظومة التثليج وتبريد الأمونيا (Chilling Train E-405/E-406 & K-401)', stepIdx: 11 },
-      sec_k401: { cam: new THREE.Vector3(-4, 14, 52), target: new THREE.Vector3(-4, 3.5, 36), eqId: 'e-405', title: '9. ضاغط التبريد والتثليج (K-401 & Flash Chillers)', stepIdx: 11 },
-      sec_storage: { cam: new THREE.Vector3(-30, 12, 72), target: new THREE.Vector3(-30, 3.5, 55), eqId: 'v-409', title: '10. خزانات الأمونيا المبردة ومحطات التحميل (F-401 / V-409 / Loading)', stepIdx: 14 },
-      sec_steam: { cam: new THREE.Vector3(-65 + 6, 28.0, 85 + 44), target: new THREE.Vector3(-65 + 2, 3.2, 85 + 4), eqId: 's-65', title: '11. مجمع ومحطات تخفيض البخار 3D (Steam Headers & PRDS Stations)', stepIdx: 5 },
-      sec_steam_utility: { cam: new THREE.Vector3(-65 + 6, 28.0, 85 + 44), target: new THREE.Vector3(-65 + 2, 3.2, 85 + 4), eqId: 's-65', title: '11. مجمع ومحطات تخفيض البخار 3D (Steam Headers & PRDS Stations)', stepIdx: 5 },
+      sec_compressor: { cam: new THREE.Vector3(55.0, 36.0, 60.0), target: new THREE.Vector3(0, 15.5, 0), eqId: 'k-301', title: '⚡ ضاغط غاز التخليق K-301 والتوربين ومبرداته 3D', stepIdx: 10 },
+      sec_syngas: { cam: new THREE.Vector3(55.0, 36.0, 60.0), target: new THREE.Vector3(0, 15.5, 0), eqId: 'k-301', title: '⚡ ضاغط غاز التخليق الرئيسي K-301', stepIdx: 10 },
+      sec_k301: { cam: new THREE.Vector3(55.0, 36.0, 60.0), target: new THREE.Vector3(0, 15.5, 0), eqId: 'k-301', title: '⚡ مجسم ضاغط غاز التخليق K-301 والتوربين ومبرداته 3D', stepIdx: 10 },
+      sec_synloop: { cam: new THREE.Vector3(20, 100.0, 230.0), target: new THREE.Vector3(0, 32.0, 20.0), eqId: 'r-401', title: '⚛️ برج تخليق الأمونيا وحلقة التفاعل R-401', stepIdx: 12 },
+      sec_refrigeration: { cam: new THREE.Vector3(-4, 14, 52), target: new THREE.Vector3(-4, 3.5, 36), eqId: 'e-405', title: '❄️ منظومة التثليج وتبريد الأمونيا (Chilling Train E-405/E-406 & K-401)', stepIdx: 11 },
+      sec_k401: { cam: new THREE.Vector3(-4, 14, 52), target: new THREE.Vector3(-4, 3.5, 36), eqId: 'e-405', title: '❄️ ضاغط التبريد والتثليج (K-401 & Flash Chillers)', stepIdx: 11 },
+      sec_storage: { cam: new THREE.Vector3(-30, 12, 72), target: new THREE.Vector3(-30, 3.5, 55), eqId: 'v-409', title: '🛢️ خزانات الأمونيا المبردة ومحطات التحميل (F-401 / V-409 / Loading)', stepIdx: 14 },
+      sec_steam: { cam: new THREE.Vector3(-65 + 6, 28.0, 85 + 44), target: new THREE.Vector3(-65 + 2, 3.2, 85 + 4), eqId: 's-65', title: '💨 مجمع ومحطات تخفيض البخار 3D (Steam Headers & PRDS Stations)', stepIdx: 5 },
+      sec_steam_utility: { cam: new THREE.Vector3(-65 + 6, 28.0, 85 + 44), target: new THREE.Vector3(-65 + 2, 3.2, 85 + 4), eqId: 's-65', title: '💨 مجمع ومحطات تخفيض البخار 3D (Steam Headers & PRDS Stations)', stepIdx: 5 },
+      sec_cooling_tower: { cam: new THREE.Vector3(38, 28.0, 58), target: new THREE.Vector3(-10, 8.0, 5), eqId: 'cooling_tower', title: '🌊 برج التبريد الصناعي ومضخات P-A..J والمكثف E711 ثلاثي الأبعاد 3D', stepIdx: 13 },
+      cooling_tower: { cam: new THREE.Vector3(38, 28.0, 58), target: new THREE.Vector3(-10, 8.0, 5), eqId: 'cooling_tower', title: '🌊 برج التبريد الصناعي ومضخات P-A..J والمكثف E711 ثلاثي الأبعاد 3D', stepIdx: 13 },
     };
 
     const sec = sectionMap[sectionId] || sectionMap.overview;
@@ -357,10 +463,72 @@ export class Engine3D {
   }
 
   public focusEquipment(equipmentId: string) {
-    const eq = MASTER_EQUIPMENT_DATA.find((e) => e.id === equipmentId || e.tag.toLowerCase() === equipmentId.toLowerCase());
+    let eq = MASTER_EQUIPMENT_DATA.find((e) => e.id === equipmentId || e.tag.toLowerCase() === equipmentId.toLowerCase());
+    if (!eq && this.plant.coolingTower) {
+      eq = this.plant.coolingTower.coolingEquipmentMap.get(equipmentId.toLowerCase());
+    }
     if (eq) {
+      if (this.plant.coolingTower && (this.plant.currentIsolatedSection === 'sec_cooling_tower' || this.plant.currentIsolatedSection === 'cooling_tower')) {
+        const targetPos = eq.position.clone();
+        const camOffset = equipmentId.toLowerCase().startsWith('fan-')
+          ? new THREE.Vector3(0, 16, 24)
+          : equipmentId.toLowerCase() === 'e711'
+          ? new THREE.Vector3(18, 14, 22)
+          : new THREE.Vector3(12, 10, 16);
+        const camPos = targetPos.clone().add(camOffset);
+        this.flyToPosition(camPos, targetPos);
+        return;
+      }
+      if (eq.id === 'unit200_master_dcs_screen') {
+        const targetPos = new THREE.Vector3(0, 13.5, 135);
+        const camPos = new THREE.Vector3(0, 14.0, 168);
+        this.flyToPosition(camPos, targetPos);
+        return;
+      }
+      if (eq.id === 'unit300_master_pfd_board') {
+        const targetPos = new THREE.Vector3(0, 12.0, 125);
+        const camPos = new THREE.Vector3(0, 14.0, 160);
+        this.flyToPosition(camPos, targetPos);
+        return;
+      }
+      if (eq.id === 'unit400_master_pfd_board') {
+        const targetPos = new THREE.Vector3(0, 12.0, 120);
+        const camPos = new THREE.Vector3(0, 14.0, 155);
+        this.flyToPosition(camPos, targetPos);
+        return;
+      }
+
+      // Check if K-301 Section 3 Twin is active
+      if (this.plant.currentIsolatedSection === 'sec_k301' || this.plant.currentIsolatedSection === 'sec_compressor') {
+        const k301VantageMap: Record<string, { cam: THREE.Vector3; target: THREE.Vector3 }> = {
+          'k-301': { cam: new THREE.Vector3(45.0, 30.0, 48.0), target: new THREE.Vector3(0, 15.5, 0) },
+          'k-301t': { cam: new THREE.Vector3(-32.0, 24.0, 28.0), target: new THREE.Vector3(-32.0, 15.5, 0) },
+          'k-301_lp': { cam: new THREE.Vector3(-8.5, 24.0, 28.0), target: new THREE.Vector3(-8.5, 15.5, 0) },
+          'k-301_mp': { cam: new THREE.Vector3(12.0, 24.0, 28.0), target: new THREE.Vector3(12.0, 15.5, 0) },
+          'k-301_hp': { cam: new THREE.Vector3(34.0, 24.0, 28.0), target: new THREE.Vector3(34.0, 15.5, 0) },
+          'v-301': { cam: new THREE.Vector3(-75.0, 28.0, -32.0), target: new THREE.Vector3(-75.0, 18.0, -60.0) },
+          'v-302': { cam: new THREE.Vector3(-25.0, 28.0, -32.0), target: new THREE.Vector3(-25.0, 18.0, -60.0) },
+          'v-303': { cam: new THREE.Vector3(25.0, 28.0, -32.0), target: new THREE.Vector3(25.0, 18.0, -60.0) },
+          'v-310': { cam: new THREE.Vector3(75.0, 30.0, -30.0), target: new THREE.Vector3(75.0, 20.0, -60.0) },
+          'e-301': { cam: new THREE.Vector3(-75.0, 22.0, 85.0), target: new THREE.Vector3(-75.0, 10.0, 60.0) },
+          'e-302': { cam: new THREE.Vector3(-25.0, 22.0, 85.0), target: new THREE.Vector3(-25.0, 10.0, 60.0) },
+          'e-303': { cam: new THREE.Vector3(25.0, 22.0, 85.0), target: new THREE.Vector3(25.0, 10.0, 60.0) },
+          'e-315': { cam: new THREE.Vector3(75.0, 22.0, 85.0), target: new THREE.Vector3(75.0, 10.0, 60.0) },
+          'lo_console': { cam: new THREE.Vector3(-115.0, 22.0, 28.0), target: new THREE.Vector3(-115.0, 8.0, 0) },
+          'fv-301': { cam: new THREE.Vector3(-50.0, 28.0, -5.0), target: new THREE.Vector3(-50.0, 22.0, -25.0) },
+          'fv-302': { cam: new THREE.Vector3(0, 28.0, -5.0), target: new THREE.Vector3(0, 22.0, -25.0) },
+          'fv-303': { cam: new THREE.Vector3(50.0, 28.0, -5.0), target: new THREE.Vector3(50.0, 22.0, -25.0) }
+        };
+
+        const vantage = k301VantageMap[equipmentId.toLowerCase()];
+        if (vantage) {
+          this.flyToPosition(vantage.cam, vantage.target);
+          return;
+        }
+      }
+
       const targetPos = eq.position.clone();
-      const camPos = eq.position.clone().add(new THREE.Vector3(12, 10, 14));
+      const camPos = targetPos.clone().add(new THREE.Vector3(12, 10, 14));
       this.flyToPosition(camPos, targetPos);
     }
   }
@@ -410,9 +578,16 @@ export class Engine3D {
       sectionId === 'storage' ||
       sectionId === 'section_8';
 
+    const isCooling =
+      sectionId === 'sec_cooling_tower' ||
+      sectionId === 'cooling_tower' ||
+      sectionId === 'sec_cooling' ||
+      sectionId === 'cooling';
+
     if (isCO2) {
       // Isolate complete dedicated CO2 removal section 3D digital twin (Unit 200)
       this.plant.isolateSection('sec_co2');
+      this.renderer.shadowMap.enabled = true;
       this.isSplashOrbiting = false;
       this.flyToPosition(
         new THREE.Vector3(0, 105.0, 235.0),
@@ -433,15 +608,13 @@ export class Engine3D {
         });
       }
     } else if (isK301) {
-      // Isolate K-301 Syngas Compressor Train (V-301, K-301, E-301, V-302, E-302, V-303, E-303, V-304, E-304, E-315, V-310)
+      // Isolate K-301 Syngas Compressor Complex (Dedicated Colossal 3D Twin matching Section 2 & 4)
       this.plant.isolateSection('sec_k301');
-      this.isCameraLerping = false;
-      this.isSplashOrbiting = true;
-      this.splashCenter.set(10, 3.5, 22);
-      this.splashRadius = 38;
-      this.splashHeight = 16;
-      this.splashAngle = 0;
-      this.controls.autoRotate = false;
+      this.isSplashOrbiting = false;
+      this.flyToPosition(
+        new THREE.Vector3(55.0, 36.0, 60.0),
+        new THREE.Vector3(0, 15.5, 0)
+      );
 
       const eqData = MASTER_EQUIPMENT_DATA.find((e) => e.id === 'k-301');
       if (eqData && this.onEquipmentSelectCallback) {
@@ -450,7 +623,7 @@ export class Engine3D {
       if (onFocus) {
         onFocus({
           sectionId: 'sec_k301',
-          title: '⚡ مجسم قسم ضاغط غاز التخليق K-301 بجميع مراحله ومبرداته وعوازل قطراته 3D (Complete 4-Stage Syngas Train - Isolated)',
+          title: '⚡ مجسم ضاغط غاز التخليق K-301 (٣ أكياس: LP و MP و HP و ٤ مراحل مع التوربين K-301T والمبردات والعوازل 3D)',
           equipment: eqData,
           stepIndex: 10,
           totalSteps: 15,
@@ -480,12 +653,12 @@ export class Engine3D {
     } else if (isRefrig) {
       this.plant.isolateSection('sec_refrigeration');
       this.isCameraLerping = false;
-      this.isSplashOrbiting = true;
-      this.splashCenter.set(110, 16.0, 130);
-      this.splashRadius = 140;
-      this.splashHeight = 65;
-      this.splashAngle = 0;
+      this.isSplashOrbiting = false;
       this.controls.autoRotate = false;
+      this.flyToPosition(
+        new THREE.Vector3(110 + 40, 45.0, 130 + 55),
+        new THREE.Vector3(110, 16.0, 130)
+      );
 
       const eqData = MASTER_EQUIPMENT_DATA.find((e) => e.id === 'e-405');
       if (eqData && this.onEquipmentSelectCallback) {
@@ -525,12 +698,12 @@ export class Engine3D {
     } else if (isStorage) {
       this.plant.isolateSection('sec_storage');
       this.isCameraLerping = false;
-      this.isSplashOrbiting = true;
-      this.splashCenter.set(-30, 3.5, 55);
-      this.splashRadius = 32;
-      this.splashHeight = 16;
-      this.splashAngle = 0;
+      this.isSplashOrbiting = false;
       this.controls.autoRotate = false;
+      this.flyToPosition(
+        new THREE.Vector3(-30 + 28, 20.0, 55 + 32),
+        new THREE.Vector3(-30, 3.5, 55)
+      );
 
       const eqData = MASTER_EQUIPMENT_DATA.find((e) => e.id === 'v-409');
       if (eqData && this.onEquipmentSelectCallback) {
@@ -545,16 +718,40 @@ export class Engine3D {
           totalSteps: 15,
         });
       }
+    } else if (isCooling) {
+      this.plant.isolateSection('sec_cooling_tower');
+      this.isCameraLerping = false;
+      this.isSplashOrbiting = false;
+      this.controls.autoRotate = false;
+      this.flyToPosition(
+        new THREE.Vector3(38, 28.0, 58),
+        new THREE.Vector3(-10, 8.0, 5)
+      );
+
+      const ct = this.plant.ensureCoolingTower();
+      const eqData = ct.coolingEquipmentMap.get('cooling_tower') || ct.coolingEquipmentMap.get('p-a');
+      if (eqData && this.onEquipmentSelectCallback) {
+        this.onEquipmentSelectCallback(eqData);
+      }
+      if (onFocus) {
+        onFocus({
+          sectionId: 'sec_cooling_tower',
+          title: '🌊 مجسم برج التبريد الصناعي ومضخات P-A..J والمكثف E711 ثلاثي الأبعاد 3D',
+          equipment: eqData,
+          stepIndex: 13,
+          totalSteps: 15,
+        });
+      }
     } else {
-      // Isolate only Section 1 equipment and piping (Reforming unit)
+      // Isolate dedicated Section 100 Reforming & Shift Conversion 3D Digital Twin
       this.plant.isolateSection('sec_reformer');
       this.isCameraLerping = false;
-      this.isSplashOrbiting = true;
-      this.splashCenter.set(-20, 6.0, -26);
-      this.splashRadius = 36;
-      this.splashHeight = 18;
-      this.splashAngle = 0;
+      this.isSplashOrbiting = false;
       this.controls.autoRotate = false;
+      this.flyToPosition(
+        new THREE.Vector3(0, 36.0, 85.0),
+        new THREE.Vector3(0, 16.0, -15.0)
+      );
 
       const eqData = MASTER_EQUIPMENT_DATA.find((e) => e.id === 'r-101');
       if (eqData && this.onEquipmentSelectCallback) {
@@ -563,7 +760,7 @@ export class Engine3D {
       if (onFocus) {
         onFocus({
           sectionId: 'sec_reformer',
-          title: '🔥 مجسم قسم تحويل الغاز والإصلاح الأولي 3D (360° Reforming Unit - Isolated)',
+          title: '🔥 مجسم قسم تحويل الغاز والإصلاح والأفران ومفاعلات التحويل 3D (Reforming Unit 100 DWG 6112P-100-100-00)',
           equipment: eqData,
           stepIndex: 3,
           totalSteps: 15,
@@ -769,6 +966,158 @@ export class Engine3D {
     this.onEquipmentSelectCallback = cb;
   }
 
+  // Traverses up to root scene ensuring this object and every ancestor is visible
+  public isObjectGloballyVisible(obj: THREE.Object3D | null): boolean {
+    let curr: THREE.Object3D | null = obj;
+    while (curr) {
+      if (!curr.visible) return false;
+      curr = curr.parent;
+    }
+    return true;
+  }
+
+  // Validates that selected equipment belongs to the current isolated section
+  // to prevent accidental cross-section overlap
+  public isEquipmentAllowedInCurrentSection(eq: EquipmentInfo): boolean {
+    const sec = this.plant.currentIsolatedSection;
+    if (
+      !sec ||
+      sec === 'overview' ||
+      sec === 'all' ||
+      sec === 'sec_full_complex' ||
+      sec === 'full_complex' ||
+      sec === 'full_plant_complex' ||
+      sec === 'sec_integrated'
+    ) {
+      return true;
+    }
+    const isSec1 = sec === 'sec_reformer' || sec === 'sec_primary_reformer' || sec === 'reform' || sec === 'section_1';
+    const isSecCO2 = sec === 'sec_co2' || sec === 'sec_catacarb' || sec === 'sec_co2_removal' || sec === 'co2' || sec === 'co2_removal' || sec === 'section_2' || sec === 'section_3';
+    const isSecK301 = sec === 'sec_k301' || sec === 'sec_compressor' || sec === 'sec_syngas' || sec === 'k301' || sec === 'section_5';
+    const isSecSynLoop = sec === 'sec_synloop' || sec === 'sec_synth' || sec === 'synth_400' || sec === 'section_4' || sec === 'section_7' || sec === 'sec_loop';
+    const isSecSteam = sec === 'sec_steam' || sec === 'sec_steam_utility' || sec === 'steam' || sec === 'section_9';
+
+    const eqId = eq.id.toLowerCase();
+    const eqSecNum = eq.sectionNumber;
+    const eqSecName = (eq.section || '').toLowerCase();
+
+    if (isSec1) {
+      return (
+        eqSecNum === 1 ||
+        eqSecName.includes('reforming') ||
+        eqSecName.includes('shift') ||
+        eqSecName.includes('100') ||
+        eqId.startsWith('p-1') ||
+        eqId === 'v-102a' ||
+        eqId === 'v-109' ||
+        eqId === 'e-108' ||
+        eqId === 'e-109' ||
+        eqId === 'e-107' ||
+        eqId === 'e-110' ||
+        eqId === 'r-101' ||
+        eqId === 'r-103' ||
+        eqId === 'r-104' ||
+        eqId === 'r-105' ||
+        eqId === 'r-106' ||
+        eqId === 'e-106' ||
+        eqId === 'v-101' ||
+        eqId === 'k-303' ||
+        eqId === 'h-101' ||
+        eqId === 'r-102' ||
+        eqId === 'r-102a' ||
+        eqId === 'r-102b' ||
+        eqId === 'k-302' ||
+        eqId === 'k-101a' ||
+        eqId === 'k-101b' ||
+        eqId === 'st-101' ||
+        eqId.includes('100')
+      );
+    }
+    if (isSecCO2) {
+      return (
+        eqSecNum === 2 ||
+        eqSecNum === 3 ||
+        eqSecName.includes('co2') ||
+        eqSecName.includes('catacarb') ||
+        eqSecName.includes('200') ||
+        eqId.startsWith('p-2') ||
+        eqId.includes('201') ||
+        eqId.includes('202') ||
+        eqId.includes('204') ||
+        eqId.includes('207') ||
+        eqId.includes('208') ||
+        eqId.includes('209') ||
+        eqId.includes('203') ||
+        eqId.includes('205') ||
+        eqId.includes('206')
+      );
+    }
+    if (isSecK301) {
+      return (
+        eqSecNum === 3 ||
+        eqSecNum === 5 ||
+        eqSecName.includes('compressor') ||
+        eqSecName.includes('syngas') ||
+        eqSecName.includes('k-301') ||
+        eqSecName.includes('300') ||
+        eqId.startsWith('p-3') ||
+        eqId.includes('301') ||
+        eqId.includes('302') ||
+        eqId.includes('303') ||
+        eqId.includes('304') ||
+        eqId.includes('310') ||
+        eqId.includes('315')
+      );
+    }
+    if (isSecSynLoop) {
+      return (
+        eqSecNum === 4 ||
+        eqSecNum === 7 ||
+        eqSecName.includes('synthesis') ||
+        eqSecName.includes('synloop') ||
+        eqSecName.includes('loop') ||
+        eqSecName.includes('400') ||
+        eqId.startsWith('p-4') ||
+        eqId.includes('401') ||
+        eqId.includes('402') ||
+        eqId.includes('403') ||
+        eqId.includes('404') ||
+        eqId.includes('405') ||
+        eqId.includes('406') ||
+        eqId.includes('407') ||
+        eqId.includes('408') ||
+        eqId.includes('409') ||
+        eqId.includes('412') ||
+        eqId.includes('416')
+      );
+    }
+    if (isSecSteam) {
+      return (
+        eqSecName.includes('steam') ||
+        eqId.startsWith('s-') ||
+        eqId.includes('steam')
+      );
+    }
+    const isSecCooling =
+      sec === 'sec_cooling_tower' ||
+      sec === 'cooling_tower' ||
+      sec === 'sec_cooling' ||
+      sec === 'cooling';
+    if (isSecCooling) {
+      return (
+        eqId.startsWith('p-') ||
+        eqId.startsWith('fan-') ||
+        eqId === 'e711' ||
+        eqId.includes('cooling') ||
+        eqSecName.includes('cooling') ||
+        (eq.type as string) === 'pump' ||
+        (eq.type as string) === 'fan' ||
+        (eq.type as string) === 'condenser'
+      );
+    }
+    return true;
+  }
+
   public handlePointerRaycast(clientX: number, clientY: number) {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -776,22 +1125,42 @@ export class Engine3D {
 
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
-    // 1. Raycast into Plant interactive objects (Equipment, Badges, Pipes)
-    const plantIntersects = this.raycaster.intersectObjects(this.plant.interactiveMeshes, true);
-    if (plantIntersects.length > 0) {
-      const hitObj = plantIntersects[0].object;
-      let eqData: EquipmentInfo | undefined = hitObj.userData?.data;
-      if (!eqData && hitObj.userData?.equipmentId) {
-        eqData = MASTER_EQUIPMENT_DATA.find((e) => e.id === hitObj.userData.equipmentId);
-      }
-      if (!eqData && hitObj.parent && hitObj.parent.userData?.data) {
-        eqData = hitObj.parent.userData.data;
-      }
+    // 1. Raycast into Plant interactive objects (Equipment, Badges, Pipes) for active section only
+    const activeCandidates = this.plant.getActiveInteractiveMeshes();
+    const plantIntersects = this.raycaster.intersectObjects(activeCandidates, true);
 
-      if (eqData && this.onEquipmentSelectCallback) {
-        this.onEquipmentSelectCallback(eqData);
-        this.focusEquipment(eqData.id);
-        return;
+    // Filter strictly to intersections that are globally visible in the 3D scene
+    const validIntersects = plantIntersects.filter((hit) => this.isObjectGloballyVisible(hit.object));
+
+    if (validIntersects.length > 0) {
+      for (const hit of validIntersects) {
+        let eqData: EquipmentInfo | undefined = undefined;
+        let curr: THREE.Object3D | null = hit.object;
+
+        while (curr && !eqData) {
+          if (curr.userData?.data) {
+            eqData = curr.userData.data;
+          } else if (curr.userData?.equipmentInfo) {
+            eqData = curr.userData.equipmentInfo;
+          } else if (curr.userData?.equipmentId) {
+            eqData = MASTER_EQUIPMENT_DATA.find((e) => e.id.toLowerCase() === curr!.userData.equipmentId.toLowerCase());
+          }
+          curr = curr.parent;
+        }
+
+        if (eqData && this.isEquipmentAllowedInCurrentSection(eqData)) {
+          if (this.plant.coolingTower && this.plant.coolingTower.group.visible) {
+            this.plant.coolingTower.highlightComponent(hit.object);
+          }
+          if (this.onEquipmentSelectCallback) {
+            this.onEquipmentSelectCallback(eqData);
+          }
+          // Only focus camera if equipment is not a generic long piping network line
+          if (eqData.type !== 'piping' && (!eqData.id.startsWith('P-') || eqData.type === 'pump')) {
+            this.focusEquipment(eqData.id);
+          }
+          return;
+        }
       }
     }
 
@@ -812,6 +1181,13 @@ export class Engine3D {
   }
 
   private onClick(event: MouseEvent) {
+    // If a mobile touch tap just fired in the last 600ms, ignore the synthetic mouse click!
+    if (performance.now() - this.lastTouchRaycastTime < 600) return;
+    // If the user was dragging/orbiting the camera, ignore the click!
+    if (this.isPointerDragging) return;
+    const dist = Math.hypot(event.clientX - this.pointerStartX, event.clientY - this.pointerStartY);
+    if (dist > 8) return;
+
     this.handlePointerRaycast(event.clientX, event.clientY);
   }
 
@@ -838,12 +1214,16 @@ export class Engine3D {
       if (!this.isRunning) return;
       this.animFrameId = requestAnimationFrame(animate);
 
-      const deltaSec = (time - lastTime) / 1000;
+      const deltaSec = Math.min((time - lastTime) / 1000, 0.04);
       lastTime = time;
 
-      // Update 3D animations
-      this.controlRoom.update(time / 1000);
-      this.plant.update(deltaSec, time / 1000);
+      // Update 3D animations only when corresponding group is visible
+      if (this.controlRoom.group.visible) {
+        this.controlRoom.update(time / 1000);
+      }
+      if (this.plant.group.visible) {
+        this.plant.update(deltaSec, time / 1000);
+      }
 
       // Smooth Camera Lerp if active
       if (this.isSplashOrbiting) {
@@ -883,6 +1263,96 @@ export class Engine3D {
     if (this.tourTimer) {
       clearTimeout(this.tourTimer);
       this.tourTimer = null;
+    }
+  }
+
+  // Camera Presets (Front, Side, Top, Isometric, Reset)
+  public setCameraAngle(angle: 'front' | 'side' | 'top' | 'isometric' | 'reset') {
+    const isFullComplex =
+      this.plant.currentIsolatedSection === 'sec_full_complex' ||
+      this.plant.currentIsolatedSection === 'full_complex' ||
+      this.plant.currentIsolatedSection === 'full_plant_complex';
+
+    if (isFullComplex) {
+      const target = new THREE.Vector3(0, 20.0, 0);
+      if (angle === 'front') {
+        this.flyToPosition(new THREE.Vector3(0, 60.0, 370.0), target);
+      } else if (angle === 'side') {
+        this.flyToPosition(new THREE.Vector3(360.0, 60.0, 0.0), target);
+      } else if (angle === 'top') {
+        this.flyToPosition(new THREE.Vector3(0, 420.0, 10.0), target);
+      } else if (angle === 'isometric') {
+        this.flyToPosition(new THREE.Vector3(180.0, 160.0, 320.0), target);
+      } else {
+        this.flyToPosition(new THREE.Vector3(0, 160.0, 390.0), target);
+      }
+      return;
+    }
+
+    const isCooling =
+      this.plant.currentIsolatedSection === 'sec_cooling_tower' ||
+      this.plant.currentIsolatedSection === 'cooling_tower';
+
+    if (isCooling) {
+      const target = new THREE.Vector3(-10, 8.0, 5);
+      if (angle === 'front') {
+        this.flyToPosition(new THREE.Vector3(-10, 16.0, 68), target);
+      } else if (angle === 'side') {
+        this.flyToPosition(new THREE.Vector3(75, 18.0, 5), target);
+      } else if (angle === 'top') {
+        this.flyToPosition(new THREE.Vector3(-10, 85.0, 5.1), target);
+      } else if (angle === 'isometric') {
+        this.flyToPosition(new THREE.Vector3(42, 34.0, 56), target);
+      } else {
+        this.flyToPosition(new THREE.Vector3(38, 28.0, 58), target);
+      }
+    } else {
+      const target = new THREE.Vector3(0, 10, 10);
+      if (angle === 'front') {
+        this.flyToPosition(new THREE.Vector3(0, 18.0, 85), target);
+      } else if (angle === 'side') {
+        this.flyToPosition(new THREE.Vector3(95, 20.0, 10), target);
+      } else if (angle === 'top') {
+        this.flyToPosition(new THREE.Vector3(0, 120.0, 10.1), target);
+      } else if (angle === 'isometric') {
+        this.flyToPosition(new THREE.Vector3(60, 48.0, 75), target);
+      } else {
+        this.flyToPosition(new THREE.Vector3(0, 48.0, 80), new THREE.Vector3(0, 6.0, 10));
+      }
+    }
+  }
+
+  // Cooling Tower Interactive Features
+  public toggleCoolingFanAnimation(active?: boolean): boolean {
+    if (this.plant.coolingTower) {
+      const state = active !== undefined ? active : !this.plant.coolingTower.isFanAnimationActive;
+      this.plant.coolingTower.setFanAnimation(state);
+      return state;
+    }
+    return false;
+  }
+
+  public toggleCoolingWaterFlow(active?: boolean): boolean {
+    if (this.plant.coolingTower) {
+      const state = active !== undefined ? active : !this.plant.coolingTower.isWaterFlowActive;
+      this.plant.coolingTower.setWaterFlow(state);
+      return state;
+    }
+    return false;
+  }
+
+  public toggleCoolingLabels(visible?: boolean): boolean {
+    if (this.plant.coolingTower) {
+      const state = visible !== undefined ? visible : !this.plant.coolingTower.badgesGroup.visible;
+      this.plant.coolingTower.setLabelsVisible(state);
+      return state;
+    }
+    return false;
+  }
+
+  public setCoolingGroupVisibility(groupKey: 'all' | 'fans' | 'pumps' | 'condenser' | 'piping', visible: boolean) {
+    if (this.plant.coolingTower) {
+      this.plant.coolingTower.setGroupVisibility(groupKey, visible);
     }
   }
 }

@@ -1,0 +1,38 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Registered app user authenticated with Google Sign-In",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 256 },
+        "photoURL": { "type": "string", "maxLength": 1024 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "lastLoginAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email"]
+    },
+    "UserStats": {
+      "title": "User Statistics",
+      "description": "Global aggregate stats including total user count",
+      "type": "object",
+      "properties": {
+        "totalUsers": { "type": "number" },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["totalUsers"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile document indexed by Firebase Auth UID"
+    },
+    "/stats/userCount": {
+      "schema": { "$ref": "#/entities/UserStats" },
+      "description": "Global counter for registered application users"
+    }
+  }
+}

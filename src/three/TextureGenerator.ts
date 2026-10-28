@@ -3,98 +3,105 @@ import * as THREE from 'three';
 /**
  * Procedural texture generator for industrial carbon steel, metallic panels,
  * floor tiles, ceiling grid, screens, and control room instruments.
+ * Optimized with texture caching and lightweight canvas buffers for maximum 60fps performance.
  */
+
+const textureCache = new Map<string, THREE.CanvasTexture>();
 
 // 1. Weathered Industrial Carbon Steel Texture (High Fidelity PBR)
 export function createCarbonSteelTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 1024;
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'carbon_steel_pbr_v2';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d')!;
 
-  // 1. Base metallic dark carbon steel gradient
-  const grad = ctx.createLinearGradient(0, 0, 1024, 1024);
-  grad.addColorStop(0, '#3a4148');
-  grad.addColorStop(0.25, '#2e353c');
-  grad.addColorStop(0.5, '#252a2f');
-  grad.addColorStop(0.75, '#2c3238');
-  grad.addColorStop(1, '#383e45');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1024, 1024);
+    // 1. Base metallic dark carbon steel gradient
+    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+    grad.addColorStop(0, '#3a4148');
+    grad.addColorStop(0.25, '#2e353c');
+    grad.addColorStop(0.5, '#252a2f');
+    grad.addColorStop(0.75, '#2c3238');
+    grad.addColorStop(1, '#383e45');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
 
-  // 2. High density micro-noise and steel grain
-  const imgData = ctx.getImageData(0, 0, 1024, 1024);
-  const data = imgData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const noise = (Math.random() - 0.5) * 26;
-    data[i] = Math.min(255, Math.max(0, data[i] + noise));
-    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
-    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise + 2)); // Subtle cold industrial steel tint
-  }
-  ctx.putImageData(imgData, 0, 0);
+    // 2. Micro-noise and steel grain
+    const imgData = ctx.getImageData(0, 0, 512, 512);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 24;
+      data[i] = Math.min(255, Math.max(0, data[i] + noise));
+      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise + 2));
+    }
+    ctx.putImageData(imgData, 0, 0);
 
-  // 3. Fine anisotropic brushed steel streaks
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-  ctx.lineWidth = 1;
-  for (let y = 0; y < 1024; y += 3) {
+    // 3. Fine brushed steel streaks
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    for (let y = 0; y < 512; y += 4) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y + (Math.random() - 0.5) * 4);
+      ctx.stroke();
+    }
+
+    // 4. Industrial steel plate weld lines & bevels
+    ctx.strokeStyle = 'rgba(15, 18, 22, 0.7)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(4, 4, 504, 504);
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(1024, y + (Math.random() - 0.5) * 6);
+    ctx.moveTo(0, 256);
+    ctx.lineTo(512, 256);
+    ctx.moveTo(256, 0);
+    ctx.lineTo(256, 512);
     ctx.stroke();
+
+    // Subtle highlight on weld seams
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(5, 5, 502, 502);
+    ctx.beginPath();
+    ctx.moveTo(0, 257);
+    ctx.lineTo(512, 257);
+    ctx.moveTo(257, 0);
+    ctx.lineTo(257, 512);
+    ctx.stroke();
+
+    // 5. Heavy duty hex bolt / rivet patterns along plates
+    ctx.fillStyle = '#181b1f';
+    for (let x = 16; x < 512; x += 32) {
+      ctx.beginPath();
+      ctx.arc(x, 12, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, 500, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x, 252, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (let y = 16; y < 512; y += 32) {
+      ctx.beginPath();
+      ctx.arc(12, y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(500, y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(252, y, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    textureCache.set(cacheKey, baseTex);
   }
-
-  // 4. Industrial steel plate weld lines & bevels
-  ctx.strokeStyle = 'rgba(15, 18, 22, 0.7)';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(8, 8, 1008, 1008);
-  ctx.beginPath();
-  ctx.moveTo(0, 512);
-  ctx.lineTo(1024, 512);
-  ctx.moveTo(512, 0);
-  ctx.lineTo(512, 1024);
-  ctx.stroke();
-
-  // Subtle highlight on weld seams
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(10, 10, 1004, 1004);
-  ctx.beginPath();
-  ctx.moveTo(0, 514);
-  ctx.lineTo(1024, 514);
-  ctx.moveTo(514, 0);
-  ctx.lineTo(514, 1024);
-  ctx.stroke();
-
-  // 5. Heavy duty hex bolt / rivet patterns along plates
-  ctx.fillStyle = '#181b1f';
-  for (let x = 32; x < 1024; x += 48) {
-    // Top & Bottom rows
-    ctx.beginPath();
-    ctx.arc(x, 22, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x, 1002, 4, 0, Math.PI * 2);
-    ctx.fill();
-    // Center divider row
-    ctx.beginPath();
-    ctx.arc(x, 502, 3.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  for (let y = 32; y < 1024; y += 48) {
-    // Left & Right columns
-    ctx.beginPath();
-    ctx.arc(22, y, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(1002, y, 4, 0, Math.PI * 2);
-    ctx.fill();
-    // Center vertical divider
-    ctx.beginPath();
-    ctx.arc(502, y, 3.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = baseTex.clone();
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   return texture;
@@ -102,42 +109,50 @@ export function createCarbonSteelTexture(): THREE.CanvasTexture {
 
 // 2. Control Room Epoxy Floor Tile Texture
 export function createFloorTileTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'floor_tile_tex';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d')!;
 
-  // Light grey terrazzo / epoxy tile base
-  ctx.fillStyle = '#b0b8b2';
-  ctx.fillRect(0, 0, 512, 512);
+    // Light grey terrazzo / epoxy tile base
+    ctx.fillStyle = '#b0b8b2';
+    ctx.fillRect(0, 0, 512, 512);
 
-  // Speckle noise for terrazzo floor effect
-  for (let i = 0; i < 4000; i++) {
-    const x = Math.random() * 512;
-    const y = Math.random() * 512;
-    const size = Math.random() * 2 + 1;
-    const shade = Math.random() > 0.5 ? '#7a827c' : '#d8deda';
-    ctx.fillStyle = shade;
-    ctx.fillRect(x, y, size, size);
+    // Speckle noise for terrazzo floor effect
+    for (let i = 0; i < 4000; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      const size = Math.random() * 2 + 1;
+      const shade = Math.random() > 0.5 ? '#7a827c' : '#d8deda';
+      ctx.fillStyle = shade;
+      ctx.fillRect(x, y, size, size);
+    }
+
+    // Tile grout lines (64x64 tiles)
+    ctx.strokeStyle = '#5a625d';
+    ctx.lineWidth = 2;
+    for (let x = 0; x <= 512; x += 128) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 512);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 512; y += 128) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    textureCache.set(cacheKey, baseTex);
   }
-
-  // Tile grout lines (64x64 tiles)
-  ctx.strokeStyle = '#5a625d';
-  ctx.lineWidth = 2;
-  for (let x = 0; x <= 512; x += 128) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 512);
-    ctx.stroke();
-  }
-  for (let y = 0; y <= 512; y += 128) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(512, y);
-    ctx.stroke();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = baseTex.clone();
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   return texture;
@@ -145,39 +160,47 @@ export function createFloorTileTexture(): THREE.CanvasTexture {
 
 // 3. Control Room Ceiling Acoustic Tile Texture
 export function createCeilingTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'ceiling_tex';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#dbe0d8';
-  ctx.fillRect(0, 0, 512, 512);
+    ctx.fillStyle = '#dbe0d8';
+    ctx.fillRect(0, 0, 512, 512);
 
-  // Acoustic dots
-  ctx.fillStyle = '#a8b0a6';
-  for (let i = 0; i < 2000; i++) {
-    const x = Math.random() * 512;
-    const y = Math.random() * 512;
-    ctx.fillRect(x, y, 1.5, 1.5);
+    // Acoustic dots
+    ctx.fillStyle = '#a8b0a6';
+    for (let i = 0; i < 2000; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      ctx.fillRect(x, y, 1.5, 1.5);
+    }
+
+    // Metal grid gridlines
+    ctx.strokeStyle = '#808882';
+    ctx.lineWidth = 4;
+    for (let x = 0; x <= 512; x += 128) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 512);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 512; y += 128) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    textureCache.set(cacheKey, baseTex);
   }
-
-  // Metal grid gridlines
-  ctx.strokeStyle = '#808882';
-  ctx.lineWidth = 4;
-  for (let x = 0; x <= 512; x += 128) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 512);
-    ctx.stroke();
-  }
-  for (let y = 0; y <= 512; y += 128) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(512, y);
-    ctx.stroke();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = baseTex.clone();
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   return texture;
@@ -249,7 +272,7 @@ export function createVintageGreenPanelTexture(title: string = 'AMMONIA PANEL', 
       tags: [
         { name: 'FRCA-301', val: '68000', pv: '67900', unit: 'Nm³/h' },
         { name: 'PRCA-301', val: '32.0', pv: '31.9', unit: 'Bar' },
-        { name: 'SR-301', val: '10450', pv: '10450', unit: 'RPM' },
+        { name: 'SR-301', val: '10000', pv: '10000', unit: 'RPM' },
         { name: 'SR-311', val: '8900', pv: '8905', unit: 'RPM' }
       ],
       mim: 'PROCESS AIR K-302 & NG K-303'
@@ -707,123 +730,141 @@ export function createDCSMonitorTexture(title: string, tag: string): THREE.Canva
 
 // 12. Golden Sunset Environment Map for High Metallic PBR Reflections
 export function createSunsetEnvMap(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'sunset_env_map';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
 
-  // Sunset sky gradient
-  const grad = ctx.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#0c1a2e');   // Deep twilight zenith
-  grad.addColorStop(0.3, '#301828'); // Sunset purple sky
-  grad.addColorStop(0.55, '#f56218'); // Bright golden orange horizon
-  grad.addColorStop(0.68, '#ffaa22'); // Sun glow
-  grad.addColorStop(0.70, '#42322a'); // Ground dark horizon
-  grad.addColorStop(1, '#1a1816');   // Lower ground reflection
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1024, 512);
+    // Sunset sky gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, '#0c1a2e');   // Deep twilight zenith
+    grad.addColorStop(0.3, '#301828'); // Sunset purple sky
+    grad.addColorStop(0.55, '#f56218'); // Bright golden orange horizon
+    grad.addColorStop(0.68, '#ffaa22'); // Sun glow
+    grad.addColorStop(0.70, '#42322a'); // Ground dark horizon
+    grad.addColorStop(1, '#1a1816');   // Lower ground reflection
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 256);
 
-  // Bright Sun disk
-  ctx.fillStyle = '#fffbee';
-  ctx.shadowColor = '#ff8800';
-  ctx.shadowBlur = 60;
-  ctx.beginPath();
-  ctx.arc(512, 330, 45, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-
-  // Sunset clouds
-  ctx.fillStyle = 'rgba(255, 120, 40, 0.25)';
-  for (let i = 0; i < 20; i++) {
-    const cx = (i * 120 + 50) % 1024;
-    const cy = 180 + Math.sin(i) * 60;
+    // Bright Sun disk
+    ctx.fillStyle = '#fffbee';
+    ctx.shadowColor = '#ff8800';
+    ctx.shadowBlur = 30;
     ctx.beginPath();
-    ctx.ellipse(cx, cy, 140, 30, 0, 0, Math.PI * 2);
+    ctx.arc(256, 165, 24, 0, Math.PI * 2);
     ctx.fill();
-  }
+    ctx.shadowBlur = 0;
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.mapping = THREE.EquirectangularReflectionMapping;
-  return texture;
+    // Sunset clouds
+    ctx.fillStyle = 'rgba(255, 120, 40, 0.25)';
+    for (let i = 0; i < 15; i++) {
+      const cx = (i * 65 + 30) % 512;
+      const cy = 90 + Math.sin(i) * 30;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 70, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.mapping = THREE.EquirectangularReflectionMapping;
+    textureCache.set(cacheKey, baseTex);
+  }
+  return baseTex;
 }
 
 // 13. Iraqi Flag Texture ( علم العراق الأصلي )
 export function createIraqiFlagTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 341; // 3:2 ratio
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'iraqi_flag_tex';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 341; // 3:2 ratio
+    const ctx = canvas.getContext('2d')!;
 
-  // Top Red Stripe
-  ctx.fillStyle = '#ce1126';
-  ctx.fillRect(0, 0, 512, 113.6);
+    // Top Red Stripe
+    ctx.fillStyle = '#ce1126';
+    ctx.fillRect(0, 0, 512, 113.6);
 
-  // Middle White Stripe
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 113.6, 512, 113.6);
+    // Middle White Stripe
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 113.6, 512, 113.6);
 
-  // Bottom Black Stripe
-  ctx.fillStyle = '#000000';
-  ctx.fillRect(0, 227.2, 512, 113.8);
+    // Bottom Black Stripe
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 227.2, 512, 113.8);
 
-  // Green Kufic Arabic Script: الله أكبر
-  ctx.fillStyle = '#007a3d';
-  ctx.font = 'bold 36px "Traditional Arabic", "Kufi", "Noto Naskh Arabic", serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('الله أكبر', 256, 170);
+    // Green Kufic Arabic Script: الله أكبر
+    ctx.fillStyle = '#007a3d';
+    ctx.font = 'bold 36px "Traditional Arabic", "Kufi", "Noto Naskh Arabic", serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('الله أكبر', 256, 170);
 
-  const texture = new THREE.CanvasTexture(canvas);
-  return texture;
+    baseTex = new THREE.CanvasTexture(canvas);
+    textureCache.set(cacheKey, baseTex);
+  }
+  return baseTex.clone();
 }
 
 // 14. Wet Reflective Concrete Pad Texture
 export function createWetGroundTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 1024;
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'wet_ground_tex';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d')!;
 
-  // Base wet concrete
-  ctx.fillStyle = '#3a4448';
-  ctx.fillRect(0, 0, 1024, 1024);
+    // Base wet concrete
+    ctx.fillStyle = '#3a4448';
+    ctx.fillRect(0, 0, 512, 512);
 
-  // Concrete grid expansion joints
-  ctx.strokeStyle = '#1d2326';
-  ctx.lineWidth = 4;
-  for (let x = 0; x <= 1024; x += 128) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 1024);
-    ctx.stroke();
+    // Concrete grid expansion joints
+    ctx.strokeStyle = '#1d2326';
+    ctx.lineWidth = 3;
+    for (let x = 0; x <= 512; x += 64) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 512);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 512; y += 64) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+    }
+
+    // Safety yellow boundary lines
+    ctx.strokeStyle = '#f5a800';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(16, 16, 480, 480);
+
+    // Wet puddles / glossy patches
+    for (let i = 0; i < 24; i++) {
+      const px = Math.random() * 512;
+      const py = Math.random() * 512;
+      const pr = 12 + Math.random() * 32;
+      const pGrad = ctx.createRadialGradient(px, py, 3, px, py, pr);
+      pGrad.addColorStop(0, 'rgba(80, 110, 120, 0.45)');
+      pGrad.addColorStop(1, 'rgba(58, 68, 72, 0.0)');
+      ctx.fillStyle = pGrad;
+      ctx.beginPath();
+      ctx.arc(px, py, pr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    textureCache.set(cacheKey, baseTex);
   }
-  for (let y = 0; y <= 1024; y += 128) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(1024, y);
-    ctx.stroke();
-  }
-
-  // Safety yellow boundary lines
-  ctx.strokeStyle = '#f5a800';
-  ctx.lineWidth = 8;
-  ctx.strokeRect(30, 30, 964, 964);
-
-  // Wet puddles / glossy patches
-  for (let i = 0; i < 35; i++) {
-    const px = Math.random() * 1024;
-    const py = Math.random() * 1024;
-    const pr = 20 + Math.random() * 60;
-    const pGrad = ctx.createRadialGradient(px, py, 5, px, py, pr);
-    pGrad.addColorStop(0, 'rgba(80, 110, 120, 0.45)');
-    pGrad.addColorStop(1, 'rgba(58, 68, 72, 0.0)');
-    ctx.fillStyle = pGrad;
-    ctx.beginPath();
-    ctx.arc(px, py, pr, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = baseTex.clone();
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   return texture;
@@ -1072,92 +1113,101 @@ export function createEquipmentTagTexture(tag: string, name: string): THREE.Canv
 
 // 21. Authentic Industrial Carbon Steel Pipe Texture (ASTM A106 / A335)
 export function createIndustrialCarbonSteelPipeTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024;
-  canvas.height = 512;
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'ind_carbon_steel_pipe_tex';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
 
-  // Base metallic dark carbon steel gradient (ASTM A106 Gr.B mill scale)
-  const grad = ctx.createLinearGradient(0, 0, 1024, 0);
-  grad.addColorStop(0, '#2e353c');
-  grad.addColorStop(0.2, '#38404a');
-  grad.addColorStop(0.4, '#303740');
-  grad.addColorStop(0.6, '#3e4650');
-  grad.addColorStop(0.8, '#323942');
-  grad.addColorStop(1, '#2e353c');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1024, 512);
+    // Base metallic dark carbon steel gradient (ASTM A106 Gr.B mill scale)
+    const grad = ctx.createLinearGradient(0, 0, 512, 0);
+    grad.addColorStop(0, '#2e353c');
+    grad.addColorStop(0.2, '#38404a');
+    grad.addColorStop(0.4, '#303740');
+    grad.addColorStop(0.6, '#3e4650');
+    grad.addColorStop(0.8, '#323942');
+    grad.addColorStop(1, '#2e353c');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 256);
 
-  // Micro-noise & mill scale surface roughness
-  const imgData = ctx.getImageData(0, 0, 1024, 512);
-  const data = imgData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const n = (Math.random() - 0.5) * 22;
-    data[i] = Math.min(255, Math.max(0, data[i] + n));
-    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + n));
-    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + n + 1));
+    // Micro-noise & mill scale surface roughness
+    const imgData = ctx.getImageData(0, 0, 512, 256);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const n = (Math.random() - 0.5) * 20;
+      data[i] = Math.min(255, Math.max(0, data[i] + n));
+      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + n));
+      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + n + 1));
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // Fine longitudinal mill rolling striations
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.lineWidth = 1;
+    for (let y = 0; y < 256; y += 4) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y + (Math.random() - 0.5) * 4);
+      ctx.stroke();
+    }
+
+    // Circumferential lathe turning marks
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
+    for (let x = 0; x < 512; x += 16) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 256);
+      ctx.stroke();
+    }
+
+    // Butt-weld seams with Heat Affected Zone (HAZ) tempering colors
+    const weldXPositions = [64, 192, 320, 448];
+    weldXPositions.forEach((wx) => {
+      // HAZ straw/bronze discoloration ring
+      const hazGrad = ctx.createLinearGradient(wx - 10, 0, wx + 10, 0);
+      hazGrad.addColorStop(0, 'rgba(80, 65, 45, 0)');
+      hazGrad.addColorStop(0.35, 'rgba(110, 85, 50, 0.25)');
+      hazGrad.addColorStop(0.5, 'rgba(40, 45, 52, 0.6)');
+      hazGrad.addColorStop(0.65, 'rgba(110, 85, 50, 0.25)');
+      hazGrad.addColorStop(1, 'rgba(80, 65, 45, 0)');
+      ctx.fillStyle = hazGrad;
+      ctx.fillRect(wx - 10, 0, 20, 256);
+
+      // Weld bead crown
+      ctx.strokeStyle = 'rgba(25, 28, 33, 0.85)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(wx, 0);
+      ctx.lineTo(wx, 256);
+      ctx.stroke();
+
+      // Weld ripple highlight
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(wx + 1, 0);
+      ctx.lineTo(wx + 1, 256);
+      ctx.stroke();
+    });
+
+    // Stenciled specification print in industrial white ink
+    ctx.fillStyle = 'rgba(230, 235, 245, 0.55)';
+    ctx.font = 'bold 11px "Courier New", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const stencilText = 'ASTM A106-B / ASME SA106 • SCH 80 • HEAT 948210 • 110 BARG • ';
+    ctx.fillText(stencilText + stencilText, 12, 90);
+    ctx.fillText(stencilText + stencilText, 12, 170);
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    baseTex.repeat.set(2, 1);
+    textureCache.set(cacheKey, baseTex);
   }
-  ctx.putImageData(imgData, 0, 0);
-
-  // Fine longitudinal mill rolling striations
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-  ctx.lineWidth = 1;
-  for (let y = 0; y < 512; y += 4) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(1024, y + (Math.random() - 0.5) * 4);
-    ctx.stroke();
-  }
-
-  // Circumferential lathe turning marks
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
-  for (let x = 0; x < 1024; x += 16) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, 512);
-    ctx.stroke();
-  }
-
-  // Butt-weld seams with Heat Affected Zone (HAZ) tempering colors
-  const weldXPositions = [128, 384, 640, 896];
-  weldXPositions.forEach((wx) => {
-    // HAZ straw/bronze discoloration ring
-    const hazGrad = ctx.createLinearGradient(wx - 20, 0, wx + 20, 0);
-    hazGrad.addColorStop(0, 'rgba(80, 65, 45, 0)');
-    hazGrad.addColorStop(0.35, 'rgba(110, 85, 50, 0.25)');
-    hazGrad.addColorStop(0.5, 'rgba(40, 45, 52, 0.6)');
-    hazGrad.addColorStop(0.65, 'rgba(110, 85, 50, 0.25)');
-    hazGrad.addColorStop(1, 'rgba(80, 65, 45, 0)');
-    ctx.fillStyle = hazGrad;
-    ctx.fillRect(wx - 20, 0, 40, 512);
-
-    // Weld bead crown
-    ctx.strokeStyle = 'rgba(25, 28, 33, 0.85)';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(wx, 0);
-    ctx.lineTo(wx, 512);
-    ctx.stroke();
-
-    // Weld ripple highlight
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(wx + 1.5, 0);
-    ctx.lineTo(wx + 1.5, 512);
-    ctx.stroke();
-  });
-
-  // Stenciled specification print in industrial white ink
-  ctx.fillStyle = 'rgba(230, 235, 245, 0.55)';
-  ctx.font = 'bold 13px "Courier New", monospace';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  const stencilText = 'ASTM A106-B / ASME SA106 SEAMLESS • HEAVY WALL • SCH 80 • HEAT NO. 948210 • HYDROTESTED 110 BARG • ';
-  ctx.fillText(stencilText + stencilText, 24, 180);
-  ctx.fillText(stencilText + stencilText, 24, 340);
-
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = baseTex.clone();
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(2, 1);
@@ -1166,35 +1216,43 @@ export function createIndustrialCarbonSteelPipeTexture(): THREE.CanvasTexture {
 
 // 22. Carbon Steel Bump & Roughness Texture
 export function createCarbonSteelBumpTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 256;
-  const ctx = canvas.getContext('2d')!;
+  const cacheKey = 'carbon_steel_bump_tex';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
 
-  ctx.fillStyle = '#808080';
-  ctx.fillRect(0, 0, 512, 256);
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 512, 256);
 
-  const imgData = ctx.getImageData(0, 0, 512, 256);
-  const data = imgData.data;
-  for (let i = 0; i < data.length; i += 4) {
-    const n = (Math.random() - 0.5) * 35;
-    const val = Math.min(255, Math.max(0, 128 + n));
-    data[i] = val;
-    data[i + 1] = val;
-    data[i + 2] = val;
+    const imgData = ctx.getImageData(0, 0, 512, 256);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const n = (Math.random() - 0.5) * 35;
+      const val = Math.min(255, Math.max(0, 128 + n));
+      data[i] = val;
+      data[i + 1] = val;
+      data[i + 2] = val;
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // Weld lines bump
+    for (let x of [128, 384]) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x - 3, 0, 6, 256);
+      ctx.fillStyle = '#404040';
+      ctx.fillRect(x - 6, 0, 3, 256);
+      ctx.fillRect(x + 3, 0, 3, 256);
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    textureCache.set(cacheKey, baseTex);
   }
-  ctx.putImageData(imgData, 0, 0);
-
-  // Weld lines bump
-  for (let x of [128, 384]) {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(x - 3, 0, 6, 256);
-    ctx.fillStyle = '#404040';
-    ctx.fillRect(x - 6, 0, 3, 256);
-    ctx.fillRect(x + 3, 0, 3, 256);
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
+  const texture = baseTex.clone();
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   return texture;
@@ -1242,6 +1300,210 @@ export function createPipeIdentificationBandTexture(
 
     // Reset font for next iteration
     ctx.font = '900 36px "Arial Black", sans-serif';
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  return texture;
+}
+
+// 24. Stucco-Embossed Aluminum Cladding Jacketing Texture (تغليف الأنابيب الحراري بالألومنيوم المصقول)
+export function createAluminumCladdingTexture(): THREE.CanvasTexture {
+  const cacheKey = 'aluminum_cladding_tex_v2';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d')!;
+
+    // 1. High-specular brushed metallic aluminum gradient
+    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+    grad.addColorStop(0, '#e2e8f0');
+    grad.addColorStop(0.2, '#cbd5e1');
+    grad.addColorStop(0.4, '#f1f5f9');
+    grad.addColorStop(0.6, '#94a3b8');
+    grad.addColorStop(0.8, '#cbd5e1');
+    grad.addColorStop(1, '#f8fafc');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // 2. High density Stucco-embossed micro texture
+    const imgData = ctx.getImageData(0, 0, 512, 512);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 28;
+      data[i] = Math.min(255, Math.max(0, data[i] + noise));
+      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise + 4));
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // 3. Longitudinal factory crimped lap seam (قفل التغليف الطولي)
+    ctx.strokeStyle = 'rgba(71, 85, 105, 0.7)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(64, 0);
+    ctx.lineTo(64, 512);
+    ctx.moveTo(320, 0);
+    ctx.lineTo(320, 512);
+    ctx.stroke();
+
+    // Highlighting crimp bead
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(65, 0);
+    ctx.lineTo(65, 512);
+    ctx.moveTo(321, 0);
+    ctx.lineTo(321, 512);
+    ctx.stroke();
+
+    // 4. Circumferential overlap beads every 256px
+    [0, 256].forEach((y) => {
+      ctx.strokeStyle = 'rgba(51, 65, 85, 0.8)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(512, y);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, y + 1);
+      ctx.lineTo(512, y + 1);
+      ctx.stroke();
+    });
+
+    // 5. Stainless steel pop rivets / sheet metal screws along lap seam
+    ctx.fillStyle = '#475569';
+    for (let y = 16; y < 512; y += 32) {
+      [64, 320].forEach((x) => {
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x - 1, y - 1, 1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#475569';
+      });
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    textureCache.set(cacheKey, baseTex);
+  }
+  const texture = baseTex.clone();
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  return texture;
+}
+
+// 25. Aluminum Cladding Bump Map
+export function createCladdingBumpTexture(): THREE.CanvasTexture {
+  const cacheKey = 'cladding_bump_tex';
+  let baseTex = textureCache.get(cacheKey);
+  if (!baseTex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d')!;
+
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 512, 512);
+
+    const imgData = ctx.getImageData(0, 0, 512, 512);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const n = (Math.random() - 0.5) * 40;
+      const val = Math.min(255, Math.max(0, 128 + n));
+      data[i] = val;
+      data[i + 1] = val;
+      data[i + 2] = val;
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // Seam bump
+    for (let x of [64, 320]) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(x - 2, 0, 4, 512);
+      ctx.fillStyle = '#303030';
+      ctx.fillRect(x - 4, 0, 2, 512);
+    }
+
+    baseTex = new THREE.CanvasTexture(canvas);
+    baseTex.wrapS = THREE.RepeatWrapping;
+    baseTex.wrapT = THREE.RepeatWrapping;
+    textureCache.set(cacheKey, baseTex);
+  }
+  const texture = baseTex.clone();
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  return texture;
+}
+
+// 26. ISO 20560 / ASME A13.1 Thermal Insulation & Process Fluid Wrap Band
+export function createThermalInsulationBandTexture(
+  tag: string,
+  serviceNameAr: string,
+  serviceNameEn: string,
+  tempPress: string,
+  baseColorHex: string,
+  isHotInsulation: boolean = true
+): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+
+  // Base background
+  ctx.fillStyle = baseColorHex;
+  ctx.fillRect(0, 0, 1024, 256);
+
+  // Top and bottom reflective safety borders
+  ctx.fillStyle = isHotInsulation ? '#f59e0b' : '#38bdf8';
+  ctx.fillRect(0, 0, 1024, 16);
+  ctx.fillRect(0, 240, 1024, 16);
+
+  // Dark border separator
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 16, 1024, 4);
+  ctx.fillRect(0, 236, 1024, 4);
+
+  // Arabic & English Service + Insulation Specification
+  for (let offset of [256, 768]) {
+    // 1. Insulation Status Badge
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(offset - 200, 30, 400, 36);
+    ctx.strokeStyle = isHotInsulation ? '#fbbf24' : '#7dd3fc';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(offset - 200, 30, 400, 36);
+
+    ctx.fillStyle = isHotInsulation ? '#fef08a' : '#e0f2fe';
+    ctx.font = 'bold 20px "Arial", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(isHotInsulation ? `🛡️ خط مغلف ومعزول حرارياً [IH]` : `🛡️ خط مغلف ومعزول تبريد [IC]`, offset, 48);
+
+    // 2. Main Fluid Tag & Name
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 32px "Arial Black", sans-serif';
+    ctx.fillText(`${tag} • ${serviceNameEn}`, offset, 105);
+
+    // 3. Arabic Fluid Name
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 24px "Arial", Tahoma, sans-serif';
+    ctx.fillText(serviceNameAr, offset, 150);
+
+    // 4. Operating Conditions & Flow Direction Chevrons
+    ctx.fillStyle = isHotInsulation ? '#fef08a' : '#bae6fd';
+    ctx.font = 'bold 22px "Courier New", monospace';
+    ctx.fillText(`➔ ➔ ➔  ${tempPress}  ➔ ➔ ➔`, offset, 200);
   }
 
   const texture = new THREE.CanvasTexture(canvas);

@@ -209,6 +209,24 @@ export function renderShellAndTubeSVG(config: ShellAndTubeConfig): string {
         <circle cx="-18" cy="${ny - 5}" r="1" fill="#e2e8f0"/>
         <circle cx="-18" cy="${ny + 5}" r="1" fill="#e2e8f0"/>
       </g>`;
+  } else if (config.tubeSide.inPos === 'axial-right') {
+    const ny = H / 2;
+    tubeInNozzleSvg = `
+      <g class="tube-in-nozzle">
+        <rect x="${W}" y="${ny - 6}" width="16" height="12" fill="url(#pfdExchangerShellGrad)" stroke="#0f172a" stroke-width="1.3"/>
+        <rect x="${W + 15}" y="${ny - 9}" width="5" height="18" rx="1" fill="#334155" stroke="#0f172a" stroke-width="1.2"/>
+        <circle cx="${W + 17}" cy="${ny - 5}" r="1" fill="#e2e8f0"/>
+        <circle cx="${W + 17}" cy="${ny + 5}" r="1" fill="#e2e8f0"/>
+      </g>`;
+  } else if (config.tubeSide.inPos === 'bottom-right') {
+    const nx = EX + FW * 2 + 6;
+    tubeInNozzleSvg = `
+      <g class="tube-in-nozzle">
+        <rect x="${nx - 6}" y="${H - 3}" width="12" height="15" fill="url(#pfdExchangerShellGrad)" stroke="#0f172a" stroke-width="1.3"/>
+        <rect x="${nx - 9}" y="${H + 10}" width="18" height="4.5" rx="1" fill="#334155" stroke="#0f172a" stroke-width="1.2"/>
+        <circle cx="${nx - 5}" cy="${H + 12}" r="1" fill="#e2e8f0"/>
+        <circle cx="${nx + 5}" cy="${H + 12}" r="1" fill="#e2e8f0"/>
+      </g>`;
   } else if (config.tubeSide.inPos === 'top-mid') {
     const nx = W / 2;
     tubeInNozzleSvg = `
@@ -221,7 +239,16 @@ export function renderShellAndTubeSVG(config: ShellAndTubeConfig): string {
   }
 
   let tubeOutNozzleSvg = '';
-  if (config.tubeSide.outPos === 'top-right') {
+  if (config.tubeSide.outPos === 'axial-left') {
+    const ny = H / 2;
+    tubeOutNozzleSvg = `
+      <g class="tube-out-nozzle">
+        <rect x="-16" y="${ny - 6}" width="16" height="12" fill="url(#pfdExchangerShellGrad)" stroke="#0f172a" stroke-width="1.3"/>
+        <rect x="-20" y="${ny - 9}" width="5" height="18" rx="1" fill="#334155" stroke="#0f172a" stroke-width="1.2"/>
+        <circle cx="-18" cy="${ny - 5}" r="1" fill="#e2e8f0"/>
+        <circle cx="-18" cy="${ny + 5}" r="1" fill="#e2e8f0"/>
+      </g>`;
+  } else if (config.tubeSide.outPos === 'top-right') {
     const nx = EX + FW * 2 + 6;
     tubeOutNozzleSvg = `
       <g class="tube-out-nozzle">

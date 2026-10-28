@@ -25,10 +25,10 @@ export function renderSteamBFWSVG(showParticles: boolean): string {
         <line x1="0" y1="120" x2="600" y2="120" stroke="#0f172a" stroke-width="1"/>
         
         <text x="20" y="140" fill="#1e293b" font-size="10.5">ORDER NO: 563030-016</text>
-        <text x="20" y="158" fill="#1e293b" font-size="10.5">HP STEAM RATING: 105 kg/cm²G @ 510°C (Superheated)</text>
+        <text x="20" y="158" fill="#1e293b" font-size="10.5">STEAM DRUMS V-102 & V-102A: 65 kg/cm²G @ 280°C (Saturated)</text>
         <text x="20" y="176" fill="#1e293b" font-size="10.5">MP STEAM RATING: 50 kg/cm²G | LP BFW: 18 kg/cm²G</text>
         <text x="20" y="194" fill="#1e293b" font-size="10.5">TOTAL BFW DEMAND: 160,000 kg/h @ 115 kg/cm²G</text>
-        <text x="20" y="214" fill="#16a34a" font-size="11" font-weight="bold">P = Pump (مضخة) | E = Exchanger (مبادل) | V = Vessel (وعاء/خزان)</text>
+        <text x="20" y="214" fill="#16a34a" font-size="11" font-weight="bold">V-102 القديم يتداور مع P-102 و E-104 | V-102A يتداور مع E-108 و E-109</text>
         
         <!-- Legend Symbols -->
         <g transform="translate(380, 130)">
@@ -72,16 +72,16 @@ export function renderSteamBFWSVG(showParticles: boolean): string {
         <text x="12" y="128" fill="#0284c7" font-size="9.5" font-weight="600">HP BFW E-105B/402/105A</text>
         <text x="160" y="128" fill="#d97706" font-size="9.5" font-weight="600">TIC-152 / TIC-341</text>
         <text x="260" y="128" fill="#0f172a" font-size="9.5">125°->280°C</text>
-        <text x="350" y="128" fill="#0f172a" font-size="9.5">115->104 kg</text>
+        <text x="350" y="128" fill="#0f172a" font-size="9.5">115->90 kg</text>
 
         <text x="12" y="148" fill="#0284c7" font-size="9.5" font-weight="600">Steam Drum V-102A</text>
         <text x="160" y="148" fill="#d97706" font-size="9.5" font-weight="600">FRC-153S</text>
-        <text x="260" y="148" fill="#0f172a" font-size="9.5">280° -> 314°</text>
+        <text x="260" y="148" fill="#0f172a" font-size="9.5">280°C</text>
         <text x="350" y="148" fill="#0f172a" font-size="9.5">65 kg/cm²</text>
 
-        <text x="12" y="168" fill="#0284c7" font-size="9.5" font-weight="600">Steam Drum V-102</text>
+        <text x="12" y="168" fill="#0284c7" font-size="9.5" font-weight="600">Steam Drum V-102 (Old)</text>
         <text x="160" y="168" fill="#d97706" font-size="9.5" font-weight="600">FRC-153</text>
-        <text x="260" y="168" fill="#0f172a" font-size="9.5">280° -> 314°</text>
+        <text x="260" y="168" fill="#0f172a" font-size="9.5">280°C</text>
         <text x="350" y="168" fill="#0f172a" font-size="9.5">65 kg/cm²</text>
 
         <text x="12" y="188" fill="#0284c7" font-size="9.5" font-weight="600">LP Header P-104 -> V-109</text>
@@ -170,33 +170,35 @@ export function renderSteamBFWSVG(showParticles: boolean): string {
         <path d="M 780 410 L 890 410" fill="none" stroke="#ef4444" stroke-width="4.5" class="${isAnim}"/>
 
         <!-- Distribution Branch 1: via FRC-153S (65 KG) to Secondary Steam Drum V-102A -->
-        <path d="M 890 410 L 890 350 L 1000 350 L 1000 340 L 1030 340" fill="none" stroke="#ef4444" stroke-width="4" class="${isAnim}"/>
+        <path d="M 890 410 L 890 340 L 1030 340" fill="none" stroke="#ef4444" stroke-width="4" class="${isAnim}"/>
 
-        <!-- Distribution Branch 2: via FRC-153 (65 KG) to Primary Steam Drum V-102 -->
-        <path d="M 890 410 L 1030 410" fill="none" stroke="#ef4444" stroke-width="4" class="${isAnim}"/>
+        <!-- Distribution Branch 2: via FRC-153 (65 KG) to Primary Steam Drum V-102 (Old) -->
+        <path d="M 890 410 L 890 435 L 1030 435" fill="none" stroke="#ef4444" stroke-width="4" class="${isAnim}"/>
 
         <!-- --- CIRCUIT 3 PIPING: V-102 & V-102A RECIRCULATION LOOPS --- -->
         <!-- Loop A (Left): V-102 Downcomer -> P-102 A/B -> E-104 -> V-102 Riser -->
-        <!-- V-102 Downcomer from bottom of V-102 -->
+        <!-- V-102 Downcomer from bottom of V-102 (Old Drum) -->
         <path d="M 80 610 L 180 610" fill="none" stroke="#00c8ef" stroke-width="4.5" class="${isAnim}"/>
         <!-- P-102 Discharge to E-104 Waste Heat Boiler -->
         <path d="M 235 610 L 360 610" fill="none" stroke="#00c8ef" stroke-width="4.5" class="${isAnim}"/>
-        <!-- E-104 Two-Phase Steam/Water Riser back to V-102 -->
+        <!-- E-104 Two-Phase Steam/Water Riser back to V-102 (Old Drum) -->
         <path d="M 470 610 L 605 610" fill="none" stroke="#ef4444" stroke-width="4.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
 
-        <!-- Loop B (Right): V-102A Downcomer -> E-108 & E-109 -> V-102A Risers -->
-        <!-- V-102A Downcomer -->
-        <path d="M 750 610 L 850 610" fill="none" stroke="#00c8ef" stroke-width="4" class="${isAnim}"/>
-        <!-- Upper branch to E-108 -->
-        <path d="M 850 610 L 850 570 L 920 570" fill="none" stroke="#00c8ef" stroke-width="3.5" class="${isAnim}"/>
-        <path d="M 1025 570 L 1100 570 L 1100 610 L 1165 610" fill="none" stroke="#ef4444" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
-        <!-- Lower branch to E-109 -->
-        <path d="M 850 610 L 850 650 L 920 650" fill="none" stroke="#00c8ef" stroke-width="3.5" class="${isAnim}"/>
-        <path d="M 1025 650 L 1100 650 L 1100 610 L 1165 610" fill="none" stroke="#ef4444" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
+        <!-- Loop B (Right): Unified V-102A Drum -> Downcomers to E-108 & E-109 -> Risers to V-102A -->
+        <!-- E-108 Downcomer from V-102A bottom into E-108 -->
+        <path d="M 825 530 L 825 610" fill="none" stroke="#00c8ef" stroke-width="4" marker-end="url(#pfdArrowCyan)" class="${isAnim}"/>
+        <!-- E-108 Riser from E-108 top into V-102A -->
+        <path d="M 870 610 L 870 530" fill="none" stroke="#ef4444" stroke-width="4" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
 
-        <!-- Interconnecting Steam Header from Drums (Top Steam Outlets) -->
-        <path d="M 1120 310 L 1120 270 L 1275 270" fill="none" stroke="#fbbf24" stroke-width="4" marker-end="url(#pfdArrowYellow)" class="${isAnim}"/>
-        <path d="M 1120 380 L 1160 380 L 1160 270" fill="none" stroke="#fbbf24" stroke-width="4" class="${isAnim}"/>
+        <!-- E-109 Downcomer from V-102A bottom into E-109 -->
+        <path d="M 970 530 L 970 610" fill="none" stroke="#00c8ef" stroke-width="4" marker-end="url(#pfdArrowCyan)" class="${isAnim}"/>
+        <!-- E-109 Riser from E-109 top into V-102A -->
+        <path d="M 1015 610 L 1015 530" fill="none" stroke="#ef4444" stroke-width="4" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
+
+        <!-- Saturated Steam Export from Top of Unified Drum V-102A (65 bar / 280°C) -->
+        <path d="M 910 480 L 910 430 L 1120 430 L 1120 270 L 1275 270" fill="none" stroke="#fbbf24" stroke-width="4" marker-end="url(#pfdArrowYellow)" class="${isAnim}"/>
+        <!-- Saturated Steam Export from V-102 Old Drum (65 bar) -->
+        <path d="M 1120 410 L 1160 410 L 1160 270" fill="none" stroke="#fbbf24" stroke-width="4" class="${isAnim}"/>
 
         <!-- --- CIRCUIT 4 PIPING: LP BFW P-104 A/B (125°C, 18 kg) & DISTRIBUTION --- -->
         <!-- P-104 A/B Discharge Header -->
@@ -517,38 +519,40 @@ export function renderSteamBFWSVG(showParticles: boolean): string {
           </g>
         </g>
 
-        <!-- V-102A: SECONDARY STEAM DRUM -->
-        <g class="pfd-eq-item cursor-pointer" data-tag="V-102A" transform="translate(1030, 305)">
-          <rect x="0" y="0" width="130" height="55" rx="14" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
-          <!-- Water level representation -->
-          <line x1="10" y1="35" x2="120" y2="35" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,2"/>
-          <g transform="translate(5, -45)">
-            <rect x="0" y="0" width="120" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="60" y="16" fill="#dc2626" font-size="13" font-weight="900" text-anchor="middle">V-102A</text>
-            <text x="60" y="30" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">درام البخار الثانوي</text>
+        <!-- V-102A: STEAM DRUM (65 kg/cm²G) -->
+        <g class="pfd-eq-item cursor-pointer" data-tag="V-102A" transform="translate(1030, 315)">
+          <rect x="0" y="0" width="130" height="50" rx="14" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2.5"/>
+          <!-- Internal cyclone/demister details -->
+          <line x1="10" y1="32" x2="120" y2="32" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <circle cx="45" cy="18" r="7" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
+          <circle cx="85" cy="18" r="7" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
+          <g transform="translate(140, 4)">
+            <rect x="0" y="0" width="170" height="42" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
+            <text x="85" y="16" fill="#dc2626" font-size="13" font-weight="900" text-anchor="middle">V-102A</text>
+            <text x="85" y="32" fill="#0f172a" font-size="9.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">درام البخار V-102A (65 kg)</text>
           </g>
         </g>
 
-        <!-- V-102: PRIMARY HIGH PRESSURE STEAM DRUM -->
-        <g class="pfd-eq-item cursor-pointer" data-tag="V-102" transform="translate(1030, 375)">
-          <rect x="0" y="0" width="130" height="65" rx="15" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2.5"/>
+        <!-- V-102: STEAM DRUM (OLD DRUM - 65 kg/cm²G) -->
+        <g class="pfd-eq-item cursor-pointer" data-tag="V-102" transform="translate(1030, 410)">
+          <rect x="0" y="0" width="130" height="50" rx="14" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2.5"/>
           <!-- Internal cyclone/demister details -->
-          <line x1="10" y1="40" x2="120" y2="40" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,2"/>
-          <circle cx="45" cy="22" r="8" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
-          <circle cx="85" cy="22" r="8" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
-          <g transform="translate(-10, 75)">
-            <rect x="0" y="0" width="150" height="42" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
-            <text x="75" y="17" fill="#dc2626" font-size="14" font-weight="900" text-anchor="middle">V-102</text>
-            <text x="75" y="33" fill="#0f172a" font-size="10.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">درام البخار الرئيسي HP Drum</text>
+          <line x1="10" y1="32" x2="120" y2="32" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <circle cx="45" cy="18" r="7" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
+          <circle cx="85" cy="18" r="7" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
+          <g transform="translate(140, 4)">
+            <rect x="0" y="0" width="170" height="42" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
+            <text x="85" y="16" fill="#dc2626" font-size="13" font-weight="900" text-anchor="middle">V-102 (القديم)</text>
+            <text x="85" y="32" fill="#0f172a" font-size="9.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">درام البخار V-102 (65 kg)</text>
           </g>
         </g>
 
         <!-- --- CIRCUIT 3 EQUIPMENT (RECIRCULATION LOOPS) --- -->
         <!-- V-102 START SYMBOL -->
-        <g class="pfd-eq-item cursor-pointer" data-tag="V-102" transform="translate(50, 590)">
-          <rect x="0" y="0" width="70" height="40" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
-          <text x="35" y="24" fill="#dc2626" font-size="12" font-weight="bold" text-anchor="middle">V-102</text>
-          <text x="35" y="55" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">أنبوب الهبوط Downcomer</text>
+        <g class="pfd-eq-item cursor-pointer" data-tag="V-102" transform="translate(45, 590)">
+          <rect x="0" y="0" width="85" height="42" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
+          <text x="42" y="18" fill="#dc2626" font-size="11" font-weight="900" text-anchor="middle">V-102 (القديم)</text>
+          <text x="42" y="32" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">أنبوب الهبوط Downcomer</text>
         </g>
 
         <!-- P-102 A/B: BOILER CIRCULATION PUMPS -->
@@ -556,9 +560,9 @@ export function renderSteamBFWSVG(showParticles: boolean): string {
           <circle cx="25" cy="25" r="22" fill="#f8fafc" stroke="#0284c7" stroke-width="2"/>
           <polygon points="10,25 35,10 35,40" fill="#0284c7"/>
           <g transform="translate(-25, -45)">
-            <rect x="0" y="0" width="115" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="57" y="16" fill="#0284c7" font-size="12" font-weight="900" text-anchor="middle">P-102 A/B</text>
-            <text x="57" y="30" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مضخات تدوير المرجل</text>
+            <rect x="0" y="0" width="130" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
+            <text x="65" y="16" fill="#0284c7" font-size="12" font-weight="900" text-anchor="middle">P-102 A/B</text>
+            <text x="65" y="30" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مضخات تدوير V-102 القديم</text>
           </g>
         </g>
 
@@ -568,51 +572,58 @@ export function renderSteamBFWSVG(showParticles: boolean): string {
           <line x1="20" y1="20" x2="85" y2="20" stroke="#d97706" stroke-width="2"/>
           <line x1="20" y1="45" x2="85" y2="45" stroke="#d97706" stroke-width="2"/>
           <g transform="translate(-15, -45)">
-            <rect x="0" y="0" width="135" height="40" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
-            <text x="67" y="16" fill="#dc2626" font-size="13.5" font-weight="900" text-anchor="middle">E-104</text>
-            <text x="67" y="31" fill="#0f172a" font-size="10" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مرجل استرجاع الحرارة الرئيسي</text>
+            <rect x="0" y="0" width="150" height="40" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+            <text x="75" y="16" fill="#dc2626" font-size="13.5" font-weight="900" text-anchor="middle">E-104</text>
+            <text x="75" y="31" fill="#0f172a" font-size="9.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مرجل E-104 (المتداور مع V-102)</text>
           </g>
         </g>
 
         <!-- V-102 RETURN SYMBOL -->
         <g class="pfd-eq-item cursor-pointer" data-tag="V-102" transform="translate(605, 590)">
-          <rect x="0" y="0" width="70" height="40" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
-          <text x="35" y="24" fill="#dc2626" font-size="12" font-weight="bold" text-anchor="middle">V-102</text>
-          <text x="35" y="55" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">أنبوب الصعود Riser</text>
+          <rect x="0" y="0" width="85" height="42" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
+          <text x="42" y="18" fill="#dc2626" font-size="11" font-weight="900" text-anchor="middle">V-102 (القديم)</text>
+          <text x="42" y="32" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">أنبوب الصعود Riser</text>
         </g>
 
-        <!-- V-102A (LOOP 2 START) -->
-        <g class="pfd-eq-item cursor-pointer" data-tag="V-102A" transform="translate(730, 590)">
-          <rect x="0" y="0" width="70" height="40" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
-          <text x="35" y="24" fill="#dc2626" font-size="11.5" font-weight="bold" text-anchor="middle">V-102A</text>
-          <text x="35" y="55" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">أنبوب الهبوط 2</text>
-        </g>
-
-        <!-- E-108: HTS EXIT WASTE HEAT BOILER -->
-        <g class="pfd-eq-item cursor-pointer" data-tag="E-108" transform="translate(920, 540)">
-          <circle cx="40" cy="30" r="28" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
-          <g transform="translate(-15, -42)">
-            <rect x="0" y="0" width="110" height="36" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
-            <text x="55" y="15" fill="#dc2626" font-size="12" font-weight="bold" text-anchor="middle">E-108</text>
-            <text x="55" y="28" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مرجل مخرج HTS</text>
+        <!-- ================================================================= -->
+        <!-- SINGLE UNIFIED STEAM DRUM V-102A DIRECTLY OVER E-108 & E-109 -->
+        <!-- ================================================================= -->
+        <g class="pfd-eq-item cursor-pointer" data-tag="V-102A" transform="translate(780, 480)">
+          <rect x="0" y="0" width="260" height="50" rx="14" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2.2"/>
+          <!-- Internal cyclone & water level line -->
+          <line x1="12" y1="30" x2="248" y2="30" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="4,2"/>
+          <circle cx="50" cy="18" r="6" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
+          <circle cx="130" cy="18" r="6" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
+          <circle cx="210" cy="18" r="6" fill="#f8fafc" stroke="#dc2626" stroke-width="1"/>
+          <g transform="translate(20, -42)">
+            <rect x="0" y="0" width="220" height="36" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
+            <text x="110" y="15" fill="#dc2626" font-size="13" font-weight="900" text-anchor="middle">V-102A</text>
+            <text x="110" y="29" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">درام البخار V-102A (يتداور مع E-108 و E-109)</text>
           </g>
         </g>
 
-        <!-- E-109: SYN GAS WASTE HEAT EXCHANGER -->
-        <g class="pfd-eq-item cursor-pointer" data-tag="E-109" transform="translate(920, 620)">
-          <circle cx="40" cy="30" r="28" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
-          <g transform="translate(-15, 60)">
-            <rect x="0" y="0" width="110" height="36" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
-            <text x="55" y="15" fill="#dc2626" font-size="12" font-weight="bold" text-anchor="middle">E-109</text>
-            <text x="55" y="28" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مرجل غاز التخليق</text>
+        <!-- E-108: REFORMED GAS WASTE HEAT BOILER (UNDER V-102A) -->
+        <g class="pfd-eq-item cursor-pointer" data-tag="E-108" transform="translate(800, 610)">
+          <rect x="0" y="0" width="95" height="48" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
+          <!-- Tube bundle indication -->
+          <line x1="12" y1="24" x2="83" y2="24" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <g transform="translate(-10, 54)">
+            <rect x="0" y="0" width="115" height="32" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+            <text x="57" y="14" fill="#dc2626" font-size="12" font-weight="bold" text-anchor="middle">E-108</text>
+            <text x="57" y="26" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مرجل مخرج R-103</text>
           </g>
         </g>
 
-        <!-- V-102A RETURN SYMBOL -->
-        <g class="pfd-eq-item cursor-pointer" data-tag="V-102A" transform="translate(1165, 590)">
-          <rect x="0" y="0" width="70" height="40" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
-          <text x="35" y="24" fill="#dc2626" font-size="11.5" font-weight="bold" text-anchor="middle">V-102A</text>
-          <text x="35" y="55" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">أنبوب الصعود 2</text>
+        <!-- E-109: CONVERTED GAS WASTE HEAT BOILER (UNDER V-102A) -->
+        <g class="pfd-eq-item cursor-pointer" data-tag="E-109" transform="translate(945, 610)">
+          <rect x="0" y="0" width="95" height="48" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.8"/>
+          <!-- Tube bundle indication -->
+          <line x1="12" y1="24" x2="83" y2="24" stroke="#ea580c" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <g transform="translate(-10, 54)">
+            <rect x="0" y="0" width="115" height="32" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+            <text x="57" y="14" fill="#dc2626" font-size="12" font-weight="bold" text-anchor="middle">E-109</text>
+            <text x="57" y="26" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مرجل مخرج R-104</text>
+          </g>
         </g>
 
         <!-- --- CIRCUIT 4 EQUIPMENT (LP BFW & BLOWDOWN) --- -->
@@ -707,7 +718,7 @@ export function renderSteamBFWSVG(showParticles: boolean): string {
         </g>
 
         <!-- Stream 10 (Feed to V-102 via FRC-153) -->
-        <g class="pfd-stream-badge cursor-pointer" data-st="10" transform="translate(980, 400)">
+        <g class="pfd-stream-badge cursor-pointer" data-st="10" transform="translate(980, 425)">
           <polygon points="0,7 7,0 14,7 7,14" fill="#ef4444" stroke="#ffffff" stroke-width="0.8"/>
           <text x="7" y="10" fill="#ffffff" font-size="7.5" font-weight="bold" text-anchor="middle">10</text>
         </g>

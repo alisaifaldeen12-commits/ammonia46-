@@ -116,12 +116,12 @@ export function renderSynthesis400SVG(showParticles: boolean): string {
         <path d="M 180 55 L 180 38 L 210 38" fill="none" stroke="#0284c7" stroke-width="1.6" marker-end="url(#pfdArrow)" class="${isAnim}"/>
 
         <!-- Ex V-310 Top (26°C, 240 kg/cm²G): Runs along top header (y: 26) straight to join E-405/E-406 tubes -->
-        <path d="M 272 50 L 272 26 L 1740 26 L 1740 283" fill="none" stroke="#0284c7" stroke-width="3" marker-end="url(#pfdArrow)" class="${isAnim}"/>
+        <path d="M 272 50 L 272 26 L 1735 26 L 1735 283" fill="none" stroke="#0284c7" stroke-width="3.5" marker-end="url(#pfdArrow)" class="${isAnim}"/>
         <!-- Junction dot where V-310 Make-up line connects to E-405/E-406 tube stream -->
-        <circle cx="1740" cy="283" r="5" fill="#0284c7" stroke="#0f172a" stroke-width="1.8"/>
+        <circle cx="1735" cy="283" r="5.5" fill="#0284c7" stroke="#0f172a" stroke-width="2"/>
         
         <!-- Clarification Callout Badge on the junction -->
-        <g transform="translate(1570, 48)">
+        <g transform="translate(1600, 48)">
           <rect width="270" height="38" rx="5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>
           <text x="135" y="15" fill="#0284c7" font-size="10.5" font-weight="900" font-family="'Cairo', sans-serif" text-anchor="middle">انضمام غاز التعويض Make-up Gas</text>
           <text x="135" y="29" fill="#0f172a" font-size="9.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">من V-310 مع خارج تيوب E-405 إلى تيوب E-406</text>
@@ -226,34 +226,35 @@ export function renderSynthesis400SVG(showParticles: boolean): string {
         <!-- ======================================================= -->
         
         <!-- Step 1: E-407 Shell Out (Axial-Right Nozzle cooled to 26.5°C) -> E-405 Tubes Inlet (Axial-Left Nozzle) -->
-        <path d="M 1530 283 L 1560 283" fill="none" stroke="#0284c7" stroke-width="3.5" marker-end="url(#pfdArrow)" class="${isAnim}"/>
+        <path d="M 1530 283 L 1550 283" fill="none" stroke="#0284c7" stroke-width="3.8" marker-end="url(#pfdArrow)" class="${isAnim}"/>
         <!-- Temperature badge between E-407 & E-405 -->
-        <g transform="translate(1505, 248)">
-          <rect width="80" height="18" rx="3" fill="#0f172a" stroke="#0284c7" stroke-width="1.2"/>
-          <text x="40" y="13" fill="#38bdf8" font-size="9" font-weight="bold" font-family="'IBM Plex Mono', monospace" text-anchor="middle">26.5°C</text>
+        <g transform="translate(1495, 248)">
+          <rect width="65" height="18" rx="3" fill="#0f172a" stroke="#0284c7" stroke-width="1.2"/>
+          <text x="32.5" y="13" fill="#38bdf8" font-size="9" font-weight="bold" font-family="'IBM Plex Mono', monospace" text-anchor="middle">26.5°C</text>
         </g>
 
         <!-- Step 2: E-405 Tubes Out (Axial-Right Nozzle 14°C) -> Joined by V-310 line -> E-406 Tubes Inlet (Axial-Left Nozzle) -->
-        <path d="M 1724 283 L 1756 283" fill="none" stroke="#0284c7" stroke-width="3.5" marker-end="url(#pfdArrow)" class="${isAnim}"/>
-        <!-- Temperature badge between E-405 & E-406 -->
-        <g transform="translate(1695, 275)">
-          <rect width="55" height="18" rx="3" fill="#0f172a" stroke="#0284c7" stroke-width="1"/>
-          <text x="27.5" y="13" fill="#38bdf8" font-size="9" font-weight="bold" font-family="'IBM Plex Mono', monospace" text-anchor="middle">14.0°C</text>
+        <!-- Generous 85px span cleanly separating E-405 and E-406 with elevated badge and non-overlapping stream indicator -->
+        <path d="M 1695 283 L 1775 283" fill="none" stroke="#0284c7" stroke-width="3.8" marker-end="url(#pfdArrow)" class="${isAnim}"/>
+        <!-- Temperature badge between E-405 & E-406 (elevated above pipe line) -->
+        <g transform="translate(1695, 248)">
+          <rect width="46" height="18" rx="3" fill="#0f172a" stroke="#0284c7" stroke-width="1"/>
+          <text x="23" y="13" fill="#38bdf8" font-size="9" font-weight="bold" font-family="'IBM Plex Mono', monospace" text-anchor="middle">14.0°C</text>
         </g>
 
         <!-- Step 3: E-406 Tubes Out (Axial-Right Nozzle -10°C / Deep Chilled) -> into V-402 Secondary Separator -->
-        <path d="M 1924 283 L 1945 283" fill="none" stroke="#2563eb" stroke-width="3.8" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
+        <path d="M 1925 283 L 1950 283" fill="none" stroke="#2563eb" stroke-width="3.8" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
         <!-- Temperature badge between E-406 & V-402 -->
-        <g transform="translate(1865, 312)">
+        <g transform="translate(1890, 312)">
           <rect width="60" height="18" rx="3" fill="#0f172a" stroke="#2563eb" stroke-width="1"/>
           <text x="30" y="13" fill="#93c5fd" font-size="9" font-weight="bold" font-family="'IBM Plex Mono', monospace" text-anchor="middle">-10.0°C</text>
         </g>
 
         <!-- Step 4: V-402 Bottom Liquid NH3 (-10°C) -> via LIC-403 to V-409 Letdown Tank -->
-        <path d="M 1965 360 L 1965 520 L 1260 520 L 1260 560" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#pfdArrowPurple)" class="${isAnim}"/>
+        <path d="M 1990 360 L 1990 520 L 1260 520 L 1260 560" fill="none" stroke="#7c3aed" stroke-width="3.2" marker-end="url(#pfdArrowPurple)" class="${isAnim}"/>
 
         <!-- Step 5: V-402 Overhead Cold Vapor (-10°C) -> goes to E-407 TUBES (Axial-Left Channel Head Nozzle) -->
-        <path d="M 1965 210 L 1965 140 L 1390 140 L 1390 283" fill="none" stroke="#2563eb" stroke-width="3.5" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
+        <path d="M 1990 210 L 1990 140 L 1390 140 L 1390 283" fill="none" stroke="#2563eb" stroke-width="3.8" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
         <g transform="translate(1520, 126)">
           <rect width="230" height="20" rx="4" fill="#0f172a" stroke="#2563eb" stroke-width="1.2"/>
           <text x="115" y="14" fill="#93c5fd" font-size="9.5" font-weight="800" font-family="'Cairo', sans-serif" text-anchor="middle">بخار قمة V-402 (-10°C) إلى تيوبات E-407</text>
@@ -464,17 +465,17 @@ export function renderSynthesis400SVG(showParticles: boolean): string {
           <text x="7" y="10" fill="#ffffff" font-size="7.5" font-weight="bold" text-anchor="middle">13</text>
         </g>
         <!-- Stream 14 (Gas ex E-407 to E-405 Chiller) -->
-        <g class="pfd-stream-badge cursor-pointer" data-st="14" transform="translate(1545, 273)">
+        <g class="pfd-stream-badge cursor-pointer" data-st="14" transform="translate(1536, 273)">
           <polygon points="0,7 7,0 14,7 7,14" fill="#0284c7" stroke="#ffffff" stroke-width="0.8"/>
           <text x="7" y="10" fill="#ffffff" font-size="7.5" font-weight="bold" text-anchor="middle">14</text>
         </g>
         <!-- Stream 15 (Gas ex E-405 to E-406 Deep Chiller) -->
-        <g class="pfd-stream-badge cursor-pointer" data-st="15" transform="translate(1725, 273)">
+        <g class="pfd-stream-badge cursor-pointer" data-st="15" transform="translate(1752, 273)">
           <polygon points="0,7 7,0 14,7 7,14" fill="#2563eb" stroke="#ffffff" stroke-width="0.8"/>
           <text x="7" y="10" fill="#ffffff" font-size="7.5" font-weight="bold" text-anchor="middle">15</text>
         </g>
         <!-- Stream 16 (Chilled Stream to V-402 Secondary Separator) -->
-        <g class="pfd-stream-badge cursor-pointer" data-st="16" transform="translate(1890, 273)">
+        <g class="pfd-stream-badge cursor-pointer" data-st="16" transform="translate(1930, 273)">
           <polygon points="0,7 7,0 14,7 7,14" fill="#2563eb" stroke="#ffffff" stroke-width="0.8"/>
           <text x="7" y="10" fill="#ffffff" font-size="7.5" font-weight="bold" text-anchor="middle">16</text>
         </g>
@@ -541,31 +542,31 @@ export function renderSynthesis400SVG(showParticles: boolean): string {
         <line x1="1315" y1="392" x2="1275" y2="392" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="3,2"/>
 
         <!-- LIC-406 on E-405 Shell Level -->
-        <g class="pfd-ctrl-item cursor-pointer" data-loop="LIC-406" transform="translate(1620, 375)">
+        <g class="pfd-ctrl-item cursor-pointer" data-loop="LIC-406" transform="translate(1605, 375)">
           <circle cx="17" cy="17" r="16" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
           <line x1="1" y1="17" x2="33" y2="17" stroke="#7c3aed" stroke-width="1"/>
           <text x="17" y="13" fill="#7c3aed" font-size="9" font-weight="900" font-family="'IBM Plex Mono', monospace" text-anchor="middle">LIC</text>
           <text x="17" y="28" fill="#0f172a" font-size="9.5" font-weight="900" font-family="'IBM Plex Mono', monospace" text-anchor="middle">406</text>
         </g>
-        <line x1="1637" y1="375" x2="1637" y2="350" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="3,2"/>
+        <line x1="1622" y1="375" x2="1622" y2="350" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="3,2"/>
 
         <!-- LIC-402 on E-406 Shell Level -->
-        <g class="pfd-ctrl-item cursor-pointer" data-loop="LIC-402" transform="translate(1790, 375)">
+        <g class="pfd-ctrl-item cursor-pointer" data-loop="LIC-402" transform="translate(1835, 375)">
           <circle cx="17" cy="17" r="16" fill="#ffffff" stroke="#2563eb" stroke-width="2"/>
           <line x1="1" y1="17" x2="33" y2="17" stroke="#2563eb" stroke-width="1"/>
           <text x="17" y="13" fill="#2563eb" font-size="9" font-weight="900" font-family="'IBM Plex Mono', monospace" text-anchor="middle">LIC</text>
           <text x="17" y="28" fill="#0f172a" font-size="9.5" font-weight="900" font-family="'IBM Plex Mono', monospace" text-anchor="middle">402</text>
         </g>
-        <line x1="1807" y1="375" x2="1807" y2="350" stroke="#2563eb" stroke-width="1.3" stroke-dasharray="3,2"/>
+        <line x1="1852" y1="375" x2="1852" y2="350" stroke="#2563eb" stroke-width="1.3" stroke-dasharray="3,2"/>
 
         <!-- LIC-403 on V-402 Bottom Liquid -->
-        <g class="pfd-ctrl-item cursor-pointer" data-loop="LIC-403" transform="translate(2010, 375)">
+        <g class="pfd-ctrl-item cursor-pointer" data-loop="LIC-403" transform="translate(2025, 375)">
           <circle cx="17" cy="17" r="16" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
           <line x1="1" y1="17" x2="33" y2="17" stroke="#7c3aed" stroke-width="1"/>
           <text x="17" y="13" fill="#7c3aed" font-size="9" font-weight="900" font-family="'IBM Plex Mono', monospace" text-anchor="middle">LIC</text>
           <text x="17" y="28" fill="#0f172a" font-size="9.5" font-weight="900" font-family="'IBM Plex Mono', monospace" text-anchor="middle">403</text>
         </g>
-        <line x1="2010" y1="392" x2="1965" y2="392" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="3,2"/>
+        <line x1="2025" y1="392" x2="1990" y2="392" stroke="#7c3aed" stroke-width="1.3" stroke-dasharray="3,2"/>
 
         <!-- LIC-425 on E-408 Purge Condenser Level -->
         <g class="pfd-ctrl-item cursor-pointer" data-loop="LIC-425" transform="translate(2100, 295)">
@@ -977,9 +978,9 @@ export function renderSynthesis400SVG(showParticles: boolean): string {
           nameAr: 'مبرد الأمونيا الأولي (+8°C)',
           temaType: 'TEMA BKU',
           tagColor: '#2563eb',
-          x: 1580,
+          x: 1570,
           y: 260,
-          width: 120,
+          width: 105,
           height: 46,
           tubeSide: {
             fluidAr: 'غاز تفاعل مبرد',
@@ -1005,15 +1006,15 @@ export function renderSynthesis400SVG(showParticles: boolean): string {
           },
         })}
 
-        <!-- 9. E-406: SECONDARY AMMONIA CHILLER (-10°C) -->
+        <!-- 9. E-406: SECONDARY AMMONIA CHILLER (-10°C) - Generously Separated from E-405 -->
         ${renderShellAndTubeSVG({
           tag: 'E-406',
           nameAr: 'مبرد الأمونيا العميق (-10°C)',
           temaType: 'TEMA BKU',
           tagColor: '#1d4ed8',
-          x: 1780,
+          x: 1800,
           y: 260,
-          width: 120,
+          width: 105,
           height: 46,
           tubeSide: {
             fluidAr: 'غاز تفاعل مبرد عميق',
@@ -1040,7 +1041,7 @@ export function renderSynthesis400SVG(showParticles: boolean): string {
         })}
 
         <!-- 10. V-402: SECONDARY SEPARATOR (Separates liquid at -10°C) -->
-        <g class="pfd-eq-item" data-tag="V-402" transform="translate(1930, 210)">
+        <g class="pfd-eq-item" data-tag="V-402" transform="translate(1955, 210)">
           <path d="M 0 15 C 0 0, 70 0, 70 15 L 70 135 C 70 150, 0 150, 0 135 Z" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
           <line x1="5" y1="110" x2="65" y2="110" stroke="#2563eb" stroke-dasharray="3,2"/>
           <g transform="translate(-45, -50)">

@@ -125,6 +125,25 @@ class IndustrialSoundscape {
       });
     } catch (_) {}
   }
+
+  public playAlert() {
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      [400, 280].forEach((freq, i) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + i * 0.12);
+        gain.gain.setValueAtTime(0.1, now + i * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.14);
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(now + i * 0.12);
+        osc.stop(now + i * 0.12 + 0.15);
+      });
+    } catch (_) {}
+  }
 }
 
 export const plantAudio = new IndustrialSoundscape();

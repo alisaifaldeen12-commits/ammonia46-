@@ -244,30 +244,6 @@ export class SynthesisSection400_3D {
       this.group.add(trench);
     });
 
-    // Colossal Multi-Tier Structural Steel Pipe Racks (Bents)
-    const rackBents = [-115, -80, -45, -10, 25, 60, 95, 125];
-    rackBents.forEach((x) => {
-      [-35.0, 0.0, 25.0, 45.0, 65.0, 95.0].forEach((z) => {
-        const colGeo = new THREE.BoxGeometry(1.0, 36.0, 1.0);
-        const col = new THREE.Mesh(colGeo, this.matCatwalkSteel);
-        col.position.set(x, 18.0, z);
-        this.group.add(col);
-
-        const footGeo = new THREE.BoxGeometry(2.8, 1.2, 2.8);
-        const foot = new THREE.Mesh(footGeo, this.matConcretePad);
-        foot.position.set(x, 0.6, z);
-        this.group.add(foot);
-      });
-
-      // 4-Tier Heavy transverse Piperack beams
-      [6.5, 15.0, 24.0, 33.0].forEach((y) => {
-        const beamGeo = new THREE.BoxGeometry(0.8, 0.8, 140.0);
-        const beam = new THREE.Mesh(beamGeo, this.matCatwalkSteel);
-        beam.position.set(x, y, 30.0);
-        this.group.add(beam);
-      });
-    });
-
     // 6 High-Mast Floodlight Towers (70m height)
     [
       { x: -135, z: -75 },
@@ -525,60 +501,64 @@ export class SynthesisSection400_3D {
     this.group.add(v401Group);
   }
 
-  // 4. Massive Deep Chilling Battery (Row Z = 25)
+  // 4. Massive Deep Chilling Battery (Row Z = 25) - Cleanly Separated Industrial Train
   private buildChillingBatteryTrain() {
-    // E-407: Cold Gas Interchanger (Diameter 13.5m, Length 38.0m) at (-70, 0, 25)
+    // E-407: Cold Gas Interchanger (Diameter 11.0m, Length 22.0m) at (-68, 0, 25)
     const e407Group = new THREE.Group();
-    e407Group.position.set(-70, 0, 25);
+    e407Group.position.set(-68, 0, 25);
     e407Group.name = 'E-407';
-    const e407Shell = this.createHorizontalShell(13.5, 38.0, this.matCryoInsulation);
-    e407Shell.position.set(0, 13.5, 0);
+    const e407Shell = this.createHorizontalShell(11.0, 22.0, this.matCryoInsulation);
+    e407Shell.position.set(0, 11.0, 0);
     e407Group.add(e407Shell);
-    this.addNozzleWithFlange(e407Group, new THREE.Vector3(0, 20.5, 0), new THREE.Vector3(0, 1, 0), 1.4, 4.2);
-    this.addNozzleWithFlange(e407Group, new THREE.Vector3(-19.0, 13.5, 0), new THREE.Vector3(-1, 0, 0), 1.3, 3.8);
-    this.addNozzleWithFlange(e407Group, new THREE.Vector3(19.0, 13.5, 0), new THREE.Vector3(1, 0, 0), 1.3, 3.8);
+    this.addNozzleWithFlange(e407Group, new THREE.Vector3(0, 17.5, 0), new THREE.Vector3(0, 1, 0), 1.2, 3.5);
+    this.addNozzleWithFlange(e407Group, new THREE.Vector3(-16.5, 11.0, 0), new THREE.Vector3(-1, 0, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e407Group, new THREE.Vector3(16.5, 11.0, 0), new THREE.Vector3(1, 0, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e407Group, new THREE.Vector3(0, 4.5, 0), new THREE.Vector3(0, -1, 0), 1.1, 2.5);
     this.registerInteractive(e407Group, 'e-407');
     this.group.add(e407Group);
 
-    // E-405: Primary Ammonia Chiller (+8°C Boiling Kettle Type: Diameter 14.5m, Length 38.0m) at (-35, 0, 25)
+    // E-405: Primary Ammonia Chiller (+8°C Boiling Kettle Type: Diameter 10.5m, Length 22.0m) at (-28, 0, 25)
     const e405Group = new THREE.Group();
-    e405Group.position.set(-35, 0, 25);
+    e405Group.position.set(-28, 0, 25);
     e405Group.name = 'E-405';
-    const e405Shell = this.createHorizontalShell(14.5, 38.0, this.matCarbonSteel);
-    e405Shell.position.set(0, 13.5, 0);
+    const e405Shell = this.createHorizontalShell(10.5, 22.0, this.matCarbonSteel);
+    e405Shell.position.set(0, 11.0, 0);
     e405Group.add(e405Shell);
 
-    const vDome5 = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.6, 9.0, 32), this.matCarbonSteel);
-    vDome5.position.set(0, 22.5, 0);
+    const vDome5 = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 2.8, 6.0, 32), this.matCarbonSteel);
+    vDome5.position.set(0, 17.5, 0);
     e405Group.add(vDome5);
 
-    this.addNozzleWithFlange(e405Group, new THREE.Vector3(-19.0, 13.5, 0), new THREE.Vector3(-1, 0, 0), 1.3, 3.8);
-    this.addNozzleWithFlange(e405Group, new THREE.Vector3(19.0, 13.5, 0), new THREE.Vector3(1, 0, 0), 1.3, 3.8);
-    this.addNozzleWithFlange(e405Group, new THREE.Vector3(0, 27.0, 0), new THREE.Vector3(0, 1, 0), 1.3, 3.8);
+    this.addNozzleWithFlange(e405Group, new THREE.Vector3(-16.25, 11.0, 0), new THREE.Vector3(-1, 0, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e405Group, new THREE.Vector3(16.25, 11.0, 0), new THREE.Vector3(1, 0, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e405Group, new THREE.Vector3(0, 21.0, 0), new THREE.Vector3(0, 1, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e405Group, new THREE.Vector3(-4.0, 4.5, 0), new THREE.Vector3(0, -1, 0), 0.9, 2.0);
     this.registerInteractive(e405Group, 'e-405');
     this.group.add(e405Group);
 
-    // E-406: Secondary Deep Ammonia Chiller (-10°C Kettle Type: Diameter 14.5m, Length 38.0m) at (0, 0, 25)
+    // E-406: Secondary Deep Ammonia Chiller (-10°C Kettle Type: Diameter 10.5m, Length 22.0m) at (16, 0, 25)
+    // Generously separated by 44m center-to-center (11.5m open space between shells) to eliminate any tangling/clash
     const e406Group = new THREE.Group();
-    e406Group.position.set(0, 0, 25);
+    e406Group.position.set(16, 0, 25);
     e406Group.name = 'E-406';
-    const e406Shell = this.createHorizontalShell(14.5, 38.0, this.matCryoInsulation);
-    e406Shell.position.set(0, 13.5, 0);
+    const e406Shell = this.createHorizontalShell(10.5, 22.0, this.matCryoInsulation);
+    e406Shell.position.set(0, 11.0, 0);
     e406Group.add(e406Shell);
 
-    const vDome6 = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.6, 9.0, 32), this.matCryoInsulation);
-    vDome6.position.set(0, 22.5, 0);
+    const vDome6 = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 2.8, 6.0, 32), this.matCryoInsulation);
+    vDome6.position.set(0, 17.5, 0);
     e406Group.add(vDome6);
 
-    this.addNozzleWithFlange(e406Group, new THREE.Vector3(-19.0, 13.5, 0), new THREE.Vector3(-1, 0, 0), 1.3, 3.8);
-    this.addNozzleWithFlange(e406Group, new THREE.Vector3(19.0, 13.5, 0), new THREE.Vector3(1, 0, 0), 1.3, 3.8);
-    this.addNozzleWithFlange(e406Group, new THREE.Vector3(0, 27.0, 0), new THREE.Vector3(0, 1, 0), 1.3, 3.8);
+    this.addNozzleWithFlange(e406Group, new THREE.Vector3(-16.25, 11.0, 0), new THREE.Vector3(-1, 0, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e406Group, new THREE.Vector3(16.25, 11.0, 0), new THREE.Vector3(1, 0, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e406Group, new THREE.Vector3(0, 21.0, 0), new THREE.Vector3(0, 1, 0), 1.1, 3.0);
+    this.addNozzleWithFlange(e406Group, new THREE.Vector3(-4.0, 4.5, 0), new THREE.Vector3(0, -1, 0), 0.9, 2.0);
     this.registerInteractive(e406Group, 'e-406');
     this.group.add(e406Group);
 
-    // V-402: Secondary Cold Cryogenic Ammonia Separator Tower (Diameter 13.5m, Height 60.0m) at (35, 0, 25)
+    // V-402: Secondary Cold Cryogenic Ammonia Separator Tower (Diameter 13.5m, Height 60.0m) at (50, 0, 25)
     const v402Group = new THREE.Group();
-    v402Group.position.set(35, 0, 25);
+    v402Group.position.set(50, 0, 25);
     v402Group.name = 'V-402';
 
     for (let i = 0; i < 8; i++) {
@@ -1277,7 +1257,7 @@ export class SynthesisSection400_3D {
           new THREE.Vector3(-109.75, 18.0, -45.0)
         ]
       },
-      // 0D. V-310 Top Overhead Make-up Gas -> High Corridor -> Join between E-405/E-406
+      // 0D. V-310 Top Overhead Make-up Gas -> High Corridor -> Drops into E-405/E-406 Interstage Spool
       {
         name: 'V-310 Top Make-Up Syngas -> Joins E-405/E-406 Interstage',
         color: 0x0284c7,
@@ -1287,9 +1267,9 @@ export class SynthesisSection400_3D {
         points: [
           new THREE.Vector3(-105.0, 40.5, -45.0),
           new THREE.Vector3(-105.0, 46.0, -45.0),
-          new THREE.Vector3(-17.5, 46.0, -45.0),
-          new THREE.Vector3(-17.5, 46.0, 25.0),
-          new THREE.Vector3(-17.5, 13.5, 25.0)
+          new THREE.Vector3(-6.0, 46.0, -45.0),
+          new THREE.Vector3(-6.0, 46.0, 25.0),
+          new THREE.Vector3(-6.0, 11.0, 25.0)
         ]
       },
       // 0H. V-401 Overhead Recycle Gas -> K-301 Recycle Wheel Suction
@@ -1317,8 +1297,63 @@ export class SynthesisSection400_3D {
         points: [
           new THREE.Vector3(-96.0, 9.8, 25.0),
           new THREE.Vector3(-96.0, 26.0, 25.0),
-          new THREE.Vector3(-70.0, 26.0, 25.0),
-          new THREE.Vector3(-70.0, 20.5, 25.0)
+          new THREE.Vector3(-68.0, 26.0, 25.0),
+          new THREE.Vector3(-68.0, 17.5, 25.0)
+        ]
+      },
+      // 0J. E-407 Shell Outlet (26.5°C) -> E-405 Primary Chiller Tube Inlet
+      {
+        name: 'E-407 Shell Outlet (26.5°C) -> E-405 Tube Inlet',
+        color: 0x0284c7,
+        radius: 0.85,
+        speed: 0.08,
+        particleColor: 0x38bdf8,
+        points: [
+          new THREE.Vector3(-51.5, 11.0, 25.0),
+          new THREE.Vector3(-44.25, 11.0, 25.0)
+        ]
+      },
+      // 0K. E-405 Tube Outlet (14.0°C) -> Interstage Transfer Spool (T-junction with V-310) -> E-406 Tube Inlet
+      {
+        name: 'E-405 Tube Outlet (14.0°C) -> Joins Make-Up -> E-406 Tube Inlet',
+        color: 0x0284c7,
+        radius: 0.85,
+        speed: 0.08,
+        particleColor: 0x38bdf8,
+        points: [
+          new THREE.Vector3(-11.75, 11.0, 25.0),
+          new THREE.Vector3(-0.25, 11.0, 25.0)
+        ]
+      },
+      // 0L. E-406 Deep Chiller Tube Outlet (-10.0°C) -> V-402 Secondary Cryogenic Separator
+      {
+        name: 'E-406 Tube Outlet (-10.0°C) -> V-402 Separator Inlet',
+        color: 0x2563eb,
+        radius: 0.9,
+        speed: 0.08,
+        particleColor: 0x60a5fa,
+        points: [
+          new THREE.Vector3(32.25, 11.0, 25.0),
+          new THREE.Vector3(38.0, 11.0, 25.0),
+          new THREE.Vector3(38.0, 32.0, 25.0),
+          new THREE.Vector3(43.25, 32.0, 25.0)
+        ]
+      },
+      // 0M. V-402 Overhead Cold Vapor (-10°C) -> High Overhead Pipe Corridor -> E-407 Tube In (Heat Recovery)
+      {
+        name: 'V-402 Overhead Vapor (-10°C) -> E-407 Tube In (Heat Recovery)',
+        color: 0x2563eb,
+        radius: 0.92,
+        speed: 0.08,
+        particleColor: 0x93c5fd,
+        points: [
+          new THREE.Vector3(50.0, 61.5, 25.0),
+          new THREE.Vector3(50.0, 68.0, 25.0),
+          new THREE.Vector3(50.0, 68.0, 33.0),
+          new THREE.Vector3(-86.0, 68.0, 33.0),
+          new THREE.Vector3(-86.0, 11.0, 33.0),
+          new THREE.Vector3(-86.0, 11.0, 25.0),
+          new THREE.Vector3(-84.5, 11.0, 25.0)
         ]
       },
 
@@ -1392,7 +1427,7 @@ export class SynthesisSection400_3D {
         ]
       },
 
-      // 3A. E-407 Tube Outlet (-10°C -> +30°C) -> E-403 Shell Bottom Inlet
+      // 3A. E-407 Tube Outlet (-10°C -> +30°C) -> Low Corridor Trench -> E-403 Shell Bottom Inlet (Bypassing E-405/E-406 completely)
       {
         name: 'E-407 Tube Outlet (+30°C) -> E-403 Shell Bottom Inlet',
         color: 0x0284c7,
@@ -1400,9 +1435,11 @@ export class SynthesisSection400_3D {
         speed: 0.08,
         particleColor: 0x38bdf8,
         points: [
-          new THREE.Vector3(-51.0, 13.5, 25.0),
-          new THREE.Vector3(-25.0, 13.5, 25.0),
-          new THREE.Vector3(-25.0, 13.5, -42.0),
+          new THREE.Vector3(-68.0, 4.5, 25.0),
+          new THREE.Vector3(-68.0, 2.5, 25.0),
+          new THREE.Vector3(-68.0, 2.5, 0.0),
+          new THREE.Vector3(-25.0, 2.5, 0.0),
+          new THREE.Vector3(-25.0, 2.5, -42.0),
           new THREE.Vector3(-25.0, 14.0, -42.0)
         ]
       },
@@ -1489,8 +1526,8 @@ export class SynthesisSection400_3D {
         speed: 0.07,
         particleColor: 0xa78bfa,
         points: [
-          new THREE.Vector3(35.0, 6.5, 25.0),
-          new THREE.Vector3(35.0, 3.5, 25.0),
+          new THREE.Vector3(50.0, 6.5, 25.0),
+          new THREE.Vector3(50.0, 3.5, 25.0),
           new THREE.Vector3(-10.0, 3.5, 25.0),
           new THREE.Vector3(-10.0, 3.5, 65.0)
         ]
@@ -1555,10 +1592,10 @@ export class SynthesisSection400_3D {
       { tag: 'K-301', ar: 'ضاغط التعويض والتدوير K-301', param: '95°C | 240 kg/cm²', pos: new THREE.Vector3(-105, 20.0, 25), scale: [12.0, 4.5] },
       { tag: 'E-315', ar: 'مبرد غاز التعويض المائي E-315', param: '95°C -> 26°C | C.W.', pos: new THREE.Vector3(-105, 20.0, -10), scale: [11.0, 4.0] },
       { tag: 'V-310', ar: 'عازل رطوبة غاز التعويض V-310', param: '26°C | 240 kg/cm²', pos: new THREE.Vector3(-105, 45.0, -45), scale: [11.0, 4.0] },
-      { tag: 'E-407', ar: 'مبادل تبريد الغاز E-407', param: '40°C -> 26.5°C | Q=5.1 Gcal/h', pos: new THREE.Vector3(-70, 26.0, 25), scale: [11.0, 4.0] },
-      { tag: 'E-405', ar: 'مبرد الأمونيا الأولي E-405', param: '26.5°C -> 14°C (+8°C Evap)', pos: new THREE.Vector3(-35, 30.0, 25), scale: [11.0, 4.0] },
-      { tag: 'E-406', ar: 'مبرد الأمونيا الثانوي E-406', param: '14°C -> -10°C (-10°C Evap)', pos: new THREE.Vector3(0, 30.0, 25), scale: [11.0, 4.0] },
-      { tag: 'V-402', ar: 'عازل الأمونيا الباردة V-402', param: '-10.0°C | 220.0 kg/cm²', pos: new THREE.Vector3(35, 65.0, 25), scale: [12.0, 4.5] },
+      { tag: 'E-407', ar: 'مبادل تبريد الغاز E-407', param: '40°C -> 26.5°C | Q=5.1 Gcal/h', pos: new THREE.Vector3(-68, 25.0, 25), scale: [11.0, 4.0] },
+      { tag: 'E-405', ar: 'مبرد الأمونيا الأولي E-405', param: '26.5°C -> 14°C (+8°C Evap)', pos: new THREE.Vector3(-28, 25.0, 25), scale: [11.0, 4.0] },
+      { tag: 'E-406', ar: 'مبرد الأمونيا الثانوي E-406', param: '14°C -> -10°C (-10°C Evap)', pos: new THREE.Vector3(16, 25.0, 25), scale: [11.0, 4.0] },
+      { tag: 'V-402', ar: 'عازل الأمونيا الباردة V-402', param: '-10.0°C | 220.0 kg/cm²', pos: new THREE.Vector3(50, 65.0, 25), scale: [12.0, 4.5] },
       { tag: 'R-401', ar: 'مفاعل تخليق الأمونيا R-401 (العملاق 102m)', param: 'Bed 1: 380°C | Effluent: 470°C | 224 bar', pos: new THREE.Vector3(65, 105.0, -35), scale: [16.0, 6.0] },
       { tag: 'H-401', ar: 'مسخن بدء التشغيل الفرني H-401 (108m)', param: 'API 560 Process Cabin Heater | 108m Stack', pos: new THREE.Vector3(95, 48.0, 15), scale: [14.0, 5.2] },
       { tag: 'J-401', ar: 'خلاط التمرير الجانبي J-401', param: '148.2°C - 235.5°C | 230 kg/cm²', pos: new THREE.Vector3(60, 22.0, 10), scale: [10.0, 3.8] },
@@ -1676,14 +1713,62 @@ export class SynthesisSection400_3D {
 
     // 4 Main Column Sections
     const cols = [
-      { x: 40, w: 460, title: '1. قطار التدوير والتثليج الأولي', sub: 'Recycle & Chilling (K-301 -> V-402)', color: '#0ea5e9' },
-      { x: 530, w: 470, title: '2. قطار التسخين والتفاعل R-401', sub: 'Feed Preheat & Reactor Loop', color: '#ea580c' },
-      { x: 1030, w: 470, title: '3. قطار استرجاع الحرارة والتكثيف', sub: 'Effluent Cooling & Condensation', color: '#dc2626' },
-      { x: 1530, w: 475, title: '4. غاز التعويض وتثليج K-401', sub: 'Make-up & Refrigeration Cycle', color: '#8b5cf6' }
+      {
+        x: 40, w: 460, title: '1. قطار التدوير والتثليج الأولي', sub: 'Recycle & Chilling (K-301 -> V-402)', color: '#0ea5e9',
+        rows: [
+          '• غاز التدوير من مرحلة الكباس K-301 يبرد إلى 26.5°C في E-407',
+          '• مكثف الأمونيا الأولي E-405 يبرد الغاز إلى 14.0°C بالأمونيا السائلة',
+          '• خلط غاز التعويض (Make-up) في مكثف E-406 والتبريد إلى 2.2°C',
+          '• تكثيف 65% من إنتاج الأمونيا في سلسلة (E-407/405/406)',
+          '• نسبة الأمونيا المتبقية في الطور الغازي: 4.0% فقط',
+          '• فاصل السوائل الثانوي V-402 يفرغ الأمونيا السائلة إلى V-409',
+          '• غاز التخليق البارد (2.2°C) يعاد تسخينه في أنابيب E-407 إلى 50.0°C',
+          '• التدفق بعد E-407 يتجه مباشرة إلى غلاف مسخن التغذية E-403'
+        ]
+      },
+      {
+        x: 530, w: 470, title: '2. قطار التسخين والتفاعل R-401', sub: 'Feed Preheat & Reactor Loop', color: '#ea580c',
+        rows: [
+          '• مسخن غاز التغذية E-403 يرفع حرارة الغاز إلى 148.0°C',
+          '• غاز التغذية يمر بالفراغ الحلقي (Annular Space) لحماية الغلاف الخارجي',
+          '• خطوط غاز الإخماد (Quench Gas) تضبط حرارة الطبقتين 2 و 3',
+          '• مبادل المفاعل E-401 يسخن الغاز إلى 400.0°C قبل الطبقة الأولى',
+          '• مفاعل R-401: سلة داخلية تضم 3 طبقات عامل مساعد (Promoted Fe)',
+          '• التفاعل باعث بشدة للحرارة مصحوب بارتفاع حراري في كل طبقة',
+          '• تبريد كظومي متتابع بين الطبقات بخلط غاز الإخماد البارد من E-403',
+          '• مناورة صمامات البايباص لـ E-403 و E-401 والفراغ الحلقي لضبط الحرارة'
+        ]
+      },
+      {
+        x: 1030, w: 470, title: '3. قطار استرجاع الحرارة والتكثيف', sub: 'Effluent Cooling & Condensation', color: '#dc2626',
+        rows: [
+          '• مخرج المفاعل الحار (470°C) يبرد في أنابيب مبادل المفاعل E-401',
+          '• مسخن ماء المرجل E-402 يسخن مياه المراجل BFW إلى 200.0°C',
+          '• مسخن غاز التغذية E-403 يبرد الغاز المتفاعل ويخفض حرارته',
+          '• المكثفات المائية E-404 A,B تكثف 35% من مجمل إنتاج الأمونيا',
+          '• الفاصل الأولي V-401 يفصل السائل ويخفض الضغط إلى 21 kg/cm²G في V-409',
+          '• غاز التطهير (Purge Gas): يستخلص لضبط نسبة الخامل عند 10.0%',
+          '• مكثف التطهير E-408 يبرد الغاز بسائل V-408 عند -30°C ويفصل بـ V-403',
+          '• مسخن غاز التطهير E-416 يسخن الغاز ليرسل كوقود لغلايات الضغط العالي'
+        ]
+      },
+      {
+        x: 1530, w: 475, title: '4. كباس التثليج K-401 ومستويات التبخير', sub: 'Refrigeration K-401 & Levels', color: '#8b5cf6',
+        rows: [
+          '• كباس طارد مركزي بغلافين (LP & HP Casings) يدار بتوربين بخاري KT-401',
+          '• غلاف LP يسحب من V-405 عند 0.07 kg/cm²G ويطرد إلى V-406',
+          '• غلاف HP يسحب من V-406 عند 2.5 kg/cm²G ومن V-407 عند 4.4 kg/cm²G',
+          '• مكثف الأمونيا E-412 ومستلم سائل التثليج V-408 يغذيان دورة التبخير',
+          '• 3 مستويات تبخير: 4.9 kg (+8°C) بـ E-405 | 2.8 kg (-4°C) بـ E-406 | 0.2 kg (-30°C)',
+          '• فواصل السحب V-405..407: تدرج انسياب السوائل (V-407 -> V-406 -> V-405)',
+          '• مضخات P-401 A,B تضخ الأمونيا السائلة المنتجة بحرارة -32°C إلى الخزانات',
+          '• صمامات مانع الاندفاع (Anti-surge) مزودة بإزالة تحميص بحقن سائل الأمونيا'
+        ]
+      }
     ];
 
     cols.forEach((col) => {
-      ctx.fillStyle = 'rgba(10, 20, 35, 0.85)';
+      ctx.fillStyle = 'rgba(10, 20, 35, 0.88)';
       ctx.fillRect(col.x, 130, col.w, 730);
       ctx.strokeStyle = col.color;
       ctx.lineWidth = 3;
@@ -1696,21 +1781,54 @@ export class SynthesisSection400_3D {
       ctx.fillText(col.title, col.x + 14, 160);
       ctx.font = '14px monospace';
       ctx.fillText(col.sub, col.x + 14, 178);
+
+      // Content Rows
+      ctx.font = '16px sans-serif';
+      ctx.fillStyle = '#f8fafc';
+      let rowY = 220;
+      col.rows.forEach((r) => {
+        ctx.fillText(r, col.x + 16, rowY);
+        rowY += 60;
+      });
     });
+
+    // Interactive Exam Launcher Banner
+    ctx.fillStyle = 'linear-gradient(90deg, #6d28d9, #8b5cf6)';
+    ctx.fillStyle = '#6d28d9';
+    ctx.fillRect(40, 880, 1968, 100);
+    ctx.strokeStyle = '#c4b5fd';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(40, 880, 1968, 100);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.fillText('📝 اضغط هنا لفتح مركز اختبارات القسم الرابع وضاغطة K-401 (100 سؤال فني معمق ودليل التشغيل C-15..C-22)', 80, 938);
+    ctx.fillStyle = '#fde047';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText('CLICK TO OPEN SECTION 400 & COMPRESSOR K-401 MASTER EXAM CENTER (100 QUESTIONS)', 80, 966);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.anisotropy = 16;
-    const monGeo = new THREE.BoxGeometry(30.0, 14.0, 0.4);
+    const monGeo = new THREE.PlaneGeometry(30.0, 14.0);
     const monMat = new THREE.MeshStandardMaterial({
       map: tex,
       roughness: 0.25,
       metalness: 0.15,
       emissive: 0x051520,
-      emissiveMap: tex
+      emissiveMap: tex,
+      side: THREE.FrontSide,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1
     });
     const mon = new THREE.Mesh(monGeo, monMat);
-    mon.position.set(0, 12.0, 0);
+    mon.position.set(0, 12.0, 0.28);
     screenGroup.add(mon);
+
+    const frameGeo = new THREE.BoxGeometry(30.8, 14.8, 0.5);
+    const frameMesh = new THREE.Mesh(frameGeo, this.matCatwalkSteel);
+    frameMesh.position.set(0, 12.0, 0.0);
+    screenGroup.add(frameMesh);
 
     this.registerInteractive(screenGroup, 'unit400_master_pfd_board');
     this.group.add(screenGroup);
@@ -1748,15 +1866,6 @@ export class SynthesisSection400_3D {
     botDome.position.set(0, 3.8, 0);
     group.add(botDome);
 
-    const fGeo = new THREE.CylinderGeometry(r * 1.25, r * 1.25, 0.4, 32);
-    const f1 = new THREE.Mesh(fGeo, this.matFlange);
-    f1.position.set(0, 3.8 + height - 0.4, 0);
-    group.add(f1);
-
-    const f2 = new THREE.Mesh(fGeo, this.matFlange);
-    f2.position.set(0, 4.2, 0);
-    group.add(f2);
-
     return group;
   }
 
@@ -1787,17 +1896,6 @@ export class SynthesisSection400_3D {
     headR.rotation.z = -Math.PI / 2;
     headR.position.set(length / 2, 0, 0);
     group.add(headR);
-
-    const fGeo = new THREE.CylinderGeometry(r * 1.22, r * 1.22, 0.4, 32);
-    const f1 = new THREE.Mesh(fGeo, this.matFlange);
-    f1.rotation.z = Math.PI / 2;
-    f1.position.set(-length / 2 + 0.6, 0, 0);
-    group.add(f1);
-
-    const f2 = new THREE.Mesh(fGeo, this.matFlange);
-    f2.rotation.z = Math.PI / 2;
-    f2.position.set(length / 2 - 0.6, 0, 0);
-    group.add(f2);
 
     return group;
   }
@@ -1877,20 +1975,30 @@ export class SynthesisSection400_3D {
     });
   }
 
+  private tempPoint: THREE.Vector3 = new THREE.Vector3();
+  private particleFrameCount: number = 0;
+
   // Animation Update
   public update(delta: number) {
-    this.particleSystems.forEach((ps) => {
-      const pos = ps.points.geometry.attributes.position.array as Float32Array;
-      const count = ps.progress.length;
-      for (let i = 0; i < count; i++) {
-        ps.progress[i] = (ps.progress[i] + ps.speed * delta * 1.5) % 1.0;
-        const pt = ps.curve.getPoint(ps.progress[i]);
-        pos[i * 3] = pt.x;
-        pos[i * 3 + 1] = pt.y;
-        pos[i * 3 + 2] = pt.z;
-      }
-      ps.points.geometry.attributes.position.needsUpdate = true;
-    });
+    if (!this.group.visible) return;
+
+    this.particleFrameCount = (this.particleFrameCount + 1) % 60;
+    if (this.particleFrameCount % 2 === 0) {
+      const stepDelta = delta * 3.0;
+      this.particleSystems.forEach((ps) => {
+        if (!ps.points.visible) return;
+        const pos = ps.points.geometry.attributes.position.array as Float32Array;
+        const count = ps.progress.length;
+        for (let i = 0; i < count; i++) {
+          ps.progress[i] = (ps.progress[i] + ps.speed * stepDelta) % 1.0;
+          ps.curve.getPoint(ps.progress[i], this.tempPoint);
+          pos[i * 3] = this.tempPoint.x;
+          pos[i * 3 + 1] = this.tempPoint.y;
+          pos[i * 3 + 2] = this.tempPoint.z;
+        }
+        ps.points.geometry.attributes.position.needsUpdate = true;
+      });
+    }
 
     this.rotatingShafts.forEach((s) => {
       s.rotation.x += delta * 12.0;

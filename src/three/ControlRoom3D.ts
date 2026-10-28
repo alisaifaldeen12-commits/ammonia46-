@@ -22,6 +22,7 @@ export class ControlRoom3D {
   public hotspots: Hotspot3D[] = [];
   public clockDigitalMesh!: THREE.Mesh;
   public interactiveObjects: THREE.Object3D[] = [];
+  private lastClockSecond: string = '';
 
   // Enlarged spacious room dimensions
   private roomW = 44; // Length (X)
@@ -604,6 +605,8 @@ export class ControlRoom3D {
   }
 
   public update(timeSec: number) {
+    if (!this.group.visible) return;
+
     // Pulse hotspot pins
     this.hotspots.forEach((hs) => {
       if (hs.mesh) {
@@ -612,28 +615,31 @@ export class ControlRoom3D {
       }
     });
 
-    // Update Digital Clock LED text
+    // Update Digital Clock LED text (only once per second, not 60 times/sec)
     if (this.clockDigitalMesh) {
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
       const s = String(now.getSeconds()).padStart(2, '0');
-      const timeStr = `${h}:${m}:${s}`;
+      if (s !== this.lastClockSecond) {
+        this.lastClockSecond = s;
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const timeStr = `${h}:${m}:${s}`;
 
-      const canvas = (this.clockDigitalMesh.material as THREE.MeshBasicMaterial).map!
-        .image as HTMLCanvasElement;
-      if (canvas) {
-        const ctx = canvas.getContext('2d')!;
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, 256, 80);
-        ctx.fillStyle = '#ff1100';
-        ctx.font = 'bold 36px Courier New, monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(timeStr, 128, 40);
-        (
-          this.clockDigitalMesh.material as THREE.MeshBasicMaterial
-        ).map!.needsUpdate = true;
+        const canvas = (this.clockDigitalMesh.material as THREE.MeshBasicMaterial).map!
+          .image as HTMLCanvasElement;
+        if (canvas) {
+          const ctx = canvas.getContext('2d')!;
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, 256, 80);
+          ctx.fillStyle = '#ff1100';
+          ctx.font = 'bold 36px Courier New, monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(timeStr, 128, 40);
+          (
+            this.clockDigitalMesh.material as THREE.MeshBasicMaterial
+          ).map!.needsUpdate = true;
+        }
       }
     }
   }

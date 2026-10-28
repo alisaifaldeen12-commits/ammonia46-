@@ -428,11 +428,11 @@ export function renderCompression300SVG(showParticles: boolean): string {
       <g id="pfd-comp-equipment">
 
         <!-- 1. K-301: SYN. GAS COMPRESSOR & CIRCULATOR TRAIN -->
-        <rect x="170" y="475" width="440" height="15" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.5" rx="3"/>
-        <text x="390" y="505" fill="#0284c7" font-size="12" font-weight="bold" text-anchor="middle">K-301: SYN. GAS COMPRESSOR &amp; CIRCULATOR</text>
-        <text x="390" y="520" fill="#475569" font-size="9" font-weight="600" text-anchor="middle">MULTI-CASE CENTRIFUGAL TRAIN WITH STEAM TURBINE DRIVER</text>
+        <rect x="150" y="475" width="480" height="15" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.5" rx="3"/>
+        <text x="390" y="505" fill="#0284c7" font-size="12" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">K-301: قطار ضاغط غاز التخليق (٣ أكياس: LP و MP و HP عبر ٤ مراحل كبس + التوربين K-301T)</text>
+        <text x="390" y="520" fill="#475569" font-size="9" font-weight="700" text-anchor="middle">3 CASINGS (LP, MP, HP) • 4 COMPRESSION STAGES • STEAM TURBINE DRIVER K-301T</text>
 
-        <!-- K-301 Casing 1 (Stage 1) -->
+        <!-- K-301 Casing 1 (Stage 1 / LP) -->
         <g class="pfd-eq-item" data-tag="K-301-C1" transform="translate(190, 360)">
           <rect x="0" y="0" width="70" height="110" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
           <circle cx="35" cy="55" r="26" fill="url(#pfdSteelHorizGrad)" stroke="#0284c7" stroke-width="1.5"/>
@@ -443,8 +443,9 @@ export function renderCompression300SVG(showParticles: boolean): string {
           <!-- High Clarity Plaque -->
           <g transform="translate(-15, -45)">
             <rect x="0" y="0" width="100" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="50" y="16" fill="#0284c7" font-size="13" font-weight="900" text-anchor="middle">K-301 C1</text>
-            <text x="50" y="30" fill="#0f172a" font-size="10" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">المرحلة الأولى</text>
+            <text x="50" y="14" fill="#0284c7" font-size="12" font-weight="900" text-anchor="middle">K-301 LP</text>
+            <text x="50" y="25" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">Case 1 (المرحلة 1)</text>
+            <text x="50" y="34" fill="#0284c7" font-size="7.5" font-weight="bold" text-anchor="middle">L.P. Casing</text>
           </g>
           <text x="35" y="125" fill="#475569" font-size="8" font-weight="bold" text-anchor="middle">25.5 IN → 74.5 kg/cm²</text>
         </g>
@@ -458,12 +459,13 @@ export function renderCompression300SVG(showParticles: boolean): string {
           <!-- High Clarity Plaque -->
           <g transform="translate(-15, -50)">
             <rect x="0" y="0" width="105" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="52" y="16" fill="#dc2626" font-size="13" font-weight="900" text-anchor="middle">K-301 TURB</text>
-            <text x="52" y="30" fill="#0f172a" font-size="10" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">توربين البخار</text>
+            <text x="52" y="14" fill="#dc2626" font-size="12" font-weight="900" text-anchor="middle">K-301T</text>
+            <text x="52" y="25" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">التوربين البخاري</text>
+            <text x="52" y="34" fill="#dc2626" font-size="7.5" font-weight="bold" text-anchor="middle">Steam Turbine</text>
           </g>
         </g>
 
-        <!-- K-301 Casing 2 (Stage 2) -->
+        <!-- K-301 Casing 2 (Stage 2 / MP) -->
         <g class="pfd-eq-item" data-tag="K-301-C2" transform="translate(390, 360)">
           <rect x="0" y="0" width="70" height="110" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
           <circle cx="35" cy="55" r="24" fill="url(#pfdSteelHorizGrad)" stroke="#0284c7" stroke-width="1.5"/>
@@ -474,16 +476,17 @@ export function renderCompression300SVG(showParticles: boolean): string {
           <!-- High Clarity Plaque -->
           <g transform="translate(-15, -45)">
             <rect x="0" y="0" width="100" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="50" y="16" fill="#0284c7" font-size="13" font-weight="900" text-anchor="middle">K-301 C2</text>
-            <text x="50" y="30" fill="#0f172a" font-size="10" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">المرحلة الثانية</text>
+            <text x="50" y="14" fill="#0284c7" font-size="12" font-weight="900" text-anchor="middle">K-301 MP</text>
+            <text x="50" y="25" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">Case 2 (المرحلة 2)</text>
+            <text x="50" y="34" fill="#0284c7" font-size="7.5" font-weight="bold" text-anchor="middle">M.P. Casing</text>
           </g>
           <text x="35" y="125" fill="#475569" font-size="8" font-weight="bold" text-anchor="middle">73.7 → 134.4 kg/cm²</text>
         </g>
 
-        <!-- K-301 Casing 3 (Stage 3 + Circulator Wheel) -->
+        <!-- K-301 Casing 3 (Stages 3 & 4 + Circulator Wheel / HP) -->
         <g class="pfd-eq-item" data-tag="K-301-C3" transform="translate(495, 360)">
           <rect x="0" y="0" width="85" height="110" rx="8" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
-          <!-- Left side: 3rd stage compression -->
+          <!-- Left side: 3rd & 4th stage compression -->
           <circle cx="28" cy="55" r="20" fill="url(#pfdSteelHorizGrad)" stroke="#0284c7" stroke-width="1.5"/>
           <!-- Right side: Circulator Impeller -->
           <circle cx="62" cy="55" r="20" fill="url(#pfdSteelHorizGrad)" stroke="#7c3aed" stroke-width="1.5"/>
@@ -491,8 +494,9 @@ export function renderCompression300SVG(showParticles: boolean): string {
           <!-- High Clarity Plaque -->
           <g transform="translate(-15, -45)">
             <rect x="0" y="0" width="115" height="38" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="57" y="16" fill="#7c3aed" font-size="12.5" font-weight="900" text-anchor="middle">K-301 CASE 3</text>
-            <text x="57" y="30" fill="#0f172a" font-size="10" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مرحلة 3 + التدوير</text>
+            <text x="57" y="14" fill="#7c3aed" font-size="11.5" font-weight="900" text-anchor="middle">K-301 HP</text>
+            <text x="57" y="25" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">Case 3 (مرحلة 3 و 4)</text>
+            <text x="57" y="34" fill="#7c3aed" font-size="7.5" font-weight="bold" text-anchor="middle">H.P. + Recycle</text>
           </g>
           <text x="42" y="125" fill="#475569" font-size="8" font-weight="bold" text-anchor="middle">P = 240.5 kg/cm²A</text>
         </g>
@@ -671,6 +675,14 @@ export function renderCompression300SVG(showParticles: boolean): string {
           </g>
         </g>
 
+        <!-- K-302 Side Extractions & Anti-Surge Atmospheric Callout Badge -->
+        <g transform="translate(970, 390)">
+          <rect x="0" y="0" width="180" height="48" rx="6" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5"/>
+          <text x="90" y="15" fill="#0369a1" font-size="8.5" font-weight="bold" text-anchor="middle">سحوبات هواء قبل مرحلة 4:</text>
+          <text x="90" y="27" fill="#0f172a" font-size="7.5" font-weight="600" text-anchor="middle">1) اليوريا &bull; 2) كاتاكارب &bull; 3) هواء الأجهزة</text>
+          <text x="90" y="40" fill="#dc2626" font-size="7.5" font-weight="bold" text-anchor="middle">تفريغ الارتجاف: صمام للجو (Atmospheric)</text>
+        </g>
+
         <!-- 3. K-303: NATURAL GAS COMPRESSOR TRAIN -->
         <rect x="1270" y="585" width="220" height="15" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.5" rx="3"/>
         <text x="1380" y="615" fill="#d97706" font-size="11" font-weight="bold" text-anchor="middle">K-303: NATURAL GAS COMPRESSOR</text>
@@ -712,6 +724,13 @@ export function renderCompression300SVG(showParticles: boolean): string {
 
         <!-- E-308: Natural Gas By-Pass Cooler -->
         ${e308Svg}
+
+        <!-- K-303 Anti-Surge Loop Badge -->
+        <g transform="translate(1300, 390)">
+          <rect x="0" y="0" width="175" height="42" rx="6" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+          <text x="87" y="16" fill="#b45309" font-size="8.5" font-weight="bold" text-anchor="middle">حماية الارتجاف (Anti-Surge):</text>
+          <text x="87" y="30" fill="#0f172a" font-size="7.5" font-weight="600" text-anchor="middle">تدوير عبر مبرد E-308 إلى السحب V-111</text>
+        </g>
       </g>
 
 

@@ -11,6 +11,8 @@ import {
   createControllerBadgeTexture,
   createEquipmentTagTexture,
   createPressureBadgeTexture,
+  createAluminumCladdingTexture,
+  createCladdingBumpTexture,
 } from './TextureGenerator';
 import {
   MASTER_EQUIPMENT_DATA,
@@ -23,15 +25,23 @@ import { Equipment3DBuilder, MaterialPalette } from './Equipment3DBuilder';
 import { SteamSystem3D } from './SteamSystem3D';
 import { SynthesisSection400_3D } from './SynthesisSection400_3D';
 import { CO2RemovalSection200_3D } from './CO2RemovalSection200_3D';
+import { SyngasCompressorK301_3D } from './SyngasCompressorK301_3D';
+import { ReformingSection100_3D } from './ReformingSection100_3D';
+import { CoolingTower3D } from './CoolingTower3D';
 
 export class AmmoniaPlant3D {
   public group: THREE.Group;
   public interactiveMeshes: THREE.Object3D[] = [];
   public equipmentMap: Map<string, THREE.Object3D> = new Map();
   public steamSystem!: SteamSystem3D;
-  public synthesisSection400!: SynthesisSection400_3D;
-  public co2RemovalSection200!: CO2RemovalSection200_3D;
+  public synthesisSection400?: SynthesisSection400_3D;
+  public co2RemovalSection200?: CO2RemovalSection200_3D;
+  public syngasCompressorK301?: SyngasCompressorK301_3D;
+  public reformingSection100?: ReformingSection100_3D;
+  public coolingTower?: CoolingTower3D;
+  public complexInterconnectGroup?: THREE.Group;
   public onSelectCallback?: (info: EquipmentInfo) => void;
+  private tempPoint = new THREE.Vector3();
 
   // Subgroups for clean toggling
   private equipmentGroup: THREE.Group;
@@ -149,27 +159,261 @@ export class AmmoniaPlant3D {
       }
     };
 
-    // Isolated Dedicated 3D Digital Twin of Section 4: Ammonia Synthesis & Refrigeration
-    this.synthesisSection400 = new SynthesisSection400_3D();
-    this.synthesisSection400.group.visible = false;
-    this.group.add(this.synthesisSection400.group);
-    this.interactiveMeshes.push(...this.synthesisSection400.interactiveMeshes);
-    this.synthesisSection400.onSelectCallback = (info) => {
-      if (this.onSelectCallback) {
-        this.onSelectCallback(info);
-      }
-    };
+  }
 
-    // Isolated Dedicated 3D Digital Twin of Section 2: CO2 Removal (Catacarb Unit 200)
-    this.co2RemovalSection200 = new CO2RemovalSection200_3D();
-    this.co2RemovalSection200.group.visible = false;
-    this.group.add(this.co2RemovalSection200.group);
-    this.interactiveMeshes.push(...this.co2RemovalSection200.interactiveMeshes);
-    this.co2RemovalSection200.onSelectCallback = (info) => {
-      if (this.onSelectCallback) {
-        this.onSelectCallback(info);
+  // Lazy Initialization of Heavy Dedicated 3D Digital Twin Sections (Eliminates startup lag & memory spikes)
+  public ensureSynthesisSection400(): SynthesisSection400_3D {
+    if (!this.synthesisSection400) {
+      this.synthesisSection400 = new SynthesisSection400_3D();
+      this.group.add(this.synthesisSection400.group);
+      this.interactiveMeshes.push(...this.synthesisSection400.interactiveMeshes);
+      this.synthesisSection400.onSelectCallback = (info) => {
+        if (this.onSelectCallback) this.onSelectCallback(info);
+      };
+    }
+    return this.synthesisSection400;
+  }
+
+  public ensureCO2RemovalSection200(): CO2RemovalSection200_3D {
+    if (!this.co2RemovalSection200) {
+      this.co2RemovalSection200 = new CO2RemovalSection200_3D();
+      this.group.add(this.co2RemovalSection200.group);
+      this.interactiveMeshes.push(...this.co2RemovalSection200.interactiveMeshes);
+      this.co2RemovalSection200.onSelectCallback = (info) => {
+        if (this.onSelectCallback) this.onSelectCallback(info);
+      };
+    }
+    return this.co2RemovalSection200;
+  }
+
+  public ensureSyngasCompressorK301(): SyngasCompressorK301_3D {
+    if (!this.syngasCompressorK301) {
+      this.syngasCompressorK301 = new SyngasCompressorK301_3D();
+      this.group.add(this.syngasCompressorK301.group);
+      this.interactiveMeshes.push(...this.syngasCompressorK301.interactiveMeshes);
+      this.syngasCompressorK301.onSelectCallback = (info) => {
+        if (this.onSelectCallback) this.onSelectCallback(info);
+      };
+    }
+    return this.syngasCompressorK301;
+  }
+
+  public ensureReformingSection100(): ReformingSection100_3D {
+    if (!this.reformingSection100) {
+      this.reformingSection100 = new ReformingSection100_3D();
+      this.group.add(this.reformingSection100.group);
+      this.interactiveMeshes.push(...this.reformingSection100.interactiveMeshes);
+      this.reformingSection100.onSelectCallback = (info) => {
+        if (this.onSelectCallback) this.onSelectCallback(info);
+      };
+    }
+    return this.reformingSection100;
+  }
+
+  public ensureCoolingTower(): CoolingTower3D {
+    if (!this.coolingTower) {
+      this.coolingTower = new CoolingTower3D();
+      this.group.add(this.coolingTower.group);
+      this.interactiveMeshes.push(...this.coolingTower.interactiveMeshes);
+      this.coolingTower.onSelectCallback = (info) => {
+        if (this.onSelectCallback) this.onSelectCallback(info);
+      };
+    }
+    return this.coolingTower;
+  }
+
+  public ensureComplexInterconnectRack(): THREE.Group {
+    if (this.complexInterconnectGroup) {
+      return this.complexInterconnectGroup;
+    }
+
+    const g = new THREE.Group();
+    this.complexInterconnectGroup = g;
+    this.group.add(g);
+
+    // Shared PBR materials for master complex interconnect
+    const matConcrete = new THREE.MeshStandardMaterial({
+      color: 0x1e2631,
+      roughness: 0.9,
+      metalness: 0.1
+    });
+    const matAsphaltRoad = new THREE.MeshStandardMaterial({
+      color: 0x0f151d,
+      roughness: 0.85,
+      metalness: 0.2
+    });
+    const matCurbYellow = new THREE.MeshStandardMaterial({
+      color: 0xf59e0b,
+      roughness: 0.5,
+      metalness: 0.3
+    });
+    const matSteelStructure = new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      roughness: 0.45,
+      metalness: 0.8
+    });
+    const matCwSupply = new THREE.MeshStandardMaterial({
+      color: 0x0284c7,
+      roughness: 0.3,
+      metalness: 0.7
+    });
+    const matCwReturn = new THREE.MeshStandardMaterial({
+      color: 0x38bdf8,
+      roughness: 0.3,
+      metalness: 0.7
+    });
+    const matSyngas = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      roughness: 0.35,
+      metalness: 0.75
+    });
+    const matHpSyngas = new THREE.MeshStandardMaterial({
+      color: 0x00c8ef,
+      roughness: 0.25,
+      metalness: 0.85
+    });
+    const matHpSteam = new THREE.MeshStandardMaterial({
+      color: 0xe2e8f0,
+      roughness: 0.2,
+      metalness: 0.9
+    });
+    const matAmmoniaLiquid = new THREE.MeshStandardMaterial({
+      color: 0xf8fafc,
+      roughness: 0.15,
+      metalness: 0.92
+    });
+
+    // Master site foundation slab
+    const masterSlab = new THREE.Mesh(
+      new THREE.BoxGeometry(450, 0.8, 180),
+      matConcrete
+    );
+    masterSlab.position.set(5, 0.4, 0);
+    masterSlab.receiveShadow = false;
+    g.add(masterSlab);
+
+    // Interconnecting avenues between sections
+    [-128, -42, 42, 130].forEach((roadX) => {
+      const road = new THREE.Mesh(new THREE.BoxGeometry(10, 0.05, 178), matAsphaltRoad);
+      road.position.set(roadX, 0.83, 0);
+      g.add(road);
+
+      const curbL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 178), matCurbYellow);
+      curbL.position.set(roadX - 5.1, 0.9, 0);
+      g.add(curbL);
+
+      const curbR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 178), matCurbYellow);
+      curbR.position.set(roadX + 5.1, 0.9, 0);
+      g.add(curbR);
+    });
+
+    // Continuous Multi-Tier Overhead Pipe Rack (spanning X: -190 to +205 at Z: 18)
+    const rackZ = 18.0;
+    const rackStartX = -190;
+    const rackEndX = 205;
+    const bentSpacing = 16.0;
+
+    const colGeo = new THREE.BoxGeometry(0.6, 11.5, 0.6);
+    const beamGeoLower = new THREE.BoxGeometry(0.5, 0.6, 7.0);
+    const beamGeoUpper = new THREE.BoxGeometry(0.5, 0.6, 7.0);
+
+    for (let bx = rackStartX; bx <= rackEndX; bx += bentSpacing) {
+      const col1 = new THREE.Mesh(colGeo, matSteelStructure);
+      col1.position.set(bx, 6.2, rackZ - 3.2);
+      g.add(col1);
+
+      const col2 = new THREE.Mesh(colGeo, matSteelStructure);
+      col2.position.set(bx, 6.2, rackZ + 3.2);
+      g.add(col2);
+
+      const beamLow = new THREE.Mesh(beamGeoLower, matSteelStructure);
+      beamLow.position.set(bx, 6.2, rackZ);
+      g.add(beamLow);
+
+      const beamUp = new THREE.Mesh(beamGeoUpper, matSteelStructure);
+      beamUp.position.set(bx, 9.8, rackZ);
+      g.add(beamUp);
+
+      if (bx + bentSpacing <= rackEndX) {
+        const strGeo = new THREE.BoxGeometry(bentSpacing, 0.35, 0.35);
+        const s1 = new THREE.Mesh(strGeo, matSteelStructure);
+        s1.position.set(bx + bentSpacing / 2, 6.4, rackZ - 3.2);
+        g.add(s1);
+
+        const s2 = new THREE.Mesh(strGeo, matSteelStructure);
+        s2.position.set(bx + bentSpacing / 2, 6.4, rackZ + 3.2);
+        g.add(s2);
+
+        const s3 = new THREE.Mesh(strGeo, matSteelStructure);
+        s3.position.set(bx + bentSpacing / 2, 10.0, rackZ - 3.2);
+        g.add(s3);
+
+        const s4 = new THREE.Mesh(strGeo, matSteelStructure);
+        s4.position.set(bx + bentSpacing / 2, 10.0, rackZ + 3.2);
+        g.add(s4);
       }
-    };
+    }
+
+    const fullSpan = rackEndX - rackStartX;
+    const midX = (rackStartX + rackEndX) / 2;
+
+    // Line 1: 48" Cooling Water Supply (CW-S) from Cooling Tower (-170) to Ammonia Synthesis (+175)
+    const cwSupplyPipe = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.75, 0.75, fullSpan, 16),
+      matCwSupply
+    );
+    cwSupplyPipe.rotation.z = Math.PI / 2;
+    cwSupplyPipe.position.set(midX, 6.8, rackZ - 2.0);
+    g.add(cwSupplyPipe);
+
+    // Line 2: 48" Cooling Water Return (CW-R)
+    const cwReturnPipe = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.75, 0.75, fullSpan, 16),
+      matCwReturn
+    );
+    cwReturnPipe.rotation.z = Math.PI / 2;
+    cwReturnPipe.position.set(midX, 6.8, rackZ + 2.0);
+    g.add(cwReturnPipe);
+
+    // Line 3: 36" Effluent Syngas Header (Unit 100 Reforming at -85 to Catacarb at 0 to K-301 at +85)
+    const syngasSpan = 85 - (-85);
+    const syngasPipe = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.65, 0.65, syngasSpan, 16),
+      matSyngas
+    );
+    syngasPipe.rotation.z = Math.PI / 2;
+    syngasPipe.position.set(0, 10.5, rackZ - 1.8);
+    g.add(syngasPipe);
+
+    // Line 4: 24" High-Pressure Compressed Syngas (K-301 at +85 to Ammonia Synthesis R-401 at +175)
+    const hpSynSpan = 185 - 85;
+    const hpSynPipe = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.5, 0.5, hpSynSpan, 16),
+      matHpSyngas
+    );
+    hpSynPipe.rotation.z = Math.PI / 2;
+    hpSynPipe.position.set(135, 10.5, rackZ);
+    g.add(hpSynPipe);
+
+    // Line 5: 28" HP Steam Header (105 kg/cm² from E-108 at -85 to K-301T turbine at +85)
+    const steamPipe = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.55, 0.55, syngasSpan, 16),
+      matHpSteam
+    );
+    steamPipe.rotation.z = Math.PI / 2;
+    steamPipe.position.set(0, 10.5, rackZ + 1.8);
+    g.add(steamPipe);
+
+    // Line 6: 16" Anhydrous Liquid Ammonia Run-Down (from Chilling train to F-401 sphere at +175)
+    const ammLiquidPipe = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.35, 0.35, 60, 16),
+      matAmmoniaLiquid
+    );
+    ammLiquidPipe.rotation.z = Math.PI / 2;
+    ammLiquidPipe.position.set(175, 6.8, rackZ);
+    g.add(ammLiquidPipe);
+
+    return g;
   }
 
   private initMaterials() {
@@ -274,6 +518,28 @@ export class AmmoniaPlant3D {
       envMap: this.envMap,
       envMapIntensity: 1.6,
     });
+
+    const cladTex = createAluminumCladdingTexture();
+    const cladBump = createCladdingBumpTexture();
+
+    const aluminumCladdingMat = new THREE.MeshStandardMaterial({
+      map: cladTex,
+      bumpMap: cladBump,
+      bumpScale: 0.04,
+      roughness: 0.22,
+      metalness: 0.94,
+      envMap: this.envMap,
+      envMapIntensity: 1.8,
+    });
+
+    const claddingStrapsMat = new THREE.MeshStandardMaterial({
+      color: 0x94a3b8,
+      roughness: 0.15,
+      metalness: 0.98,
+    });
+
+    (this as any).aluminumCladdingMat = aluminumCladdingMat;
+    (this as any).claddingStrapsMat = claddingStrapsMat;
   }
 
   // Ground, Pipe Racks, Palm Trees, Chemical Drums, Safety Markings
@@ -294,49 +560,6 @@ export class AmmoniaPlant3D {
     ground.position.set(0, -0.01, 10);
     ground.receiveShadow = true;
     this.group.add(ground);
-
-    // Multi-Tier Pipe Racks spanning across the plant rows
-    const rackSteelMat = new THREE.MeshStandardMaterial({
-      color: 0x2c3b48,
-      metalness: 0.85,
-      roughness: 0.25,
-      envMap: this.envMap,
-    });
-
-    const rackZPositions = [-29, -15, -2, 11, 23, 37, 52];
-    rackZPositions.forEach((z) => {
-      for (let x = -55; x <= 50; x += 15) {
-        // Vertical H-Columns
-        const colGeo = new THREE.BoxGeometry(0.4, 5.8, 0.4);
-        const col1 = new THREE.Mesh(colGeo, rackSteelMat);
-        col1.position.set(x, 2.9, z - 1.5);
-        const col2 = new THREE.Mesh(colGeo, rackSteelMat);
-        col2.position.set(x, 2.9, z + 1.5);
-        this.group.add(col1);
-        this.group.add(col2);
-
-        // Lower & Upper Crossbeams
-        const beamGeo = new THREE.BoxGeometry(0.35, 0.35, 3.4);
-        const b1 = new THREE.Mesh(beamGeo, rackSteelMat);
-        b1.position.set(x, 3.2, z);
-        const b2 = new THREE.Mesh(beamGeo, rackSteelMat);
-        b2.position.set(x, 5.4, z);
-        this.group.add(b1);
-        this.group.add(b2);
-      }
-
-      // Longitudinal Pipe Support Trusses
-      const trussGeo = new THREE.BoxGeometry(110, 0.25, 0.25);
-      const t1 = new THREE.Mesh(trussGeo, rackSteelMat);
-      t1.position.set(-2.5, 3.2, z - 1.2);
-      const t2 = new THREE.Mesh(trussGeo, rackSteelMat);
-      t2.position.set(-2.5, 3.2, z + 1.2);
-      const t3 = new THREE.Mesh(trussGeo, rackSteelMat);
-      t3.position.set(-2.5, 5.4, z);
-      this.group.add(t1);
-      this.group.add(t2);
-      this.group.add(t3);
-    });
 
     // Basra Palm Trees lining the perimeter (نخيل البصرة)
     const palmGroup = new THREE.Group();
@@ -932,7 +1155,12 @@ export class AmmoniaPlant3D {
       // Row 2 -> Row 3: R-103 (900°C) -> E-108 (340°C) -> R-104 HTS (390°C) -> E-107/109 (285°C) -> E-110 (200°C)
       {
         name: 'R-103 (900°C) -> E-108 Waste Heat Boiler',
-        points: [new THREE.Vector3(-45, 3.5, -22), new THREE.Vector3(-45, 3.5, -9)],
+        points: [
+          new THREE.Vector3(-45, 6.8, -22), // Exits from middle of R-103
+          new THREE.Vector3(-45, 6.8, -15),
+          new THREE.Vector3(-45, 3.5, -15),
+          new THREE.Vector3(-45, 3.5, -9)
+        ],
         radius: 0.32,
         isLiquid: false,
       },
@@ -943,13 +1171,13 @@ export class AmmoniaPlant3D {
         isLiquid: false,
       },
       {
-        name: 'R-104 (390°C) -> E-107/E-109 Exchangers',
-        points: [new THREE.Vector3(-28, 2.5, -9), new THREE.Vector3(-5, 2.5, -9)],
+        name: 'R-104 (390°C) -> E-107/E-109 Tube Inlets',
+        points: [new THREE.Vector3(-28, 5.0, -9), new THREE.Vector3(-5, 5.0, -9), new THREE.Vector3(-5, 2.5, -9)],
         radius: 0.28,
         isLiquid: false,
       },
       {
-        name: 'E-107/109 (285°C) -> E-110 Cooler (200°C)',
+        name: 'E-107 & E-109 Tube Outlets -> E-110 Cooler (200°C)',
         points: [new THREE.Vector3(-5, 2.5, -9), new THREE.Vector3(15, 2.5, -9)],
         radius: 0.26,
         isLiquid: false,
@@ -964,17 +1192,24 @@ export class AmmoniaPlant3D {
         isSectionCO2: true,
       },
       {
-        name: 'V-101 -> R-105 LTS Converter',
-        points: [new THREE.Vector3(15, 4.0, 4), new THREE.Vector3(-3, 4.0, 4)],
+        name: 'V-101 -> R-105 LTS Converter (Top Inlet)',
+        points: [
+          new THREE.Vector3(15, 4.5, 4),
+          new THREE.Vector3(15, 8.5, 4),
+          new THREE.Vector3(-1.5, 8.5, 4),
+          new THREE.Vector3(-1.5, 8.0, 4)
+        ],
         radius: 0.26,
         isLiquid: false,
         isSectionCO2: true,
       },
       // Row 4: CO2 Removal (Catacarb System - P&ID Exact Orthogonal Routing)
       {
-        name: 'R-105 LTS Outlet -> E-201 Reboiler (Shift Gas 185°C)',
+        name: 'R-105 LTS Top Outlet -> E-201 Reboiler (Shift Gas 185°C)',
         points: [
-          new THREE.Vector3(-3, 2.5, 4),
+          new THREE.Vector3(-4.5, 8.0, 4), // يخرج من قمة المفاعل العلوية من فوق وليس من أسفل
+          new THREE.Vector3(-4.5, 9.5, 4),
+          new THREE.Vector3(-50, 9.5, 4),
           new THREE.Vector3(-50, 2.5, 4),
           new THREE.Vector3(-50, 2.5, -10),
         ],
@@ -1324,7 +1559,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'K-301 Stage 1 Discharge (130°C) -> E-302 1st Intercooler',
+        name: 'K-301 Stage 1 Discharge (130°C) -> E-302 Tubes (Gas in Tubes / WC in Shell)',
         points: [
           new THREE.Vector3(20.3, 5.1, 17),
           new THREE.Vector3(20.3, 5.6, 17),
@@ -1337,7 +1572,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'E-302 Intercooler (43°C) -> V-302 1st Interstage Separator',
+        name: 'E-302 Tubes (43°C) -> V-302 1st Interstage Separator',
         points: [
           new THREE.Vector3(22.5, 2.0, 23),
           new THREE.Vector3(22.5, 2.0, 28),
@@ -1360,7 +1595,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'K-301 Stage 2 Discharge (135°C) -> E-303 2nd Intercooler',
+        name: 'K-301 Stage 2 Discharge (135°C) -> E-303 Tubes (Gas in Tubes / WC in Shell)',
         points: [
           new THREE.Vector3(19.0, 5.1, 17),
           new THREE.Vector3(19.0, 5.6, 17),
@@ -1373,7 +1608,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'E-303 Intercooler (43°C) -> V-303 2nd Interstage Separator',
+        name: 'E-303 Tubes (43°C) -> V-303 2nd Interstage Separator',
         points: [
           new THREE.Vector3(15.0, 2.0, 23),
           new THREE.Vector3(15.0, 2.0, 28),
@@ -1396,7 +1631,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'K-301 Stage 3 Discharge (138°C) -> E-304 3rd Intercooler',
+        name: 'K-301 Stage 3 Discharge (138°C) -> E-304 Tubes (Gas in Tubes / WC in Shell)',
         points: [
           new THREE.Vector3(16.3, 5.1, 17),
           new THREE.Vector3(16.3, 5.6, 17),
@@ -1409,7 +1644,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'E-304 Intercooler (43°C) -> V-304 3rd Interstage Separator',
+        name: 'E-304 Tubes (43°C) -> V-304 3rd Interstage Separator',
         points: [
           new THREE.Vector3(7.5, 2.0, 23),
           new THREE.Vector3(7.5, 2.0, 28),
@@ -1432,7 +1667,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'K-301 Stage 4 Final Discharge (239 kg/cm²G, 135°C) -> E-315 After-Cooler',
+        name: 'K-301 Stage 4 Final Discharge (239 kg/cm²G, 135°C) -> E-315 Tubes (Gas in Tubes / WC in Shell)',
         points: [
           new THREE.Vector3(15.2, 5.1, 17),
           new THREE.Vector3(15.2, 5.6, 17),
@@ -1445,7 +1680,7 @@ export class AmmoniaPlant3D {
         isSectionK301: true,
       },
       {
-        name: 'E-315 Cooled Gas (26°C) -> V-310 Make-Up Separator',
+        name: 'E-315 Tubes Cooled Gas (26°C) -> V-310 Make-Up Separator',
         points: [
           new THREE.Vector3(0.0, 2.0, 23),
           new THREE.Vector3(0.0, 2.0, 28),
@@ -1903,9 +2138,12 @@ export class AmmoniaPlant3D {
       },
     ];
 
+    const PLANT_PIPE_SCALE = 1.7;
+
     pipeSegments.forEach((seg, idx) => {
       const curve = this.createOrthogonalPipePath(seg.points, 0.5);
-      const tubeGeo = new THREE.TubeGeometry(curve, 64, seg.radius, 12, false);
+      const effectiveRadius = seg.radius * PLANT_PIPE_SCALE;
+      const tubeGeo = new THREE.TubeGeometry(curve, 64, effectiveRadius, 14, false);
 
       const isSec1Pipe = seg.isSection1 ?? (idx < 12); // First 12 lines belong to Section 1
       const isSecCO2Pipe = seg.isSectionCO2 ?? false;
@@ -1932,6 +2170,24 @@ export class AmmoniaPlant3D {
       };
       this.pipingGroup.add(pipeMesh);
       this.interactiveMeshes.push(pipeMesh);
+
+      // Thermal Insulation Cladding Jacket Wrap (تغليف الخطوط الحراري بالألومنيوم والأحزمة)
+      const cladRadius = effectiveRadius + 0.16;
+      const cladTubeGeo = new THREE.TubeGeometry(curve, 64, cladRadius, 16, false);
+      const cladMesh = new THREE.Mesh(cladTubeGeo, (this as any).aluminumCladdingMat || mat);
+      cladMesh.userData = {
+        isPipe: true,
+        isCladding: true,
+        name: `[مغلف حرارياً] ${seg.name}`,
+        isLiquid: seg.isLiquid,
+        isSection1: isSec1Pipe,
+        isSectionCO2: isSecCO2Pipe,
+        isSectionK301: isSecK301Pipe,
+        isSectionSynLoop: isSecSynLoopPipe,
+        isSectionRefrig: isSecRefrigPipe,
+      };
+      this.pipingGroup.add(cladMesh);
+      this.interactiveMeshes.push(cladMesh);
 
       // Create Particle Animation System for this stream
       const curveLen = curve.getLength();
@@ -2108,34 +2364,56 @@ export class AmmoniaPlant3D {
       this.flareFlameMesh.rotation.y += delta * 2.0;
     }
 
-    // 3. Advance flow particles along curves
-    this.particleSystems.forEach((ps) => {
-      const positions = ps.points.geometry.attributes.position.array as Float32Array;
-      const count = ps.progress.length;
+    // 3. Advance flow particles along curves (only if particles group is visible)
+    if (this.flowParticlesGroup.visible && this.particleSystems.length > 0) {
+      (this as any)._pfCount = (((this as any)._pfCount || 0) + 1) % 60;
+      if ((this as any)._pfCount % 2 === 0) {
+        const stepDelta = delta * 20;
+        this.particleSystems.forEach((ps) => {
+          if (!ps.points.visible) return;
+          const positions = ps.points.geometry.attributes.position.array as Float32Array;
+          const count = ps.progress.length;
 
-      for (let i = 0; i < count; i++) {
-        ps.progress[i] = (ps.progress[i] + ps.speed * delta * 10) % 1.0;
-        const pt = ps.curve.getPoint(ps.progress[i]);
-        positions[i * 3] = pt.x;
-        positions[i * 3 + 1] = pt.y;
-        positions[i * 3 + 2] = pt.z;
+          for (let i = 0; i < count; i++) {
+            ps.progress[i] = (ps.progress[i] + ps.speed * stepDelta) % 1.0;
+            ps.curve.getPoint(ps.progress[i], this.tempPoint);
+            positions[i * 3] = this.tempPoint.x;
+            positions[i * 3 + 1] = this.tempPoint.y;
+            positions[i * 3 + 2] = this.tempPoint.z;
+          }
+          ps.points.geometry.attributes.position.needsUpdate = true;
+        });
       }
-      ps.points.geometry.attributes.position.needsUpdate = true;
-    });
+    }
 
-    // 4. Update isolated Steam System & PRDS Unit animations
-    if (this.steamSystem) {
+    // 4. Update isolated Steam System & PRDS Unit animations (only when visible)
+    if (this.steamSystem && this.steamSystem.group.visible) {
       this.steamSystem.update(delta);
     }
 
-    // 5. Update isolated Section 4 Synthesis & Refrigeration Twin animations
-    if (this.synthesisSection400) {
+    // 5. Update isolated Section 4 Synthesis & Refrigeration Twin animations (only when visible)
+    if (this.synthesisSection400 && this.synthesisSection400.group.visible) {
       this.synthesisSection400.update(delta);
     }
 
-    // 6. Update isolated Section 2 CO2 Removal Twin animations
-    if (this.co2RemovalSection200) {
+    // 6. Update isolated Section 2 CO2 Removal Twin animations (only when visible)
+    if (this.co2RemovalSection200 && this.co2RemovalSection200.group.visible) {
       this.co2RemovalSection200.update(delta);
+    }
+
+    // 7. Update isolated Section 3 Syngas Compressor K-301 Twin animations (only when visible)
+    if (this.syngasCompressorK301 && this.syngasCompressorK301.group.visible) {
+      this.syngasCompressorK301.update(delta);
+    }
+
+    // 8. Update isolated Section 1 Reforming Section 100 Twin animations (only when visible)
+    if (this.reformingSection100 && this.reformingSection100.group.visible) {
+      this.reformingSection100.update(delta);
+    }
+
+    // 9. Update isolated Cooling Tower System (Fans rotation & water flow)
+    if (this.coolingTower && this.coolingTower.group.visible) {
+      this.coolingTower.update(delta);
     }
   }
 
@@ -2249,22 +2527,22 @@ export class AmmoniaPlant3D {
       sectionId === 'storage' ||
       sectionId === 'section_8';
 
+    const isSecCooling =
+      sectionId === 'sec_cooling_tower' ||
+      sectionId === 'cooling_tower' ||
+      sectionId === 'sec_cooling' ||
+      sectionId === 'cooling';
+
     // 1. Equipment Visibility
     this.equipmentMap.forEach((meshGroup, eqId) => {
       if (!sectionId || sectionId === 'overview' || sectionId === 'all') {
         meshGroup.visible = true;
-      } else if (isSec1) {
-        meshGroup.visible = AmmoniaPlant3D.SECTION_1_EQUIPMENT_IDS.has(eqId);
-      } else if (isSecCO2) {
-        meshGroup.visible = false; // High-precision dedicated 3D Section 2 Catacarb digital twin is displayed instead
-      } else if (isSecK301) {
-        meshGroup.visible = AmmoniaPlant3D.SECTION_K301_EQUIPMENT_IDS.has(eqId);
-      } else if (isSecSynLoop) {
-        meshGroup.visible = false; // High-precision dedicated 3D Section 4 digital twin is displayed instead
+      } else if (isSecCooling || isSec1 || isSecCO2 || isSecK301 || isSecSynLoop) {
+        meshGroup.visible = false;
       } else if (isSecRefrig) {
         meshGroup.visible = AmmoniaPlant3D.SECTION_REFRIG_EQUIPMENT_IDS.has(eqId);
       } else if (isSecSteam) {
-        meshGroup.visible = false; // Isolated dedicated 3D steam unit is displayed instead
+        meshGroup.visible = false;
       } else if (isSecStorage) {
         meshGroup.visible = AmmoniaPlant3D.SECTION_STORAGE_EQUIPMENT_IDS.has(eqId);
       } else {
@@ -2277,14 +2555,8 @@ export class AmmoniaPlant3D {
       const data = child.userData?.data;
       if (!sectionId || sectionId === 'overview' || sectionId === 'all') {
         child.visible = true;
-      } else if (isSec1 && data) {
-        child.visible = AmmoniaPlant3D.SECTION_1_EQUIPMENT_IDS.has(data.id);
-      } else if (isSecCO2 && data) {
-        child.visible = false; // Dedicated 3D badges on co2RemovalSection200
-      } else if (isSecK301 && data) {
-        child.visible = AmmoniaPlant3D.SECTION_K301_EQUIPMENT_IDS.has(data.id);
-      } else if (isSecSynLoop && data) {
-        child.visible = false; // Built-in dedicated signs on synthesisSection400
+      } else if ((isSec1 || isSecCO2 || isSecK301 || isSecSynLoop) && data) {
+        child.visible = false;
       } else if (isSecRefrig && data) {
         child.visible = AmmoniaPlant3D.SECTION_REFRIG_EQUIPMENT_IDS.has(data.id);
       } else if (isSecSteam) {
@@ -2301,13 +2573,7 @@ export class AmmoniaPlant3D {
       const data = child.userData?.data;
       if (!sectionId || sectionId === 'overview' || sectionId === 'all') {
         child.visible = true;
-      } else if (isSec1 && data) {
-        child.visible = AmmoniaPlant3D.SECTION_1_EQUIPMENT_IDS.has(data.equipmentRef);
-      } else if (isSecCO2 && data) {
-        child.visible = false;
-      } else if (isSecK301 && data) {
-        child.visible = AmmoniaPlant3D.SECTION_K301_EQUIPMENT_IDS.has(data.equipmentRef);
-      } else if (isSecSynLoop && data) {
+      } else if ((isSec1 || isSecCO2 || isSecK301 || isSecSynLoop) && data) {
         child.visible = false;
       } else if (isSecRefrig && data) {
         child.visible = AmmoniaPlant3D.SECTION_REFRIG_EQUIPMENT_IDS.has(data.equipmentRef);
@@ -2323,13 +2589,7 @@ export class AmmoniaPlant3D {
       const data = child.userData?.data;
       if (!sectionId || sectionId === 'overview' || sectionId === 'all') {
         child.visible = true;
-      } else if (isSec1 && data) {
-        child.visible = AmmoniaPlant3D.SECTION_1_EQUIPMENT_IDS.has(data.equipmentRef);
-      } else if (isSecCO2 && data) {
-        child.visible = false;
-      } else if (isSecK301 && data) {
-        child.visible = AmmoniaPlant3D.SECTION_K301_EQUIPMENT_IDS.has(data.equipmentRef);
-      } else if (isSecSynLoop && data) {
+      } else if ((isSec1 || isSecCO2 || isSecK301 || isSecSynLoop) && data) {
         child.visible = false;
       } else if (isSecRefrig && data) {
         child.visible = AmmoniaPlant3D.SECTION_REFRIG_EQUIPMENT_IDS.has(data.equipmentRef);
@@ -2344,13 +2604,7 @@ export class AmmoniaPlant3D {
     this.pipingGroup.children.forEach((child) => {
       if (!sectionId || sectionId === 'overview' || sectionId === 'all') {
         child.visible = true;
-      } else if (isSec1) {
-        child.visible = child.userData?.isSection1 === true;
-      } else if (isSecCO2) {
-        child.visible = false;
-      } else if (isSecK301) {
-        child.visible = child.userData?.isSectionK301 === true;
-      } else if (isSecSynLoop) {
+      } else if (isSec1 || isSecCO2 || isSecK301 || isSecSynLoop) {
         child.visible = false;
       } else if (isSecRefrig) {
         child.visible = child.userData?.isSectionRefrig === true;
@@ -2365,13 +2619,7 @@ export class AmmoniaPlant3D {
     this.particleSystems.forEach((ps) => {
       if (!sectionId || sectionId === 'overview' || sectionId === 'all') {
         ps.points.visible = true;
-      } else if (isSec1) {
-        ps.points.visible = ps.isSection1 === true;
-      } else if (isSecCO2) {
-        ps.points.visible = false;
-      } else if (isSecK301) {
-        ps.points.visible = ps.isSectionK301 === true;
-      } else if (isSecSynLoop) {
+      } else if (isSec1 || isSecCO2 || isSecK301 || isSecSynLoop) {
         ps.points.visible = false;
       } else if (isSecRefrig) {
         ps.points.visible = ps.isSectionRefrig === true;
@@ -2386,6 +2634,7 @@ export class AmmoniaPlant3D {
     if (this.steamSystem) {
       if (isSecSteam) {
         this.steamSystem.group.visible = true;
+        this.steamSystem.group.position.set(-65, 0, 85);
       } else if (isSec1 || isSecCO2 || isSecK301 || isSecSynLoop || isSecRefrig || isSecStorage) {
         this.steamSystem.group.visible = false;
       } else {
@@ -2394,21 +2643,105 @@ export class AmmoniaPlant3D {
     }
 
     // 8. Isolated Section 4 (Unit 400 - Synthesis & Refrigeration) 3D Twin Visibility
-    if (this.synthesisSection400) {
-      if (isSecSynLoop) {
-        this.synthesisSection400.group.visible = true;
-      } else {
-        this.synthesisSection400.group.visible = false;
+    if (isSecSynLoop) {
+      const sec400 = this.ensureSynthesisSection400();
+      sec400.group.visible = true;
+      sec400.group.position.set(0, 0, 0);
+      if ((sec400 as any).particleSystems) {
+        (sec400 as any).particleSystems.forEach((ps: any) => { if (ps.points) ps.points.visible = true; });
       }
+    } else if (this.synthesisSection400) {
+      this.synthesisSection400.group.visible = false;
     }
 
     // 9. Isolated Section 2 (Unit 200 - Catacarb CO2 Removal) 3D Twin Visibility
-    if (this.co2RemovalSection200) {
-      if (isSecCO2) {
-        this.co2RemovalSection200.group.visible = true;
-      } else {
-        this.co2RemovalSection200.group.visible = false;
+    if (isSecCO2) {
+      const sec200 = this.ensureCO2RemovalSection200();
+      sec200.group.visible = true;
+      sec200.group.position.set(0, 0, 0);
+      if ((sec200 as any).particleSystems) {
+        (sec200 as any).particleSystems.forEach((ps: any) => { if (ps.points) ps.points.visible = true; });
       }
+    } else if (this.co2RemovalSection200) {
+      this.co2RemovalSection200.group.visible = false;
     }
+
+    // 10. Isolated Section 3 (Unit 300 - Syngas Compressor Complex K-301) 3D Twin Visibility
+    if (isSecK301) {
+      const secK301 = this.ensureSyngasCompressorK301();
+      secK301.group.visible = true;
+      secK301.group.position.set(0, 0, 0);
+    } else if (this.syngasCompressorK301) {
+      this.syngasCompressorK301.group.visible = false;
+    }
+
+    // 11. Isolated Section 1 (Unit 100 - Gas Reforming & Shift Conversion) 3D Twin Visibility
+    if (isSec1) {
+      const sec100 = this.ensureReformingSection100();
+      sec100.group.visible = true;
+      sec100.group.position.set(0, 0, 0);
+    } else if (this.reformingSection100) {
+      this.reformingSection100.group.visible = false;
+    }
+
+    // 12. Isolated Cooling Tower System 3D Twin Visibility
+    if (isSecCooling) {
+      const ct = this.ensureCoolingTower();
+      ct.group.visible = true;
+      ct.group.position.set(0, 0, 0);
+      this.flagsGroup.visible = false;
+      this.nightLightsGroup.visible = false;
+      this.tempBadgesGroup.visible = false;
+      this.equipmentTagsGroup.visible = false;
+      this.pressureBadgesGroup.visible = false;
+      this.pipingGroup.visible = false;
+      this.flowParticlesGroup.visible = false;
+    } else if (this.coolingTower) {
+      this.coolingTower.group.visible = false;
+    }
+  }
+
+  // Returns ONLY the interactive meshes belonging to the currently visible / isolated section
+  // to prevent any cross-section clicking and raycasting overlap
+  public getActiveInteractiveMeshes(): THREE.Object3D[] {
+    const sec = this.currentIsolatedSection;
+    const isSec1 = sec === 'sec_reformer' || sec === 'sec_primary_reformer' || sec === 'reform' || sec === 'section_1';
+    const isSecCO2 = sec === 'sec_co2' || sec === 'sec_catacarb' || sec === 'sec_co2_removal' || sec === 'co2' || sec === 'co2_removal' || sec === 'section_2' || sec === 'section_3';
+    const isSecK301 = sec === 'sec_k301' || sec === 'sec_compressor' || sec === 'sec_syngas' || sec === 'k301' || sec === 'section_5';
+    const isSecSynLoop = sec === 'sec_synloop' || sec === 'sec_synth' || sec === 'synth_400' || sec === 'section_4' || sec === 'section_7' || sec === 'sec_loop';
+    const isSecRefrig = sec === 'sec_refrigeration' || sec === 'sec_k401' || sec === 'k401ref' || sec === 'sec_refrig';
+    const isSecSteam = sec === 'sec_steam' || sec === 'sec_steam_utility' || sec === 'steam' || sec === 'section_9';
+    const isSecCooling = sec === 'sec_cooling_tower' || sec === 'cooling_tower' || sec === 'sec_cooling' || sec === 'cooling';
+
+    if (isSecCooling && this.coolingTower && this.coolingTower.group.visible) {
+      return this.coolingTower.interactiveMeshes;
+    }
+    if (isSec1 && this.reformingSection100 && this.reformingSection100.group.visible) {
+      return this.reformingSection100.interactiveMeshes;
+    }
+    if (isSecCO2 && this.co2RemovalSection200 && this.co2RemovalSection200.group.visible) {
+      return this.co2RemovalSection200.interactiveMeshes;
+    }
+    if (isSecK301 && this.syngasCompressorK301 && this.syngasCompressorK301.group.visible) {
+      return this.syngasCompressorK301.interactiveMeshes;
+    }
+    if (isSecSynLoop && this.synthesisSection400 && this.synthesisSection400.group.visible) {
+      return this.synthesisSection400.interactiveMeshes;
+    }
+    if (isSecSteam && this.steamSystem && this.steamSystem.group.visible) {
+      return this.steamSystem.interactiveMeshes;
+    }
+
+    // Default: Plant Overview or partial section isolation (e.g. refrig/storage)
+    const candidates: THREE.Object3D[] = [];
+    if (this.equipmentGroup.visible) candidates.push(...this.equipmentGroup.children);
+    if (this.pipingGroup.visible) candidates.push(...this.pipingGroup.children);
+    if (this.tempBadgesGroup.visible) candidates.push(...this.tempBadgesGroup.children);
+    if (this.pressureBadgesGroup.visible) candidates.push(...this.pressureBadgesGroup.children);
+    if (this.equipmentTagsGroup.visible) candidates.push(...this.equipmentTagsGroup.children);
+    if (this.steamSystem && this.steamSystem.group.visible && !isSecRefrig) {
+      candidates.push(...this.steamSystem.interactiveMeshes);
+    }
+    return candidates;
   }
 }

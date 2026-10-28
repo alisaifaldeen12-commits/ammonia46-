@@ -197,7 +197,7 @@ export class UnitOpsEngine {
       const pic302 = sec.controllers.find(c => c.tag === 'PIC-302')?.pv || 0;
       sec.kpis[0].value = sic.toFixed(0);
       sec.kpis[1].value = pic302.toFixed(1);
-      sec.kpis[2].value = (sic / 10450 * 18.5).toFixed(1); // Shaft Power MW
+      sec.kpis[2].value = (sic / 10000 * 18.5).toFixed(1); // Shaft Power MW
       sec.kpis[3].value = '84.2 %';
     } else if (sec.id === 'sec_comp_k302') {
       const frc = sec.controllers.find(c => c.tag === 'FRC-302')?.pv || 0;
@@ -654,8 +654,8 @@ export class UnitOpsEngine {
             min: 0,
             max: 12000,
             decimals: 0,
-            sp: 10450,
-            pv: 10450,
+            sp: 10000,
+            pv: 10000,
             mv: 78,
             mode: 'AUTO',
             alarms: { hh: 11400, h: 10900, l: 8000, ll: 6500 },
@@ -742,7 +742,7 @@ export class UnitOpsEngine {
           }
         ],
         kpis: [
-          { id: 'kpi_k301_speed', labelAr: 'سرعة التوربين K-301', labelEn: 'Turbine Speed', value: '10,450', unit: 'RPM', status: 'normal' },
+          { id: 'kpi_k301_speed', labelAr: 'سرعة التوربين K-301', labelEn: 'Turbine Speed', value: '10,000', unit: 'RPM', status: 'normal' },
           { id: 'kpi_k301_disch', labelAr: 'ضغط التفريغ النهائي', labelEn: 'Discharge Press', value: '245.0', unit: 'kg/cm²', status: 'normal' },
           { id: 'kpi_k301_power', labelAr: 'القدرة التوربينية المستهلكة', labelEn: 'Shaft Power', value: '18.5', unit: 'MW', status: 'normal' },
           { id: 'kpi_k301_eff', labelAr: 'الكفاءة المتعددة (Polytropic)', labelEn: 'Polytropic Eff', value: '84.2 %', unit: '%', status: 'normal' }
@@ -776,7 +776,7 @@ export class UnitOpsEngine {
             '2. تدفئة التوربين البخاري البطيئة (Slow Rolling at 500 RPM) لمنع تقوس المحور.',
             '3. فتح صمامات مانع السرج HIC-301 بنسبة 100% بالكامل قبل التسريع.',
             '4. رفع السرعة تدريجياً وتجاوز السرعات الحرجة (Critical Speeds) بسرعة وبدون توقف.',
-            '5. بعد استقرار السرعة عند 10,450 RPM، يتم غلق صمامات السرج تدريجياً.'
+            '5. بعد استقرار السرعة عند 10,000 RPM، يتم غلق صمامات السرج تدريجياً.'
           ],
           shutdownStepsAr: [
             '1. فتح صمام مانع السرج HIC-301 بنسبة 100% فوراً لتفريغ الحمل.',

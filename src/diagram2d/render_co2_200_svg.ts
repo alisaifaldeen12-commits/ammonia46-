@@ -42,25 +42,25 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
     nameAr: 'مبرد المحلول شبه النقي',
     temaType: 'AES / Floating Head',
     tagColor: '#0284c7',
-    x: 880,
-    y: 270,
-    width: 100,
-    height: 46,
+    x: 830,
+    y: 260,
+    width: 105,
+    height: 48,
     tubeSide: {
-      fluidAr: 'مياه تبريد صناعية CW',
+      fluidAr: 'محلول شبه نقي Semi-Lean (بالتيوب)',
+      tempIn: '114°C',
+      tempOut: '105°C',
+      color: '#059669',
+      inPos: 'axial-right',
+      outPos: 'axial-left'
+    },
+    shellSide: {
+      fluidAr: 'مياه تبريد صناعية CW (بالشيل)',
       tempIn: '32°C',
       tempOut: '42°C',
       color: '#0284c7',
-      inPos: 'bottom-left',
-      outPos: 'top-right'
-    },
-    shellSide: {
-      fluidAr: 'محلول شبه نقي Semi-Lean',
-      tempIn: '116°C',
-      tempOut: '105°C',
-      color: '#10b981',
-      inPos: 'top',
-      outPos: 'bottom'
+      inPos: 'bottom',
+      outPos: 'top'
     }
   });
 
@@ -128,20 +128,20 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
     width: 110,
     height: 48,
     tubeSide: {
-      fluidAr: 'مياه التبريد CW',
-      tempIn: '32°C',
-      tempOut: '42°C',
-      color: '#0284c7',
-      inPos: 'bottom-left',
-      outPos: 'top-right'
-    },
-    shellSide: {
-      fluidAr: 'غاز CO2 مشبع بالبخار',
+      fluidAr: 'غاز CO2 مشبع بالبخار (بالتيوب)',
       tempIn: '97°C',
       tempOut: '40°C',
       color: '#f43f5e',
-      inPos: 'top',
-      outPos: 'bottom'
+      inPos: 'top-left',
+      outPos: 'axial-right'
+    },
+    shellSide: {
+      fluidAr: 'مياه التبريد CW (بالشيل)',
+      tempIn: '32°C',
+      tempOut: '42°C',
+      color: '#0284c7',
+      inPos: 'bottom',
+      outPos: 'top'
     }
   });
 
@@ -194,24 +194,45 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
         <path d="M 585 110 L 585 70" fill="none" stroke="#00c8ef" stroke-width="3.5"/>
         <path d="M 615 45 L 2248 45" fill="none" stroke="#00c8ef" stroke-width="3.5" marker-end="url(#pfdArrowCyan)" class="${isAnim}"/>
 
-        <!-- 3. T-201 Bottom Rich Sol'n -> Hydraulic Turbine P-201HT -> T-202 Top Flash -->
-        <path d="M 585 530 L 585 550 L 778 550" fill="none" stroke="#10b981" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
-        <path d="M 830 540 L 830 180 L 1358 180" fill="none" stroke="#10b981" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <!-- 3. T-201 Bottom Rich Sol'n (112°C, 28.2 bar) -> Hydraulic Turbine P-201HT -> T-202 Top Flash Chamber (1.46 bar) -->
+        <!-- Absorber Bottom Rich draw down to elevation 565 and across to P-201HT Turbine Inlet -->
+        <path d="M 585 530 L 585 565 L 728 565" fill="none" stroke="#10b981" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <!-- Turbine P-201HT Top Outlet Riser up to elevation 180 and straight into T-202 Top Flash Nozzle -->
+        <path d="M 740 500 L 740 180 L 1358 180" fill="none" stroke="#10b981" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <!-- Rich Solution Level Control Bypass (LRC-202-2V) merging into Riser -->
+        <path d="M 660 565 L 660 590 L 760 590 L 760 515 L 742 515" fill="none" stroke="#10b981" stroke-width="2.0" stroke-dasharray="4,3" marker-end="url(#pfdArrowGreen)"/>
 
-        <!-- 4. T-202 Semi-Lean Sol'n Draw -> P-201 A,B -> E-207 -> T-201 Mid Feed (105°C) -->
-        <path d="M 1360 360 L 920 360 L 920 503" fill="none" stroke="#10b981" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
-        <path d="M 920 505 L 920 330" fill="none" stroke="#10b981" stroke-width="3.5" class="${isAnim}"/>
-        <path d="M 920 280 L 920 270 L 652 270" fill="none" stroke="#10b981" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <!-- 4. Semi-Lean Solution: T-202 Mid Draw (114°C) -> P-201A Suction -> P-201A Discharge -> E-207 Tube Side -> T-201 Mid Distributor (105°C) -->
+        <!-- T-202 Middle draw (at Y=350) runs horizontally left to Suction Header at X=940 -->
+        <path d="M 1360 350 L 940 350 L 940 470" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <!-- Suction Header spanning to P-201A and P-201B -->
+        <path d="M 875 470 L 1025 470" fill="none" stroke="#059669" stroke-width="3.5"/>
+        <!-- Suction branch into P-201A (Operating / قيد التشغيل) -->
+        <path d="M 875 470 L 875 508" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <!-- Suction branch to P-201B (Standby / احتياط) -->
+        <path d="M 1025 470 L 1025 508" fill="none" stroke="#059669" stroke-width="2.5" stroke-dasharray="5,3" marker-end="url(#pfdArrowGreen)"/>
+
+        <!-- P-201A Vertical Discharge Riser (28 bar) rising to E-207 Tube Inlet Level -->
+        <path d="M 875 500 L 875 320 L 950 320 L 950 284 L 935 284" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <!-- P-201B Standby Discharge Riser merging into Discharge Line -->
+        <path d="M 1025 500 L 1025 320 L 950 320" fill="none" stroke="#059669" stroke-width="2.5" stroke-dasharray="5,3"/>
+
+        <!-- Cooled Semi-Lean Solution (105°C) from E-207 Tube Outlet (Left Axial) straight into T-201 Mid Distributor (Y=284) -->
+        <path d="M 814 284 L 652 284" fill="none" stroke="#10b981" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+
+        <!-- E-207 Shell Side Cooling Water (CW) supply & return -->
+        <path d="M 865 370 L 865 312" fill="none" stroke="#0284c7" stroke-width="2.2" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
+        <path d="M 865 244 L 865 210 L 920 210" fill="none" stroke="#0284c7" stroke-width="2.2" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
 
         <!-- 5. T-202 Bottom Lean Sol'n -> E-204 -> P-202 A,B -> F-201 -> T-201 Top Feed (80°C) -->
         <!-- Hot Lean Solution (120°C) from T-202 Bottom into E-204 -->
-        <path d="M 1425 530 L 1425 580 L 1295 580 L 1295 520 L 1287 520" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <path d="M 1425 530 L 1425 590 L 1315 590 L 1315 520 L 1310 520" fill="none" stroke="#047857" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
         <!-- Cooled Lean Solution (80°C) from E-204 Outlet to P-202 A,B Suction -->
-        <path d="M 1205 520 L 1117 520" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <path d="M 1205 520 L 1180 520" fill="none" stroke="#047857" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
         <!-- P-202 A,B Discharge (36 kg/cm²A) to F-201 Filter -->
-        <path d="M 1085 495 L 1085 307" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <path d="M 1150 495 L 1150 285" fill="none" stroke="#047857" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
         <!-- Filtered Lean Solution from F-201 to T-201 Top Liquid Distributor (80°C) -->
-        <path d="M 1085 250 L 1085 160 L 652 160" fill="none" stroke="#059669" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
+        <path d="M 1150 235 L 1150 155 L 652 155" fill="none" stroke="#047857" stroke-width="3.5" marker-end="url(#pfdArrowGreen)" class="${isAnim}"/>
         <!-- E-204 BFW Preheating Circuits -->
         <path d="M 1245 640 L 1245 542" fill="none" stroke="#00c8ef" stroke-width="2.2" marker-end="url(#pfdArrowCyan)" class="${isAnim}"/>
         <path d="M 1265 495 L 1265 430 L 1212 430" fill="none" stroke="#0284c7" stroke-width="2.2" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
@@ -226,18 +247,25 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
         <!-- LP Steam Supply into E-202 -->
         <path d="M 1690 400 L 1652 400" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#pfdArrowYellow)"/>
 
-        <!-- 7. T-202 Overhead Acid Gas (Stream 4) -> E-205 A,B -> V-203 -->
-        <path d="M 1425 110 L 1425 80 L 1805 80 L 1805 198" fill="none" stroke="#f43f5e" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
-        <path d="M 1850 225 L 1948 225" fill="none" stroke="#f43f5e" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
+        <!-- 7. T-202 Overhead Acid Gas (Stream 4) -> E-205 A,B (Top Tube In) -> V-203 -->
+        <!-- Acid gas enters from top into E-205 tube inlet nozzle at X=1768, Y=185 -->
+        <path d="M 1425 110 L 1425 80 L 1768 80 L 1768 185" fill="none" stroke="#f43f5e" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
+        <!-- Cooled gas/condensate exits E-205 right axial tube outlet to V-203 -->
+        <path d="M 1886 224 L 1948 224" fill="none" stroke="#f43f5e" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
+
+        <!-- E-205 Shell Side Cooling Water (CW) Supply (Bottom In) & Return (Top Out) -->
+        <path d="M 1815 310 L 1815 252" fill="none" stroke="#0284c7" stroke-width="2.2" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
+        <path d="M 1815 196 L 1815 165 L 1880 165" fill="none" stroke="#0284c7" stroke-width="2.2" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
 
         <!-- 8. V-203 Top CO2 Pure Gas (Stream 5) -> To Urea Unit / ATM -->
         <path d="M 1982 200 L 1982 140 L 2248 140" fill="none" stroke="#ef4444" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
         <!-- Vent / ATM line -->
         <path d="M 2150 140 L 2150 90 L 2248 90" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#pfdArrowRed)"/>
 
-        <!-- 9. V-203 Bottom Condensate -> P-203 A,B -> T-202 Top Reflux -->
+        <!-- 9. V-203 Bottom Condensate -> P-203 A,B -> T-202 Top Reflux (Clean Overhead Route Clear of E-202) -->
         <path d="M 1982 275 L 1982 353" fill="none" stroke="#0284c7" stroke-width="2.5" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
-        <path d="M 1950 380 L 1490 380 L 1490 142" fill="none" stroke="#0284c7" stroke-width="2.5" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
+        <!-- P-203 Discharge rises in clear space between E-205 and V-203 up to Y=142 and enters T-202 Top Reflux without crossing E-202 -->
+        <path d="M 1950 380 L 1910 380 L 1910 142 L 1492 142" fill="none" stroke="#0284c7" stroke-width="2.5" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
 
         <!-- 10. Degassing System (V-209, E-206, P-208 A,B) -->
         <path d="M 480 840 L 480 870 L 740 870 L 740 832" fill="none" stroke="#0284c7" stroke-width="2" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
@@ -249,9 +277,19 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
         <path d="M 305 820 L 338 820" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#pfdArrowGreen)"/>
         <path d="M 365 820 L 400 820 L 400 680 L 848 680" fill="none" stroke="#059669" stroke-width="1.8" marker-end="url(#pfdArrowGreen)"/>
 
-        <!-- 12. Anti-foam injection from V-206 / P-205 -->
+        <!-- 12. Anti-Foam Chemical Dosing Network (V-206 / P-205 A,B) matching Operation Manual C-11 -->
+        <!-- P-205 Suction from V-206 Tank -->
         <path d="M 1125 820 L 1148 820" fill="none" stroke="#8b5cf6" stroke-width="1.8" marker-end="url(#pfdArrowPurple)"/>
-        <path d="M 1175 800 L 1175 640 L 922 640" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#pfdArrowPurple)"/>
+        <!-- Branch A: Injection into Lean Solution Line (P-202 / E-204) -->
+        <path d="M 1175 800 L 1175 550 L 1180 550" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#pfdArrowPurple)"/>
+        <!-- Branch B: Injection into Semi-Lean Solution Line (P-201) -->
+        <path d="M 1175 640 L 940 640 L 940 480" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#pfdArrowPurple)"/>
+        <!-- Branch C: Injection into Rich Solution Line (P-201HT / T-202 Flash Feed) -->
+        <path d="M 940 640 L 740 640 L 740 540" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#pfdArrowPurple)"/>
+
+        <!-- 13. Inhibitor Activation Air Line (FI-206 / 2C-201) from Process Air Compressor into Turbine Discharge -->
+        <path d="M 680 440 L 738 440" fill="none" stroke="#00c8ef" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#pfdArrowCyan)"/>
+        <text x="695" y="432" fill="#0284c7" font-size="8" font-weight="bold">Air (FI-206)</text>
       </g>
 
       <!-- ========================================== -->
@@ -267,14 +305,23 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
         </g>
         <line x1="665" y1="70" x2="615" y2="70" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="3,2"/>
 
-        <!-- LRC-201 (Absorber Rich Solution Level Controller) -->
-        <g class="pfd-ctrl-badge" data-ctrl="LRC-201" transform="translate(660, 560)" cursor="pointer">
+        <!-- LRC-201 / LRC-202-1V (Absorber Rich Solution Level Controller to P-201HT) -->
+        <g class="pfd-ctrl-badge" data-ctrl="LRC-201" transform="translate(670, 535)" cursor="pointer">
           <circle cx="0" cy="0" r="15" fill="#ffffff" stroke="#10b981" stroke-width="1.8"/>
           <line x1="-15" y1="0" x2="15" y2="0" stroke="#10b981" stroke-width="1"/>
           <text x="0" y="-4" fill="#0f172a" font-size="7.5" font-weight="bold" text-anchor="middle">LRC</text>
+          <text x="0" y="9" fill="#0f172a" font-size="7.5" font-weight="bold" text-anchor="middle">202-1V</text>
+        </g>
+        <line x1="670" y1="550" x2="670" y2="565" stroke="#10b981" stroke-width="1.2" stroke-dasharray="3,2"/>
+
+        <!-- FRC-201 (Semi-Lean Solution Flow Controller 855 m3/h) -->
+        <g class="pfd-ctrl-badge" data-ctrl="FRC-201" transform="translate(730, 260)" cursor="pointer">
+          <circle cx="0" cy="0" r="15" fill="#ffffff" stroke="#059669" stroke-width="1.8"/>
+          <line x1="-15" y1="0" x2="15" y2="0" stroke="#059669" stroke-width="1"/>
+          <text x="0" y="-4" fill="#0f172a" font-size="7.5" font-weight="bold" text-anchor="middle">FRC</text>
           <text x="0" y="9" fill="#0f172a" font-size="7.5" font-weight="bold" text-anchor="middle">201</text>
         </g>
-        <line x1="645" y1="560" x2="585" y2="550" stroke="#10b981" stroke-width="1.2" stroke-dasharray="3,2"/>
+        <line x1="730" y1="275" x2="730" y2="284" stroke="#059669" stroke-width="1.2" stroke-dasharray="3,2"/>
 
         <!-- TRC-202 (Regenerator Bottom Reboiler Temp 120°C) -->
         <g class="pfd-ctrl-badge" data-ctrl="TRC-202" transform="translate(1500, 540)" cursor="pointer">
@@ -347,6 +394,12 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
           <text x="12" y="-12" fill="#ef4444" font-size="10.5" font-weight="bold" text-anchor="middle">TO UREA UNIT / ATM</text>
           <rect x="-35" y="24" width="42" height="15" rx="3" fill="#0f2942" stroke="#10b981" stroke-width="0.8"/>
           <text x="-14" y="35" fill="#10b981" font-size="8.5" text-anchor="middle">61000 MAX</text>
+        </g>
+
+        <!-- Semi-Lean Flow Stream Tag -->
+        <g transform="translate(720, 298)">
+          <rect x="-35" y="0" width="70" height="16" rx="3" fill="#0f2942" stroke="#10b981" stroke-width="1"/>
+          <text x="0" y="11" fill="#10b981" font-size="9.5" font-weight="bold" text-anchor="middle">105 °C | 28 bar</text>
         </g>
       </g>
 
@@ -431,30 +484,74 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
           </g>
         </g>
 
-        <!-- 6. P-201 HT: HYDRAULIC TURBINE -->
-        <g class="pfd-eq-item" data-tag="P-201HT" transform="translate(780, 520)">
-          <path d="M 0 10 L 50 20 L 50 45 L 0 55 Z" fill="url(#pfdTurbineGrad)" stroke="#0f172a" stroke-width="2"/>
-          <rect x="10" y="55" width="30" height="8" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.2"/>
-          <g transform="translate(-25, 70)">
-            <rect width="100" height="34" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.6"/>
-            <text x="50" y="15" fill="#16a34a" font-size="11.5" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">P-201 HT</text>
-            <text x="50" y="27" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">توربين استرجاع الضغط</text>
+        <!-- ======================================================================= -->
+        <!-- TRAIN 1 (OPERATING / قيد التشغيل): P-201HT + M-201A + P-201A ON COMMON SHAFT -->
+        <!-- ======================================================================= -->
+        
+        <!-- P-201 HT: HYDRAULIC RECOVERY TURBINE -->
+        <g class="pfd-eq-item" data-tag="P-201HT" transform="translate(715, 520)">
+          <path d="M 0 10 L 45 20 L 45 42 L 0 52 Z" fill="url(#pfdTurbineGrad)" stroke="#0f172a" stroke-width="2"/>
+          <rect x="8" y="52" width="28" height="8" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.2"/>
+          <g transform="translate(-18, 65)">
+            <rect width="82" height="32" rx="4" fill="#ffffff" stroke="#0f172a" stroke-width="1.5"/>
+            <text x="41" y="14" fill="#16a34a" font-size="11" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">P-201 HT</text>
+            <text x="41" y="25" fill="#0f172a" font-size="8" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">توربين الطاقة</text>
           </g>
         </g>
 
-        <!-- Shaft Coupling -->
-        <line x1="835" y1="545" x2="875" y2="545" stroke="#0f172a" stroke-width="3.5" stroke-dasharray="2,2"/>
+        <!-- Common Shaft Coupling Left: P-201HT <===> M-201A -->
+        <line x1="760" y1="545" x2="780" y2="545" stroke="#0f172a" stroke-width="3.5" stroke-dasharray="2,2"/>
 
-        <!-- 7. P-201 A,B: SEMI-LEAN SOLUTION PUMP -->
-        <g class="pfd-eq-item" data-tag="P-201" transform="translate(875, 510)">
-          <circle cx="35" cy="35" r="28" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
-          <circle cx="35" cy="35" r="14" fill="url(#pfdMotorGrad)" stroke="#0f172a" stroke-width="1.5"/>
-          <rect x="25" y="0" width="12" height="12" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.2"/>
-          <rect x="10" y="65" width="50" height="8" rx="2" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.2"/>
-          <g transform="translate(-25, 78)">
-            <rect width="120" height="36" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="60" y="16" fill="#0284c7" font-size="13" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">P-201 A,B</text>
-            <text x="60" y="29" fill="#0f172a" font-size="9.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مضخة المحلول شبه النقي</text>
+        <!-- M-201A: Shared Electric Motor (محرك كهربائي مشترك) -->
+        <g class="pfd-eq-item" data-tag="M-201A" transform="translate(780, 528)">
+          <rect x="0" y="0" width="38" height="34" rx="3" fill="url(#pfdMotorGrad)" stroke="#0f172a" stroke-width="1.8"/>
+          <line x1="0" y1="17" x2="38" y2="17" stroke="#0f172a" stroke-width="1" stroke-dasharray="2,2"/>
+          <text x="19" y="21" fill="#0f172a" font-size="8.5" font-weight="bold" text-anchor="middle">M-201A</text>
+          <g transform="translate(-16, 40)">
+            <rect width="70" height="22" rx="3" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+            <text x="35" y="14" fill="#92400e" font-size="8" font-weight="bold" text-anchor="middle">محرك مشترك</text>
+          </g>
+        </g>
+
+        <!-- Common Shaft Coupling Right: M-201A <===> P-201A -->
+        <line x1="818" y1="545" x2="845" y2="545" stroke="#0f172a" stroke-width="3.5" stroke-dasharray="2,2"/>
+
+        <!-- P-201A: SEMI-LEAN PUMP (OPERATING / قيد التشغيل) -->
+        <g class="pfd-eq-item" data-tag="P-201" transform="translate(845, 515)">
+          <circle cx="30" cy="30" r="25" fill="url(#pfdSteelGrad)" stroke="#16a34a" stroke-width="2.4"/>
+          <circle cx="30" cy="30" r="11" fill="url(#pfdMotorGrad)" stroke="#0f172a" stroke-width="1.4"/>
+          <rect x="22" y="-2" width="10" height="10" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.2"/>
+          <rect x="8" y="55" width="44" height="7" rx="2" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.2"/>
+          
+          <g transform="translate(-25, 68)">
+            <rect width="112" height="42" rx="5" fill="#ffffff" stroke="#16a34a" stroke-width="2"/>
+            <text x="56" y="15" fill="#16a34a" font-size="12" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">P-201A (تشغيل)</text>
+            <text x="56" y="27" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مضخة شبه النقي</text>
+            <text x="56" y="37" fill="#16a34a" font-size="7.5" font-weight="bold" text-anchor="middle">● قيد العمل (RUNNING)</text>
+          </g>
+        </g>
+
+        <!-- ======================================================================= -->
+        <!-- TRAIN 2 (STANDBY / احتياط): P-201B + M-201B (SPACED APART / بعيدة عنهم) -->
+        <!-- ======================================================================= -->
+        
+        <!-- P-201B: SEMI-LEAN PUMP (STANDBY / احتياط) -->
+        <g class="pfd-eq-item" data-tag="P-201B" transform="translate(995, 515)">
+          <circle cx="30" cy="30" r="25" fill="url(#pfdSteelGrad)" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,2"/>
+          <circle cx="30" cy="30" r="11" fill="url(#pfdMotorGrad)" stroke="#0f172a" stroke-width="1.2"/>
+          <rect x="22" y="-2" width="10" height="10" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="1.2"/>
+          <rect x="8" y="55" width="44" height="7" rx="2" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.2"/>
+          
+          <!-- Standby Motor for P-201B -->
+          <rect x="52" y="13" width="30" height="28" rx="3" fill="url(#pfdMotorGrad)" stroke="#0f172a" stroke-width="1.4"/>
+          <line x1="30" y1="30" x2="52" y2="30" stroke="#0f172a" stroke-width="2.5" stroke-dasharray="2,2"/>
+          <text x="67" y="30" fill="#0f172a" font-size="7.5" font-weight="bold" text-anchor="middle">M-201B</text>
+
+          <g transform="translate(-20, 68)">
+            <rect width="115" height="42" rx="5" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+            <text x="57" y="15" fill="#475569" font-size="12" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">P-201B (احتياط)</text>
+            <text x="57" y="27" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مضخة شبه النقي</text>
+            <text x="57" y="37" fill="#d97706" font-size="7.5" font-weight="bold" text-anchor="middle">○ احتياط (STANDBY)</text>
           </g>
         </g>
 
@@ -462,14 +559,14 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
         ${e207Svg}
 
         <!-- 9. P-202 A,B: LEAN SOL'N PUMP (Draws from E-204, Discharges to T-201 Top) -->
-        <g class="pfd-eq-item" data-tag="P-202" transform="translate(1050, 495)">
-          <circle cx="35" cy="35" r="26" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
-          <circle cx="35" cy="35" r="12" fill="url(#pfdMotorGrad)" stroke="#0f172a" stroke-width="1.5"/>
-          <rect x="10" y="62" width="50" height="8" rx="2" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.2"/>
-          <g transform="translate(-25, 78)">
-            <rect width="120" height="36" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="60" y="16" fill="#16a34a" font-size="13" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">P-202 A,B</text>
-            <text x="60" y="29" fill="#0f172a" font-size="9.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مضخة المحلول النقي</text>
+        <g class="pfd-eq-item" data-tag="P-202" transform="translate(1120, 495)">
+          <circle cx="30" cy="30" r="24" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
+          <circle cx="30" cy="30" r="11" fill="url(#pfdMotorGrad)" stroke="#0f172a" stroke-width="1.5"/>
+          <rect x="8" y="54" width="44" height="8" rx="2" fill="url(#pfdSkirtGrad)" stroke="#0f172a" stroke-width="1.2"/>
+          <g transform="translate(-25, 68)">
+            <rect width="110" height="36" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
+            <text x="55" y="16" fill="#16a34a" font-size="12" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">P-202 A,B</text>
+            <text x="55" y="29" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مضخة المحلول النقي</text>
           </g>
         </g>
 
@@ -477,13 +574,13 @@ export function renderCO2Removal200SVG(showParticles: boolean): string {
         ${e204Svg}
 
         <!-- 11. F-201: LEAN SOL'N FILTER (Discharge to T-201 Top) -->
-        <g class="pfd-eq-item" data-tag="F-201" transform="translate(1055, 250)">
-          <path d="M 0 10 C 0 0, 60 0, 60 10 L 60 45 C 60 55, 0 55, 0 45 Z" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
-          <line x1="6" y1="28" x2="54" y2="28" stroke="#d97706" stroke-dasharray="2,2"/>
-          <g transform="translate(-22, -36)">
-            <rect width="105" height="34" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
-            <text x="52" y="15" fill="#0284c7" font-size="12.5" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">F-201</text>
-            <text x="52" y="27" fill="#0f172a" font-size="9" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">فلتر المحلول النقي</text>
+        <g class="pfd-eq-item" data-tag="F-201" transform="translate(1120, 240)">
+          <path d="M 0 10 C 0 0, 55 0, 55 10 L 55 42 C 55 52, 0 52, 0 42 Z" fill="url(#pfdSteelGrad)" stroke="#0f172a" stroke-width="2"/>
+          <line x1="5" y1="26" x2="50" y2="26" stroke="#d97706" stroke-dasharray="2,2"/>
+          <g transform="translate(-20, -36)">
+            <rect width="100" height="32" rx="5" fill="#ffffff" stroke="#0f172a" stroke-width="1.8"/>
+            <text x="50" y="14" fill="#0284c7" font-size="12" font-weight="800" font-family="'IBM Plex Mono', monospace" text-anchor="middle">F-201</text>
+            <text x="50" y="25" fill="#0f172a" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">فلتر المحلول النقي</text>
           </g>
         </g>
 

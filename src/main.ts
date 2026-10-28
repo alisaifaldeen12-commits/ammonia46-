@@ -6,6 +6,12 @@ import { unitOpsManager } from './unitops/UnitOpsManager';
 import { unitOpsEngine } from './unitops/UnitOpsEngine';
 import { plantOpsLab } from './unitops/PlantOperationsLab';
 import { plantDiagram2D } from './diagram2d/PlantDiagram2D';
+import { section100ExamCenter } from './three/Section100ExamCenterUI';
+import { section200ExamCenter } from './three/Section200ExamCenterUI';
+import { section300ExamCenter } from './three/Section300ExamCenterUI';
+import { section400ExamCenter } from './three/Section400ExamCenterUI';
+import { openK302Exam, openK303Exam, compressorsK302K303ExamCenter } from './three/CompressorsK302K303ExamCenterUI';
+import { firebaseAuthWidget } from './FirebaseAuthWidget';
 
 let engine3D: Engine3D | null = null;
 let view3DOverlay: HTMLElement | null = null;
@@ -72,19 +78,22 @@ function init3DOverlay() {
             <span class="v3d-btn-icon">🔙</span>
             <span class="v3d-btn-txt">الرجوع للواجهة الرئيسية</span>
           </button>
-          <div class="view3d-title">
+          <button id="v3d-ct-lang-btn" class="v3d-edu-btn" style="border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.18);font-weight:bold;margin-left:4px;" title="تغيير اللغة بين العربية والإنجليزية / Switch Language AR/EN">
+            🌐 <span id="v3d-ct-lang-txt">AR / EN</span>
+          </button>
+          <div class="view3d-title" id="v3d-main-app-title">
             🏭 محاكاة ومطابقة مخطط تدفق إنتاج الأمونيا
           </div>
         </div>
         
         <!-- Primary View Modes & Process Units Switcher -->
         <div class="view3d-pagetabs" id="view3d-pagetabs">
-          <button class="view3d-pgtab on" id="v3d-tab-plant" data-mode="plant_overview" data-sec="overview" title="استعراض مجمع تصنيع الأمونيا بالكامل بتقنية ثلاثية الأبعاد">🌐 المصنع بالكامل 3D (Full Plant)</button>
-          <button class="view3d-pgtab" id="v3d-tab-gas-sec" data-mode="plant_overview" data-sec="sec_reformer" data-splash="true" title="القسم الأول: تحويل الغاز والإصلاح الأولي 3D مع دوران 360°">🔥 1. تحويل الغاز 3D</button>
+          <button class="view3d-pgtab on" id="v3d-tab-gas-sec" data-mode="plant_overview" data-sec="sec_reformer" data-splash="true" style="border-color:#ff9800;color:#ff9800;background:rgba(255,152,0,0.18);font-weight:bold;" title="القسم الأول: تحويل الغاز والإصلاح ومفاعلات التحويل 3D مع دوران 360°">🔥 1. قسم الإصلاح والتحويل 3D</button>
           <button class="view3d-pgtab" id="v3d-tab-co2-splash" data-mode="plant_overview" data-sec="sec_co2" data-splash="true" style="border-color:#00e5aa;color:#00e5aa;background:rgba(0,229,170,0.12);" title="القسم الخامس: منظومة إزالة واستخلاص CO₂ كاتاكارب 3D مع دوران 360°">🧪 5. إزالة CO₂ 3D</button>
           <button class="view3d-pgtab" id="v3d-tab-k301-splash" data-mode="plant_overview" data-sec="sec_k301" data-splash="true" style="border-color:#ffeb3b;color:#ffeb3b;background:rgba(255,235,59,0.12);" title="القسم السابع: ضاغط غاز التخليق K-301 والتوربين البخاري ومبرداته 3D مع دوران 360°">⚡ 7. ضاغط K-301 3D</button>
           <button class="view3d-pgtab" id="v3d-tab-synloop-splash" data-mode="plant_overview" data-sec="sec_synloop" data-splash="true" style="border-color:#00c8ef;color:#00c8ef;background:rgba(0,200,239,0.12);" title="القسم الثامن: حلقة تخليق الأمونيا والمفاعل R-401 والمبادلات 3D مع دوران 360°">⚛️ 8. حلقة تخليق الأمونيا R-401 3D</button>
           <button class="view3d-pgtab" id="v3d-tab-refrig-splash" data-mode="plant_overview" data-sec="sec_refrigeration" data-splash="true" style="border-color:#00e5aa;color:#00e5aa;background:rgba(0,229,170,0.12);" title="القسم التاسع: منظومة التثليج والتبريد ومكثفات الأمونيا 3D">❄️ 9. التثليج والتبريد 3D</button>
+          <button class="view3d-pgtab" id="v3d-tab-cooling-tower" data-mode="plant_overview" data-sec="sec_cooling_tower" data-splash="true" style="border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.18);font-weight:bold;" title="برج التبريد الصناعي 9 مراوح ومضخات P-A..J والمكثف E711 ثلاثي الأبعاد 3D">🌊 برج التبريد E711 3D</button>
           <button class="view3d-pgtab" id="v3d-tab-top" data-mode="top_layout" data-sec="top_layout" title="المخطط الهندسي الأفقي العلوي (Top-Down P&ID Layout)">📐 المخطط العلوي</button>
           <button class="view3d-pgtab" id="v3d-tab-cr" data-mode="control_room" data-sec="control_room" title="غرفة السيطرة اليابانية (MHI 1977 Annunciator Panels)">🎛 غرفة السيطرة 3D</button>
           <button class="view3d-pgtab" id="v3d-tab-desulf" data-mode="plant_overview" data-sec="sec_desulf" title="إزالة الكبريت ومعالجة الغاز الطبيعي (V-115 / R-102AB)">1. إزالة الكبريت والضغط</button>
@@ -102,6 +111,30 @@ function init3DOverlay() {
 
         <div class="v3d-nav-right">
           <!-- Academic Modules Trigger Buttons -->
+          <button class="v3d-edu-btn" id="v3d-btn-sec100-exam" style="border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,0.18);font-weight:bold;" title="بنك الـ 100 سؤال واختبار قسم الإصلاح والتحويل (القسم 100)">
+            <span>🔥</span>
+            <span>بنك القسم 100</span>
+          </button>
+          <button class="v3d-edu-btn" id="v3d-btn-sec200-exam" style="border-color:#00e5aa;color:#00e5aa;background:rgba(0,229,170,0.18);font-weight:bold;" title="بنك الـ 100 سؤال واختبار قسم إزالة ثاني أكسيد الكربون كاتاكارب (القسم 200)">
+            <span>🧪</span>
+            <span>بنك القسم 200</span>
+          </button>
+          <button class="v3d-edu-btn" id="v3d-btn-sec300-exam" style="border-color:#ffeb3b;color:#fef08a;background:rgba(255,235,59,0.18);font-weight:bold;" title="بنك الـ 100 سؤال واختبار ضاغط غاز التخليق K-301 والتوربين ومبرداته (القسم 300)">
+            <span>⚡</span>
+            <span>بنك ضاغط K-301</span>
+          </button>
+          <button class="v3d-edu-btn" id="v3d-btn-k302-exam" style="border-color:#0284c7;color:#38bdf8;background:rgba(2,132,199,0.18);font-weight:bold;" title="بنك الـ 100 سؤال واختبار ضاغط هواء العمليات K-302 ومبرداته وسحوبات اليوريا والكاتاكارب">
+            <span>💨</span>
+            <span>بنك ضاغط K-302</span>
+          </button>
+          <button class="v3d-edu-btn" id="v3d-btn-k303-exam" style="border-color:#d97706;color:#fbbf24;background:rgba(217,119,6,0.18);font-weight:bold;" title="بنك الـ 100 سؤال واختبار ضاغط الغاز الطبيعي K-303 وفاصل V-111 ومبرد E-308">
+            <span>🔥</span>
+            <span>بنك ضاغط K-303</span>
+          </button>
+          <button class="v3d-edu-btn" id="v3d-btn-sec400-exam" style="border-color:#a855f7;color:#d8b4fe;background:rgba(168,85,247,0.18);font-weight:bold;" title="بنك الـ 100 سؤال واختبار قسم تخليق الأمونيا والتبريد وضاغط K-401 (القسم 400)">
+            <span>❄️</span>
+            <span>بنك القسم 4 و K-401</span>
+          </button>
           <button class="v3d-edu-btn" id="v3d-btn-quiz" title="الاختبار الأكاديمي الشامل لمهندسي الكيمياء">
             <span>📝</span>
             <span>الاختبار والشهادة</span>
@@ -142,8 +175,27 @@ function init3DOverlay() {
           <button id="v3d-toggle-k301-isolation" class="v3d-tool-btn" style="border-color:#ffeb3b;color:#ffeb3b;font-weight:bold;background:rgba(255,235,59,0.15);" title="عزل مجسم ضاغط غاز التخليق K-301 والتوربين البخاري ومبرداته ومزيتاته">⚡ عزل ضاغط K-301</button>
           <button id="v3d-toggle-synloop-isolation" class="v3d-tool-btn" style="border-color:#00c8ef;color:#00c8ef;font-weight:bold;background:rgba(0,200,239,0.15);" title="عزل مجسم حلقة تخليق الأمونيا والمفاعل R-401 والمبادلات">⚛️ عزل حلقة الأمونيا R-401</button>
           <button id="v3d-toggle-refrig-isolation" class="v3d-tool-btn" style="border-color:#00e5aa;color:#00e5aa;font-weight:bold;background:rgba(0,229,170,0.15);" title="عزل مجسم منظومة التثليج والتبريد ومكثفات الأمونيا K-401">❄️ عزل التثليج K-401</button>
+          <button id="v3d-toggle-cooling-isolation" class="v3d-tool-btn" style="border-color:#38bdf8;color:#38bdf8;font-weight:bold;background:rgba(56,189,248,0.18);" title="عزل مجسم برج التبريد الصناعي ومضخات P-A..J والمكثف E711">🌊 برج التبريد E711</button>
+          <span class="v3d-tool-sep">|</span>
+          <span class="v3d-tool-label">📷 زوايا الكاميرا:</span>
+          <button id="v3d-cam-iso" class="v3d-tool-btn on" title="عرض آيزومتري 3D">📐 آيزومتري</button>
+          <button id="v3d-cam-front" class="v3d-tool-btn" title="عرض أمامي Front">⬛ أمامي</button>
+          <button id="v3d-cam-side" class="v3d-tool-btn" title="عرض جانبي Side">▎جانبي</button>
+          <button id="v3d-cam-top" class="v3d-tool-btn" title="عرض علوي Top-Down">⬆️ علوي</button>
+          <button id="v3d-cam-reset" class="v3d-tool-btn" title="إعادة ضبط الكاميرا">↺ المركز</button>
+          <span class="v3d-tool-sep">|</span>
+          <span class="v3d-tool-label">🌊 برج التبريد:</span>
+          <button id="v3d-ct-fans" class="v3d-tool-btn on" style="border-color:#38bdf8;color:#38bdf8;font-weight:bold;" title="تشغيل / إيقاف دوران المراوح الـ 9">🌀 دوران المراوح</button>
+          <button id="v3d-ct-flow" class="v3d-tool-btn on" style="border-color:#00e5aa;color:#00e5aa;font-weight:bold;" title="تشغيل / إيقاف تدفق المياه بالأسهم المتحركة">💧 جريان المياه</button>
+          <button id="v3d-ct-labels" class="v3d-tool-btn on" style="border-color:#fbbf24;color:#fbbf24;font-weight:bold;" title="إظهار / إخفاء وسوم المعدات والمضخات">🏷️ وسوم الأجهزة</button>
+          <button id="v3d-ct-filter-all" class="v3d-tool-btn on" title="إظهار كل عناصر برج التبريد">الكل</button>
+          <button id="v3d-ct-filter-fans" class="v3d-tool-btn" title="تصفية: المراوح الـ 9">المراوح</button>
+          <button id="v3d-ct-filter-pumps" class="v3d-tool-btn" title="تصفية: المضخات P711A,B والمضخات الكهربائية">المضخات P711A..J</button>
+          <button id="v3d-ct-filter-cond" class="v3d-tool-btn" title="تصفية: المكثف E711">المكثف E711</button>
+          <button id="v3d-ct-filter-pipes" class="v3d-tool-btn" title="تصفية: شبكة الأنابيب">الأنابيب</button>
           <span class="v3d-tool-sep">|</span>
           <span class="v3d-tool-label">🔍 الطبقات:</span>
+          <button id="v3d-toggle-cladding" class="v3d-tool-btn on" style="border-color:#38bdf8;color:#38bdf8;background:rgba(56,189,248,0.18);font-weight:bold;" title="تبديل وضع تغليف وعزل الأنابيب الحراري (Thermal Cladding & Jacketing)">🛡️ تغليف الخطوط</button>
           <button id="v3d-toggle-temp" class="v3d-tool-btn on" title="إظهار / إخفاء قيم درجات الحرارة">🌡 درجات الحرارة</button>
           <button id="v3d-toggle-tags" class="v3d-tool-btn on" title="إظهار / إخفاء وسوم المعدات">🏷 الوسوم</button>
           <button id="v3d-toggle-flow" class="v3d-tool-btn on" title="إظهار / إخفاء جزيئات الجريان المتحركة">✨ الجريان</button>
@@ -156,29 +208,41 @@ function init3DOverlay() {
           <button id="v3d-btn-xray" class="v3d-tool-btn" title="وضع الأشعة السينية لفحص المحفزات الداخلية">🔬 فحص داخلي (X-Ray)</button>
           <button id="v3d-btn-rotate" class="v3d-tool-btn" title="تدوير تلقائي 360°">🔄 تدوير 360°</button>
           <span class="v3d-tool-sep">|</span>
+          <button id="v3d-sec100-exam-btn" class="v3d-tool-btn" style="border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال واختبار قسم الإصلاح والتحويل">🔥 بنك القسم 100</button>
+          <button id="v3d-sec100-pfd-btn" class="v3d-tool-btn" style="border-color:#f97316;color:#f97316;background:rgba(249,115,22,0.18);font-weight:bold;" title="المخطط التشغيلي والتدفق التكنولوجي الشامل لقسم تحويل الغاز والإصلاح والأفران (Unit 100 PFD)">🔥 المخطط التشغيلي للقسم 1</button>
+          <button id="v3d-sec200-exam-btn" class="v3d-tool-btn" style="border-color:#00e5aa;color:#00e5aa;background:rgba(0,229,170,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال واختبار قسم إزالة ثاني أكسيد الكربون كاتاكارب (القسم 200)">🧪 بنك القسم 200</button>
+          <button id="v3d-sec200-pfd-btn" class="v3d-tool-btn" style="border-color:#00e5aa;color:#00e5aa;background:rgba(0,229,170,0.12);font-weight:bold;" title="المخطط التشغيلي والتدفق التكنولوجي الشامل لقسم إزالة واستخلاص CO2 كاتاكارب ودليل C-8..C-13">🧪 دليل ومخطط القسم 2</button>
+          <button id="v3d-sec300-exam-btn" class="v3d-tool-btn" style="border-color:#ffeb3b;color:#ffeb3b;background:rgba(255,235,59,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال واختبار ضاغط غاز التخليق K-301 والتوربين ومبرداته (القسم 300)">⚡ بنك ضاغط K-301</button>
+          <button id="v3d-k302-exam-btn" class="v3d-tool-btn" style="border-color:#0284c7;color:#38bdf8;background:rgba(2,132,199,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال لضاغط هواء العمليات K-302 ومبرداته وسحوبات اليوريا والكاتاكارب">💨 بنك هواء K-302</button>
+          <button id="v3d-k303-exam-btn" class="v3d-tool-btn" style="border-color:#d97706;color:#fbbf24;background:rgba(217,119,6,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال لضاغط الغاز الطبيعي K-303 وفاصل V-111 ومبرد E-308">🔥 بنك غاز K-303</button>
+          <button id="v3d-sec300-pfd-btn" class="v3d-tool-btn" style="border-color:#ffeb3b;color:#ffeb3b;background:rgba(255,235,59,0.18);font-weight:bold;" title="المخطط التشغيلي والتحكم الرقمي الشامل لضاغط غاز التخليق K-301 والتوربين ومبرداته (Unit 300 PFD)">⚡ المخطط التشغيلي لضاغط K-301</button>
           <button id="v3d-sec400-pfd-btn" class="v3d-tool-btn" style="border-color:#00c8ef;color:#00c8ef;background:rgba(0,200,239,0.18);font-weight:bold;" title="المخطط التشغيلي والتدفق التكنولوجي الشامل لقسم تخليق وتبريد الأمونيا (Unit 400 PFD)">📋 المخطط التشغيلي للقسم 4</button>
+          <button id="v3d-sec400-exam-btn" class="v3d-tool-btn" style="border-color:#a855f7;color:#d8b4fe;background:rgba(168,85,247,0.18);font-weight:bold;" title="فتح بنك الـ 100 سؤال واختبار قسم تخليق الأمونيا وضاغط التبريد K-401 (القسم 400)">❄️ بنك القسم 4 و K-401</button>
         </div>
       </div>
     </div>
 
     <!-- Main 3D Canvas Viewport -->
     <div id="view3d-canvas-wrap" class="view3d-canvas-wrap">
-      <!-- Floating View Mode Status Badge & Switcher -->
-      <div id="v3d-mode-status-badge" class="v3d-mode-status-badge" style="position:absolute;top:14px;left:14px;z-index:40;background:rgba(5,15,25,0.88);border:1px solid #00e5aa;border-radius:8px;padding:6px 14px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(8px);box-shadow:0 4px 18px rgba(0,0,0,0.6);">
-        <span id="v3d-mode-badge-icon" style="font-size:16px;">🌐</span>
-        <span id="v3d-mode-badge-txt" style="color:#00e5aa;font-weight:bold;font-size:12px;">وضع مجمع المصنع بالكامل 3D (Full Plant)</span>
-        <button id="v3d-badge-switch-btn" style="background:#ff9800;color:#030c14;border:none;border-radius:4px;padding:3px 10px;font-size:11px;font-weight:bold;cursor:pointer;transition:all 0.2s;" title="التبديل الفوري بين عزل القسم 1 والمصنع بالكامل">🔥 عزل القسم 1</button>
-      </div>
+      <!-- Unified Top Floating Actions & Status Dock (Non-overlapping) -->
+      <div class="v3d-floating-dock-bar">
+        <!-- Floating View Mode Status Badge & Switcher -->
+        <div id="v3d-mode-status-badge" class="v3d-mode-status-badge">
+          <span id="v3d-mode-badge-icon" style="font-size:15px;">🌐</span>
+          <span id="v3d-mode-badge-txt" style="color:#00e5aa;font-weight:bold;font-size:11.5px;">المصنع بالكامل 3D (Full Plant)</span>
+          <button id="v3d-badge-switch-btn" class="v3d-badge-switch-btn" title="التبديل الفوري بين عزل القسم والمصنع بالكامل">🔥 عزل القسم 1</button>
+        </div>
 
-      <!-- Floating Quick Actions Dock (Return & UI Toggle) -->
-      <div class="v3d-float-top-actions">
-        <button id="v3d-float-back-btn" class="v3d-float-back-btn" title="الرجوع إلى الواجهة الرئيسية للمحاكي (DCS Simulator)">
-          <span style="font-size:13px;">🔙</span>
-          <span>الواجهة الرئيسية</span>
-        </button>
-        <button id="v3d-float-toggleui" class="v3d-float-toggleui" title="إظهار / إخفاء القوائم والواجهة">
-          👁 إخفاء القوائم
-        </button>
+        <!-- Floating Quick Actions Dock (Return & UI Toggle) -->
+        <div class="v3d-float-top-actions">
+          <button id="v3d-float-back-btn" class="v3d-float-back-btn" title="الرجوع إلى الواجهة الرئيسية للمحاكي (DCS Simulator)">
+            <span style="font-size:13px;">🔙</span>
+            <span>الواجهة الرئيسية</span>
+          </button>
+          <button id="v3d-float-toggleui" class="v3d-float-toggleui" title="إظهار / إخفاء القوائم والواجهة">
+            👁 إخفاء القوائم
+          </button>
+        </div>
       </div>
 
       <div class="view3d-hint" id="view3d-hint">
@@ -191,6 +255,21 @@ function init3DOverlay() {
         <button id="v3d-zoom-out" title="تصغير / Zoom Out">➖</button>
         <button id="v3d-reset-cam" title="إعادة الضبط / Reset View">↺ المركز</button>
         <button id="v3d-btn-rotate-float" title="تدوير 360°">🔄 دوران</button>
+        <button id="v3d-ct-legend-toggle" title="دليل ألوان التدفق / Flow Direction Legend" style="background:rgba(56,189,248,0.2);border:1px solid #38bdf8;color:#38bdf8;font-weight:bold;margin-top:2px;">📊 الدليل</button>
+      </div>
+
+      <!-- Flow Direction Legend Card -->
+      <div id="v3d-ct-legend-card" class="v3d-ct-legend-card" style="display:none;">
+        <div class="v3d-legend-header">
+          <span>💧 دليل مسارات وتدفق شبكة برج التبريد</span>
+          <button id="v3d-legend-close" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:14px;font-weight:bold;">✕</button>
+        </div>
+        <div class="v3d-legend-body">
+          <div class="v3d-legend-item"><span class="v3d-leg-color" style="background:#0284c7;"></span><span>خطوط السحب CWS Suction (أزرق داكن)</span></div>
+          <div class="v3d-legend-item"><span class="v3d-leg-color" style="background:#38bdf8;"></span><span>خطوط الطرد CWD Discharge (أزرق سماوي)</span></div>
+          <div class="v3d-legend-item"><span class="v3d-leg-color" style="background:#00e5aa;"></span><span>الراجع من المصنع WCR Return (تايكوزي)</span></div>
+          <div class="v3d-legend-item"><span class="v3d-leg-color" style="background:#f59e0b;"></span><span>بخار عادم التوربين LP Steam Exhaust (عنبري)</span></div>
+        </div>
       </div>
 
       <!-- Interactive Equipment Inspector Card / Bottom Sheet -->
@@ -220,6 +299,7 @@ function init3DOverlay() {
         <div class="view3d-card-footer">
           <button id="v3d-card-action" class="v3d-btn-primary">🎯 تركيز الكاميرا</button>
           <button id="v3d-card-learn-btn" class="v3d-btn-learn">📚 الشرح الهندسي والتفاعلات</button>
+          <button id="v3d-card-exam-btn" class="v3d-btn-learn" style="display:none;background:rgba(255,235,59,0.18);border-color:#ffeb3b;color:#fef08a;font-weight:bold;">⚡ بنك الـ 100 سؤال التخصصي</button>
         </div>
       </div>
 
@@ -282,6 +362,171 @@ function init3DOverlay() {
       </div>
     </div>
 
+    <!-- Master Unit 300 Operational PFD Modal (لوحة شاشة المخطط التشغيلي لضاغط غاز التخليق K-301 والتوربين ومبرداته) -->
+    <div id="v3d-sec300-pfd-modal" class="v3d-sec400-pfd-modal" style="display:none;">
+      <div class="v3d-pfd-modal-card">
+        <div class="v3d-pfd-modal-header">
+          <div class="v3d-pfd-title-box">
+            <span class="v3d-pfd-badge" style="background:#f59e0b;color:#030c14;">DWG 6112P-100-300-00</span>
+            <div class="v3d-pfd-title-txt">⚡ المخطط التشغيلي والتحكم الرقمي الشامل لضاغط غاز التخليق K-301 والتوربين ومبرداته (Unit 300)</div>
+          </div>
+          <div class="v3d-pfd-header-actions">
+            <button id="v3d-sec300-open-exam-btn" class="v3d-btn-primary" style="background:#ffeb3b;color:#030c14;font-size:12px;padding:6px 14px;font-weight:bold;">⚡ بنك الـ 100 سؤال لضاغط K-301</button>
+            <button id="v3d-pfd300-goto-board-btn" class="v3d-btn-primary" style="background:#00c8ef;color:#030c14;font-size:12px;padding:6px 14px;font-weight:bold;">🎯 الانتقال إلى لوحة الشاشة في المصنع 3D</button>
+            <button id="v3d-sec300-pfd-close" class="v3d-modal-close-btn" title="إغلاق">✕</button>
+          </div>
+        </div>
+
+        <div class="v3d-pfd-modal-body">
+          <!-- Normal Run vs Anti-Surge & Trip Status Banner -->
+          <div class="v3d-pfd-status-banner">
+            <div class="v3d-status-item normal">
+              <span class="v3d-status-dot" style="color:#ffeb3b;">●</span>
+              <span class="v3d-status-label">وضع التشغيل الطبيعي (Normal Running):</span>
+              <span class="v3d-status-val">سرعة العمود 10,000 RPM | اهتزازات المحاور 12 µm (طبيعي) | ضغط زيت التزييت 2.8 bar | صمامات مانع الارتجاف FV-301/302/303 [مغلقة Standby]</span>
+            </div>
+            <div class="v3d-status-item startup">
+              <span class="v3d-status-dot" style="color:#00e5aa;">●</span>
+              <span class="v3d-status-label">حماية الارتجاف والرحلة (Trip & Anti-Surge):</span>
+              <span class="v3d-status-val">مسافة الأمان Surge Margin > 15% | صمام الرحلة السريع Trip Valve جاهز للإغلاق في 0.2 ثانية عند انخفاض ضغط الزيت أو زيادة السرعة</span>
+            </div>
+          </div>
+
+          <!-- 4 Sequential Operational Flow Columns -->
+          <div class="v3d-pfd-columns-grid">
+            <!-- Col 1: Turbine & Condenser -->
+            <div class="v3d-pfd-col c1" style="border-color:#f59e0b;">
+              <div class="v3d-col-header" style="background:#f59e0b;color:#030c14;">
+                <span class="v3d-col-num">1</span>
+                <div>
+                  <div class="v3d-col-title">قطار التوربين الدافع K-301T والمكثف</div>
+                  <div class="v3d-col-sub">Steam Turbine Driver & Surface Condenser</div>
+                </div>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 1</div>
+                <div class="v3d-sb-title">بخار الضغط العالي 105 bar:</div>
+                <p>يدخل بخار المراجل المحمص <b>(105 kg/cm²G, 510°C)</b> القادم من غلايات مرجل المصلح الثانوي E-108 عبر 4 صمامات حاكم هيدروليكية (Governor Valves) للحفاظ الدقيق على سرعة الدوران <b>10,000 RPM</b> والقدرة 18.5 MW.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 2</div>
+                <div class="v3d-sb-title">استخراج بخار الضغط المتوسط 38 bar:</div>
+                <p>يتم استخراج <b>82 طن/ساعة</b> من بخار الضغط المتوسط MP عند <b>38 kg/cm²G</b> لتغذية مبادلات إعادة غلي محلول كاتاكارب E-201 وتوربينات المرافق، مما يرفع الكفاءة الحرارية الشاملة للمصنع.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 3</div>
+                <div class="v3d-sb-title">عادم التوربين والمكثف السطحي:</div>
+                <p>يتمدد البخار المتبقي عبر صفوف الريش التوربينية نحو المكثف السطحي السفلي (Surface Condenser) الواقع تحت منصة الكبس عند ضغط مخلخل <b>0.1 kg/cm²A</b> ويكثف بمياه التبريد الصناعية WC.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 4</div>
+                <div class="v3d-sb-title">مضخات المتكثف P-302 A/B:</div>
+                <p>تسحب ماء التكثيف عالي النقاوة من حوض المكثف (Hotwell) وتضخه لإعادته إلى غلايات البخار وشبكة مياه تغذية المراجل BFW في قسم إنتاج البخار.</p>
+              </div>
+            </div>
+
+            <!-- Col 2: LP & MP Casings -->
+            <div class="v3d-pfd-col c2" style="border-color:#0ea5e9;">
+              <div class="v3d-col-header" style="background:#0ea5e9;color:#030c14;">
+                <span class="v3d-col-num">2</span>
+                <div>
+                  <div class="v3d-col-title">كابينة الضغط المنخفض والمتوسط (LP & MP)</div>
+                  <div class="v3d-col-sub">Stages 1 & 2 (Cases 1 & 2) + Coolers & Separators</div>
+                </div>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 5</div>
+                <div class="v3d-sb-title">سحب غاز التخليق وفصل الرطوبة V-301:</div>
+                <p>يبرد غاز التخليق القادم من قسم الميثانايتر بمبادل <b>E-301 (الغاز بالشيل / ماء التبريد الداخل WC بالأنابيب والراجع WCR بالأنابيب)</b> إلى 43°C، ثم يدخل عازل السحب <b>V-301 بضغط 25.5 kg/cm²A</b> لفصل الرطوبة المتكثفة تماماً لحماية ريش الضاغط.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 6</div>
+                <div class="v3d-sb-title">كبس المرحلة الأولى (LP Case 1):</div>
+                <p>يسحب غاز التخليق الجاف ويدخل الجسم الأول (LP Casing) لإنجاز المرحلة الأولى، حيث يرفع الضغط من <b>25.5 إلى 44.0 kg/cm²A</b> وترتفع الحرارة إلى <b>148.0°C</b>.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 7</div>
+                <div class="v3d-sb-title">مبرد المرحلة الأولى E-302 وعازل V-302:</div>
+                <p>يمر الغاز داخل <b>أنابيب المبادل E-302 (Gas in Tubes)</b> لتحمل الضغط العالي، ويبرد إلى 43°C بواسطة ماء التبريد الداخل <b>WC</b> بالشيل والراجع <b>WCR</b> من أعلى الشيل، ثم يدخل فاصل السحب <b>V-302 عند 44.0 kg/cm²A</b> لفصل أي متكثفات.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 8</div>
+                <div class="v3d-sb-title">كبس المرحلة الثانية (MP Case 2):</div>
+                <p>يسحب الغاز من قمة V-302 ويدخل كابينة الضغط المتوسط (MP Casing) لإنجاز المرحلة الثانية، حيث يرفع الضغط من <b>44.0 إلى 110.0 kg/cm²A</b> وترتفع الحرارة إلى <b>134.4°C</b> ثم يدفعه لمبرد المرحلة التالية.</p>
+              </div>
+            </div>
+
+            <!-- Col 3: HP Casing & Recycle -->
+            <div class="v3d-pfd-col c3" style="border-color:#10b981;">
+              <div class="v3d-col-header" style="background:#10b981;color:#030c14;">
+                <span class="v3d-col-num">3</span>
+                <div>
+                  <div class="v3d-col-title">كابينة الضغط العالي وعجلة التدوير (HP)</div>
+                  <div class="v3d-col-sub">Stages 3 & 4 + Recycle Impeller (Case 3)</div>
+                </div>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 9</div>
+                <div class="v3d-sb-title">مبرد E-303 وفاصل V-303 والمرحلة 3:</div>
+                <p>يمر الغاز داخل <b>أنابيب مبرد E-303 (Gas in Tubes)</b> ليبرد إلى 43°C بواسطة ماء التبريد الداخل <b>WC</b> بالشيل والراجع <b>WCR</b> من أعلى الشيل، ويفصل في <b>V-303 عند 105.0 kg/cm²A</b>، ثم يُكبس في المرحلة الثالثة من كابينة HP إلى <b>160.0 kg/cm²A</b>.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 10</div>
+                <div class="v3d-sb-title">كبس المرحلة الرابعة النهائي (Final Make-up):</div>
+                <p>يرفع ضغط غاز التعويض الطازج (Make-Up) في المرحلة الرابعة إلى <b>240.5 kg/cm²A</b> (معدل التدفق 47.6 طن/ساعة) بحرارة <b>135.0°C</b>.</p>
+              </div>
+              <div class="v3d-step-box highlight">
+                <div class="v3d-sb-num">المحطة 11 (حقن التعويض في الحلقة)</div>
+                <div class="v3d-sb-title">المبرد اللاحق E-315 وفاصل V-310:</div>
+                <p>يبرد الغاز في <b>أنابيب المبادل اللاحق E-315 (Gas in Tubes)</b> إلى 26°C بواسطة ماء التبريد الداخل <b>WC</b> بالشيل والراجع <b>WCR</b> من أعلى الشيل، ثم يدخل عازل الضغط العالي <b>V-310 (220-240 bar)</b>، ويخرج من قمته ليحقن بالخط الرابط بين تيوب E-405 وتيوب E-406 في حلقة التخليق.</p>
+              </div>
+              <div class="v3d-step-box highlight">
+                <div class="v3d-sb-num">المحطة 12 (عجلة التدوير)</div>
+                <div class="v3d-sb-title">عجلة تدوير الغاز الراجع (Circulator):</div>
+                <p>تسحب عجلة التدوير المدمجة في كابينة HP غاز التدوير غير المتفاعل من عازل <b>V-401 بضغط 220 bar وحرارة 40°C</b> بمعدل <b>205.1 طن/ساعة</b> وترفع ضغطه بمقدار 25 bar إلى <b>245 bar</b> ليذهب مباشرة إلى شيل E-407 لإكمال الدورة المغلقة.</p>
+              </div>
+            </div>
+
+            <!-- Col 4: Auxiliaries & Anti-Surge -->
+            <div class="v3d-pfd-col c4" style="border-color:#a855f7;">
+              <div class="v3d-col-header" style="background:#a855f7;color:#030c14;">
+                <span class="v3d-col-num">4</span>
+                <div>
+                  <div class="v3d-col-title">منظومة التزييت وموانع التسرب والارتجاف</div>
+                  <div class="v3d-col-sub">Lube Oil Console, DGS & Anti-Surge Systems</div>
+                </div>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 13</div>
+                <div class="v3d-sb-title">منصة التزييت وزيت العزل (LO/SO Console):</div>
+                <p>وحدة متكاملة تضم خزان زيت مركزي، مضختين كهربائيتين رئيسيتين، مضخة توربينية بخارية للطوارئ، مبردات مائية مزدوجة، وفلاتر 5 ميكرون لتغذية كراسي التحميل بضغط مستقر <b>2.8 kg/cm²G</b> وحرارة 45°C.</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 14</div>
+                <div class="v3d-sb-title">موانع التسرب الغازية الجافة (Dry Gas Seals):</div>
+                <p>منظومة حواجز غازية متطورة تمنع تسرب الهيدروجين فائق الضغط إلى الجو، مدعومة بحاجز نيتروجين N2 وتفريغ آمن لغاز التعتيم إلى الشعلة Flare.</p>
+              </div>
+              <div class="v3d-step-box highlight">
+                <div class="v3d-sb-num">المحطة 15 (مانع الارتجاف)</div>
+                <div class="v3d-sb-title">حلقات مانع الارتجاف (FV-301 / 302 / 303):</div>
+                <p>ثلاث حلقات تحكم سريعة مستقلة مزودة بصمامات أوتوماتيكية تعيد تدوير الغاز المضغوط من طرد كل مرحلة إلى فاصل السحب الخاص بها لحماية الضاغط من ظاهرة الانهيار والانعكاس الديناميكي (Compressor Surge).</p>
+              </div>
+              <div class="v3d-step-box">
+                <div class="v3d-sb-num">المحطة 16</div>
+                <div class="v3d-sb-title">نظام الحماية والرحلة الطارئة (ESD):</div>
+                <p>يراقب اهتزازات المحاور (Bently Nevada Proximity Probes) وحرارة المحامل ومسافة الأمان، ويغلق صمام البخار الرئيسي Trip Valve في <b>0.2 ثانية</b> عند أي خلل تشغيلي حرج.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Operational Note -->
+          <div class="v3d-pfd-bottom-note" style="border-color:#f59e0b;">
+            <b>⚡ تأكيد المطابقة الهندسية الشاملة للضاغطة K-301:</b> تم بناء المجسم ثلاثي الأبعاد ليعكس بدقة الأجسام الثلاثة (LP و MP و HP) والتوربين البخاري الدافع K-301T بقدرة 18.5 MW ومبردات المراحل (E-301 بالشيل، E-302 و E-303 و E-315 بالأنابيب) وفواص السحب (V-301, V-302, V-303, V-310) وعجلة التدوير المغلقة مع شاشة التحكم الرقمية المطابقة للواقع.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Master Unit 400 Operational PFD Modal (لوحة شاشة المخطط التشغيلي للقسم الرابع) -->
     <div id="v3d-sec400-pfd-modal" class="v3d-sec400-pfd-modal" style="display:none;">
       <div class="v3d-pfd-modal-card">
@@ -291,6 +536,7 @@ function init3DOverlay() {
             <div class="v3d-pfd-title-txt">📋 المخطط التشغيلي والتدفق التكنولوجي الشامل لقسم تخليق وتبريد الأمونيا (Unit 400)</div>
           </div>
           <div class="v3d-pfd-header-actions">
+            <button id="v3d-sec400-open-exam-btn" class="v3d-btn-primary" style="background:#a855f7;color:#ffffff;font-size:12px;padding:6px 14px;border:none;font-weight:bold;">📝 فتح بنك الـ 100 سؤال (القسم 4 و K-401)</button>
             <button id="v3d-pfd-goto-board-btn" class="v3d-btn-primary" style="background:#00e5aa;color:#030c14;font-size:12px;padding:6px 14px;">🎯 الانتقال إلى لوحة الشاشة في المصنع 3D</button>
             <button id="v3d-sec400-pfd-close" class="v3d-modal-close-btn" title="إغلاق">✕</button>
           </div>
@@ -850,33 +1096,82 @@ function init3DOverlay() {
       position: relative;
       overflow: hidden;
       background: radial-gradient(circle at center, #0a1b2a 0%, #030910 80%, #010408 100%);
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
-    .v3d-float-top-actions {
+    .v3d-floating-dock-bar {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 10px;
+      left: 12px;
+      right: 12px;
       z-index: 45;
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
+      pointer-events: none;
+    }
+
+    .v3d-floating-dock-bar > * {
+      pointer-events: auto;
+    }
+
+    .v3d-mode-status-badge {
+      background: rgba(5, 15, 25, 0.92);
+      border: 1px solid #00e5aa;
+      border-radius: 8px;
+      padding: 5px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+      max-width: 58%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .v3d-badge-switch-btn {
+      background: #ff9800;
+      color: #030c14;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .v3d-float-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .v3d-float-back-btn {
       background: linear-gradient(135deg, #00e5aa, #00c8ef);
       border: 1px solid #00e5aa;
       color: #030c14;
-      padding: 7px 14px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       backdrop-filter: blur(8px);
       box-shadow: 0 4px 16px rgba(0, 229, 170, 0.4);
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .v3d-float-back-btn:hover {
@@ -889,7 +1184,7 @@ function init3DOverlay() {
       background: rgba(9, 21, 34, 0.85);
       border: 1px solid #00c8ef;
       color: #00c8ef;
-      padding: 7px 12px;
+      padding: 6px 11px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: bold;
@@ -897,6 +1192,35 @@ function init3DOverlay() {
       backdrop-filter: blur(8px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .view3d-branding-bar {
+        display: none !important;
+      }
+      .v3d-floating-dock-bar {
+        top: 6px;
+        left: 6px;
+        right: 6px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+      .v3d-mode-status-badge {
+        max-width: 100%;
+        justify-content: space-between;
+        padding: 4px 8px;
+        font-size: 10.5px;
+      }
+      .v3d-float-top-actions {
+        justify-content: flex-end;
+        gap: 6px;
+      }
+      .v3d-float-back-btn, .v3d-float-toggleui {
+        padding: 4px 8px;
+        font-size: 10px;
+      }
     }
 
     .view3d-hint {
@@ -1805,6 +2129,48 @@ function init3DOverlay() {
         overflow-y: auto;
       }
     }
+
+    .v3d-ct-legend-card {
+      position: absolute;
+      bottom: 24px;
+      right: 20px;
+      background: rgba(4, 12, 22, 0.94);
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
+      padding: 10px 14px;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+      font-size: 11px;
+      color: #e2e8f0;
+      max-width: 300px;
+    }
+    .v3d-legend-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      color: #38bdf8;
+      border-bottom: 1px solid #1e3a5f;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    .v3d-legend-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .v3d-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .v3d-leg-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
   `;
   document.head.appendChild(style);
 
@@ -1820,14 +2186,22 @@ function init3DOverlay() {
     const toggleCo2IsoBtn = document.getElementById('v3d-toggle-co2-isolation');
     const statusBadge = document.getElementById('v3d-mode-status-badge');
 
+    const isSecFullComplex = isolatedSec === 'sec_full_complex' || isolatedSec === 'full_complex' || isolatedSec === 'full_plant_complex';
     const isSec1 = isolatedSec === true || isolatedSec === 'sec_reformer';
     const isSecCO2 = isolatedSec === 'sec_co2' || isolatedSec === 'sec_catacarb';
     const isSecK301 = isolatedSec === 'sec_k301' || isolatedSec === 'sec_compressor' || isolatedSec === 'sec_syngas';
     const isSecSynLoop = isolatedSec === 'sec_synloop' || isolatedSec === 'sec_synth' || isolatedSec === 'synth' || isolatedSec === 'section_7' || isolatedSec === 'sec_loop';
     const isSecRefrig = isolatedSec === 'sec_refrigeration' || isolatedSec === 'sec_k401' || isolatedSec === 'k401ref' || isolatedSec === 'sec_refrig';
+    const toggleFullComplexBtn = document.getElementById('v3d-toggle-full-complex');
     const toggleK301IsoBtn = document.getElementById('v3d-toggle-k301-isolation');
     const toggleSynLoopIsoBtn = document.getElementById('v3d-toggle-synloop-isolation');
     const toggleRefrigIsoBtn = document.getElementById('v3d-toggle-refrig-isolation');
+
+    if (toggleFullComplexBtn) {
+      toggleFullComplexBtn.classList.toggle('on', isSecFullComplex);
+      toggleFullComplexBtn.style.background = isSecFullComplex ? '#00e5aa' : 'rgba(0,229,170,0.15)';
+      toggleFullComplexBtn.style.color = isSecFullComplex ? '#030c14' : '#00e5aa';
+    }
 
     // Reset all buttons to default off
     if (toggleIsoBtn) {
@@ -1866,12 +2240,24 @@ function init3DOverlay() {
       toggleRefrigIsoBtn.style.background = 'rgba(0,229,170,0.15)';
     }
 
-    if (isSecSynLoop) {
+    if (isSecFullComplex) {
+      if (statusBadge) statusBadge.style.borderColor = '#00e5aa';
+      if (badgeIcon) badgeIcon.textContent = '🏭';
+      if (badgeTxt) {
+        badgeTxt.style.color = '#00e5aa';
+        badgeTxt.textContent = 'المعمل الشامل 3D (دمج برج التبريد + القسم 1 + 2 + الضاغطات + 4)';
+      }
+      if (badgeSwitchBtn) {
+        badgeSwitchBtn.textContent = '🔥 عزل القسم 1';
+        badgeSwitchBtn.style.background = '#ff9800';
+        badgeSwitchBtn.style.color = '#030c14';
+      }
+    } else if (isSecSynLoop) {
       if (statusBadge) statusBadge.style.borderColor = '#00c8ef';
       if (badgeIcon) badgeIcon.textContent = '⚛️';
       if (badgeTxt) {
         badgeTxt.style.color = '#00c8ef';
-        badgeTxt.textContent = 'وضع مجسم حلقة تخليق الأمونيا والمفاعل R-401 والمبادلات 3D (معزولة بدقة)';
+        badgeTxt.textContent = 'حلقة تخليق الأمونيا R-401 (3D معزول)';
       }
       if (badgeSwitchBtn) {
         badgeSwitchBtn.textContent = '🌐 إظهار المصنع كاملاً';
@@ -1890,7 +2276,7 @@ function init3DOverlay() {
       if (badgeIcon) badgeIcon.textContent = '❄️';
       if (badgeTxt) {
         badgeTxt.style.color = '#00e5aa';
-        badgeTxt.textContent = 'وضع مجسم منظومة التثليج ومكثفات الأمونيا K-401 ثلاثية الأبعاد 3D (معزولة)';
+        badgeTxt.textContent = 'منظومة التثليج والتبريد K-401 (3D)';
       }
       if (badgeSwitchBtn) {
         badgeSwitchBtn.textContent = '🌐 إظهار المصنع كاملاً';
@@ -1909,7 +2295,7 @@ function init3DOverlay() {
       if (badgeIcon) badgeIcon.textContent = '⚡';
       if (badgeTxt) {
         badgeTxt.style.color = '#ffeb3b';
-        badgeTxt.textContent = 'وضع مجسم ضاغط غاز التخليق K-301 والتوربين البخاري 3D (K-301, E-315, V-310 معزولة)';
+        badgeTxt.textContent = 'ضاغط غاز التخليق K-301 والتوربين (3D معزول)';
       }
       if (badgeSwitchBtn) {
         badgeSwitchBtn.textContent = '🌐 إظهار المصنع كاملاً';
@@ -1928,7 +2314,7 @@ function init3DOverlay() {
       if (badgeIcon) badgeIcon.textContent = '🧪';
       if (badgeTxt) {
         badgeTxt.style.color = '#00e5aa';
-        badgeTxt.textContent = 'وضع مجسم إزالة CO₂ كاتاكارب 3D (T-201, T-202, E-201, V-201, V-204, P-201 معزولة)';
+        badgeTxt.textContent = 'منظومة إزالة واستخلاص CO₂ (3D معزول)';
       }
       if (badgeSwitchBtn) {
         badgeSwitchBtn.textContent = '🌐 إظهار المصنع كاملاً';
@@ -1947,7 +2333,7 @@ function init3DOverlay() {
       if (badgeIcon) badgeIcon.textContent = '🔥';
       if (badgeTxt) {
         badgeTxt.style.color = '#ffb74d';
-        badgeTxt.textContent = 'وضع مجسم قسم تحويل الغاز 3D (معدات القسم 1 معزولة بدقة دون تداخل)';
+        badgeTxt.textContent = 'قسم تحويل الغاز والإصلاح R-101 (3D معزول)';
       }
       if (badgeSwitchBtn) {
         badgeSwitchBtn.textContent = '🌐 إظهار المصنع كاملاً';
@@ -1966,7 +2352,7 @@ function init3DOverlay() {
       if (badgeIcon) badgeIcon.textContent = '🌐';
       if (badgeTxt) {
         badgeTxt.style.color = '#00e5aa';
-        badgeTxt.textContent = 'وضع مجمع المصنع بالكامل 3D (Full Plant Complex)';
+        badgeTxt.textContent = 'المصنع الشامل 3D (Full Plant Complex)';
       }
       if (badgeSwitchBtn) {
         badgeSwitchBtn.textContent = '🔥 عزل القسم 1';
@@ -2114,8 +2500,154 @@ function init3DOverlay() {
   document.getElementById('v3d-toggle-k301-isolation')?.addEventListener('click', toggleK301IsolationAction);
   document.getElementById('v3d-toggle-synloop-isolation')?.addEventListener('click', toggleSynLoopIsolationAction);
   document.getElementById('v3d-toggle-refrig-isolation')?.addEventListener('click', toggleRefrigIsolationAction);
+
+  const toggleCoolingIsolationAction = () => {
+    plantAudio.playClick();
+    if (engine3D?.plant.currentIsolatedSection === 'sec_cooling_tower') {
+      openSection3D('overview', false);
+    } else {
+      openSection3D('sec_cooling_tower', true);
+    }
+  };
+  document.getElementById('v3d-toggle-cooling-isolation')?.addEventListener('click', toggleCoolingIsolationAction);
+
+  // Camera Presets
+  const camIsoBtn = document.getElementById('v3d-cam-iso');
+  const camFrontBtn = document.getElementById('v3d-cam-front');
+  const camSideBtn = document.getElementById('v3d-cam-side');
+  const camTopBtn = document.getElementById('v3d-cam-top');
+  const camResetBtn = document.getElementById('v3d-cam-reset');
+
+  const setCamActive = (btn: HTMLElement | null) => {
+    [camIsoBtn, camFrontBtn, camSideBtn, camTopBtn, camResetBtn].forEach((b) => b?.classList.remove('on'));
+    btn?.classList.add('on');
+  };
+
+  camIsoBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    setCamActive(camIsoBtn);
+    engine3D?.setCameraAngle('isometric');
+  });
+  camFrontBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    setCamActive(camFrontBtn);
+    engine3D?.setCameraAngle('front');
+  });
+  camSideBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    setCamActive(camSideBtn);
+    engine3D?.setCameraAngle('side');
+  });
+  camTopBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    setCamActive(camTopBtn);
+    engine3D?.setCameraAngle('top');
+  });
+  camResetBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    setCamActive(camResetBtn);
+    engine3D?.setCameraAngle('reset');
+  });
+
+  // Cooling Tower Features
+  let isCoolingTowerEn = false;
+  const ctLangBtn = document.getElementById('v3d-ct-lang-btn');
+  const ctLangTxt = document.getElementById('v3d-ct-lang-txt');
+  const appMainTitle = document.getElementById('v3d-main-app-title');
+
+  ctLangBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    isCoolingTowerEn = !isCoolingTowerEn;
+    if (ctLangTxt) ctLangTxt.textContent = isCoolingTowerEn ? 'EN / AR' : 'AR / EN';
+    if (appMainTitle) {
+      if (isCoolingTowerEn) {
+        appMainTitle.textContent = 'COOLING TOWER — CT-01 | AMMONIA PLANT COOLING WATER SYSTEM';
+      } else {
+        appMainTitle.textContent = '🏭 محاكاة ومطابقة مخطط تدفق إنتاج الأمونيا (برج التبريد CT-01)';
+      }
+    }
+    // Refresh card if visible
+    const card = document.getElementById('view3d-info-card');
+    if (card && card.style.display !== 'none' && (window as any).lastInspectedEq) {
+      showEquipmentCard((window as any).lastInspectedEq);
+    }
+  });
+
+  const legendToggleBtn = document.getElementById('v3d-ct-legend-toggle');
+  const legendCard = document.getElementById('v3d-ct-legend-card');
+  const legendCloseBtn = document.getElementById('v3d-legend-close');
+
+  legendToggleBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    if (legendCard) {
+      const isVisible = legendCard.style.display !== 'none';
+      legendCard.style.display = isVisible ? 'none' : 'block';
+      legendToggleBtn.classList.toggle('on', !isVisible);
+    }
+  });
+
+  legendCloseBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    if (legendCard) legendCard.style.display = 'none';
+    legendToggleBtn?.classList.remove('on');
+  });
+
+  const ctFansBtn = document.getElementById('v3d-ct-fans');
+  ctFansBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    const active = engine3D?.toggleCoolingFanAnimation();
+    ctFansBtn.classList.toggle('on', active);
+    ctFansBtn.textContent = active ? '🌀 دوران المراوح' : '⏸️ المراوح متوقفة';
+  });
+
+  const ctFlowBtn = document.getElementById('v3d-ct-flow');
+  ctFlowBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    const active = engine3D?.toggleCoolingWaterFlow();
+    ctFlowBtn.classList.toggle('on', active);
+    ctFlowBtn.textContent = active ? '💧 جريان المياه' : '🚫 إيقاف الجريان';
+    if (legendCard) {
+      legendCard.style.display = active ? 'block' : 'none';
+      legendToggleBtn?.classList.toggle('on', active);
+    }
+  });
+
+  const ctLabelsBtn = document.getElementById('v3d-ct-labels');
+  ctLabelsBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    const active = engine3D?.toggleCoolingLabels();
+    ctLabelsBtn.classList.toggle('on', active);
+  });
+
+  // Cooling Group Filters
+  const fAllBtn = document.getElementById('v3d-ct-filter-all');
+  const fFansBtn = document.getElementById('v3d-ct-filter-fans');
+  const fPumpsBtn = document.getElementById('v3d-ct-filter-pumps');
+  const fCondBtn = document.getElementById('v3d-ct-filter-cond');
+  const fPipesBtn = document.getElementById('v3d-ct-filter-pipes');
+
+  const setGroupFilter = (group: 'all' | 'fans' | 'pumps' | 'condenser' | 'piping', btn: HTMLElement | null) => {
+    plantAudio.playClick();
+    [fAllBtn, fFansBtn, fPumpsBtn, fCondBtn, fPipesBtn].forEach((b) => b?.classList.remove('on'));
+    btn?.classList.add('on');
+    if (group === 'all') {
+      engine3D?.setCoolingGroupVisibility('all', true);
+    } else {
+      engine3D?.setCoolingGroupVisibility('all', false);
+      engine3D?.setCoolingGroupVisibility(group, true);
+    }
+  };
+
+  fAllBtn?.addEventListener('click', () => setGroupFilter('all', fAllBtn));
+  fFansBtn?.addEventListener('click', () => setGroupFilter('fans', fFansBtn));
+  fPumpsBtn?.addEventListener('click', () => setGroupFilter('pumps', fPumpsBtn));
+  fCondBtn?.addEventListener('click', () => setGroupFilter('condenser', fCondBtn));
+  fPipesBtn?.addEventListener('click', () => setGroupFilter('piping', fPipesBtn));
+
   document.getElementById('v3d-badge-switch-btn')?.addEventListener('click', () => {
-    if (engine3D?.plant.currentIsolatedSection === 'sec_synloop') {
+    if (engine3D?.plant.currentIsolatedSection === 'sec_cooling_tower') {
+      toggleCoolingIsolationAction();
+    } else if (engine3D?.plant.currentIsolatedSection === 'sec_synloop') {
       toggleSynLoopIsolationAction();
     } else if (engine3D?.plant.currentIsolatedSection === 'sec_refrigeration') {
       toggleRefrigIsolationAction();
@@ -2139,6 +2671,17 @@ function init3DOverlay() {
   });
 
   // Layer Toggles
+  const toggleCladdingBtn = document.getElementById('v3d-toggle-cladding');
+  toggleCladdingBtn?.addEventListener('click', () => {
+    plantAudio.playClick();
+    if (engine3D?.plant.co2RemovalSection200) {
+      engine3D.plant.co2RemovalSection200.toggleCladdingMode();
+      const isTrans = engine3D.plant.co2RemovalSection200.isCladdingTranslucent;
+      toggleCladdingBtn.classList.toggle('on', !isTrans);
+      toggleCladdingBtn.innerHTML = isTrans ? '🛡️ تغليف الخطوط (شفاف)' : '🛡️ تغليف الخطوط (مغلف)';
+    }
+  });
+
   const toggleTempBtn = document.getElementById('v3d-toggle-temp');
   toggleTempBtn?.addEventListener('click', () => {
     plantAudio.playClick();
@@ -2300,6 +2843,82 @@ function init3DOverlay() {
   document.getElementById('v3d-drawer-close')?.addEventListener('click', handleDrawerBack);
   document.getElementById('v3d-drawer-back-btn')?.addEventListener('click', handleDrawerBack);
 
+  // Section 100 Exam & Technical Question Bank Trigger
+  document.getElementById('v3d-btn-sec100-exam')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section100ExamCenter.open('exam');
+  });
+  document.getElementById('v3d-sec100-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section100ExamCenter.open('exam');
+  });
+
+  // Section 200 Exam & Technical Operating Manual Trigger (Catacarb)
+  document.getElementById('v3d-btn-sec200-exam')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section200ExamCenter.open('exam');
+  });
+  document.getElementById('v3d-sec200-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section200ExamCenter.open('exam');
+  });
+  document.getElementById('v3d-sec200-pfd-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section200ExamCenter.open('manual');
+  });
+
+  // Section 300 Exam & Technical Operating Manual Trigger (Syngas Compressor K-301)
+  document.getElementById('v3d-btn-sec300-exam')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section300ExamCenter.open('exam');
+  });
+  document.getElementById('v3d-sec300-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section300ExamCenter.open('exam');
+  });
+  document.getElementById('v3d-sec300-open-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    const pm = document.getElementById('v3d-sec300-pfd-modal');
+    if (pm) pm.style.display = 'none';
+    section300ExamCenter.open('exam');
+  });
+
+  // K-302 Process Air Compressor Exam & Manual (100 Questions)
+  document.getElementById('v3d-btn-k302-exam')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    openK302Exam('exam');
+  });
+  document.getElementById('v3d-k302-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    openK302Exam('exam');
+  });
+
+  // K-303 Natural Gas Compressor Exam & Manual (100 Questions)
+  document.getElementById('v3d-btn-k303-exam')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    openK303Exam('exam');
+  });
+  document.getElementById('v3d-k303-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    openK303Exam('exam');
+  });
+
+  // Section 400 Exam & Technical Operating Manual Trigger (Ammonia Synthesis & Refrigeration Compressor K-401)
+  document.getElementById('v3d-btn-sec400-exam')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section400ExamCenter.open('exam');
+  });
+  document.getElementById('v3d-sec400-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    section400ExamCenter.open('exam');
+  });
+  document.getElementById('v3d-sec400-open-exam-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    const pm = document.getElementById('v3d-sec400-pfd-modal');
+    if (pm) pm.style.display = 'none';
+    section400ExamCenter.open('exam');
+  });
+
   // Quiz Modal Trigger & Close
   document.getElementById('v3d-btn-quiz')?.addEventListener('click', () => {
     plantAudio.playClick();
@@ -2318,6 +2937,28 @@ function init3DOverlay() {
   document.getElementById('v3d-search-close')?.addEventListener('click', () => {
     const sm = document.getElementById('v3d-search-modal');
     if (sm) sm.style.display = 'none';
+  });
+
+  // Master Unit 100 Operational PFD Modal Trigger
+  document.getElementById('v3d-sec100-pfd-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    openSection2D('reform_100');
+  });
+
+  // Master Unit 300 Operational PFD Modal Trigger & Close (K-301)
+  document.getElementById('v3d-sec300-pfd-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    openSec300PfdModal();
+  });
+  document.getElementById('v3d-sec300-pfd-close')?.addEventListener('click', () => {
+    const pm = document.getElementById('v3d-sec300-pfd-modal');
+    if (pm) pm.style.display = 'none';
+  });
+  document.getElementById('v3d-pfd300-goto-board-btn')?.addEventListener('click', () => {
+    plantAudio.playClick();
+    const pm = document.getElementById('v3d-sec300-pfd-modal');
+    if (pm) pm.style.display = 'none';
+    engine3D?.focusEquipment('unit300_master_pfd_board');
   });
 
   // Master Unit 400 Operational PFD Modal Trigger & Close
@@ -2340,12 +2981,15 @@ function init3DOverlay() {
   window.addEventListener('keydown', (e: KeyboardEvent) => {
     if (!view3DOverlay || view3DOverlay.style.display === 'none') return;
     if (e.key === 'Escape') {
+      const pm300 = document.getElementById('v3d-sec300-pfd-modal');
       const pm = document.getElementById('v3d-sec400-pfd-modal');
       const qm = document.getElementById('v3d-quiz-modal');
       const sm = document.getElementById('v3d-search-modal');
       const drawer = document.getElementById('v3d-edu-drawer');
       const card = document.getElementById('view3d-info-card');
-      if (pm && pm.style.display !== 'none') {
+      if (pm300 && pm300.style.display !== 'none') {
+        pm300.style.display = 'none';
+      } else if (pm && pm.style.display !== 'none') {
         pm.style.display = 'none';
       } else if (qm && qm.style.display !== 'none') {
         qm.style.display = 'none';
@@ -2366,6 +3010,12 @@ function init3DOverlay() {
   });
 }
 
+function openSec300PfdModal() {
+  const modal = document.getElementById('v3d-sec300-pfd-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+}
+
 function openSec400PfdModal() {
   const modal = document.getElementById('v3d-sec400-pfd-modal');
   if (!modal) return;
@@ -2373,6 +3023,7 @@ function openSec400PfdModal() {
 }
 
 function showEquipmentCard(eq: EquipmentInfo) {
+  (window as any).lastInspectedEq = eq;
   const card = document.getElementById('view3d-info-card');
   const tag = document.getElementById('v3d-card-tag');
   const title = document.getElementById('v3d-card-title');
@@ -2387,9 +3038,64 @@ function showEquipmentCard(eq: EquipmentInfo) {
     tag.textContent = eq.tag;
     title.textContent = eq.name;
     if (arname) arname.textContent = eq.arabicName || eq.name;
-    desc.textContent = eq.description;
     temp.textContent = eq.operatingTemp;
     press.textContent = eq.operatingPress;
+
+    const cEq = eq as any;
+    const isCoolingEq =
+      cEq.fanNumber !== undefined ||
+      cEq.driverType !== undefined ||
+      eq.id === 'e711' ||
+      eq.id.startsWith('fan-') ||
+      (eq.id.startsWith('p-') && eq.id.length <= 4) ||
+      eq.id === 'cooling_tower' ||
+      eq.id === 'cooling_basin';
+
+    if (isCoolingEq) {
+      let specHtml = `<div style="margin-top:10px;padding:10px;background:rgba(3,14,28,0.9);border:1px solid #1e3a5f;border-radius:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#cbd5e1;display:flex;flex-direction:column;gap:5px;box-shadow:inset 0 1px 4px rgba(0,0,0,0.5);">`;
+      
+      if (cEq.fanNumber !== undefined) {
+        specHtml += `
+          <div style="color:#38bdf8;font-weight:bold;margin-bottom:4px;border-bottom:1px solid #1e3a5f;padding-bottom:3px;">📋 البيانات الهندسية للمروحة (Fan Specifications):</div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">رقم المروحة / Fan Number:</span><b style="color:#38bdf8;">Fan ${cEq.fanNumber}</b></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">نوع المروحة / Fan Type:</span><span>${cEq.fanType || 'Axial Induced Draft Fan'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">معدل تدفق الهواء / Rated Airflow:</span><span>${cEq.ratedAirflow || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">سرعة الدوران / Rotational Speed:</span><span>${cEq.rotationalSpeed || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">الحالة التشغيلية / Operating Status:</span><b style="color:#10b981;">${cEq.operatingStatus || 'Data not provided'}</b></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">معلومات المحرك / Motor Info:</span><span>${cEq.motorInfo || 'Data not provided'}</span></div>
+        `;
+      } else if (cEq.driverType !== undefined || (eq.id.startsWith('p-') && eq.id.length <= 4)) {
+        specHtml += `
+          <div style="color:#38bdf8;font-weight:bold;margin-bottom:4px;border-bottom:1px solid #1e3a5f;padding-bottom:3px;">📋 بطاقة البيانات الهندسية للمضخة (Pump Specifications):</div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">وسم المعدة / Equipment Tag:</span><b style="color:#ffffff;">${eq.tag}</b></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">نوع المعدة / Equipment Type:</span><span>${eq.name}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">نوع المشغل / Driver Type:</span><b style="color:${cEq.driverType?.includes('Turbine') ? '#fbbf24' : '#34d399'};">${cEq.driverType || 'Data not provided'}</b></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">المعدة المتصلة / Connected Eq:</span><span>${cEq.connectedEquipment || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">مصدر السحب / Suction Source:</span><span>${cEq.suctionSource || 'Cooling Water Basin'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">جهة الطرد / Destination:</span><span>${cEq.dischargeDestination || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">التدفق التصميمي / Design Flow:</span><span>${cEq.designFlowRate || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">التدفق التشغيلي / Operating Flow:</span><span>${cEq.operatingFlowRate || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">ضغط السحب / Suction Pressure:</span><span>${cEq.suctionPressure || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">ضغط الطرد / Discharge Pressure:</span><span>${cEq.dischargePressure || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">درجة الحرارة / Operating Temp:</span><span>${cEq.operatingTemp || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">الحالة التشغيلية / Operating Status:</span><b style="color:#10b981;">${cEq.operatingStatus || 'Data not provided'}</b></div>
+        `;
+      } else if (eq.id === 'e711') {
+        specHtml += `
+          <div style="color:#38bdf8;font-weight:bold;margin-bottom:4px;border-bottom:1px solid #1e3a5f;padding-bottom:3px;">📋 بطاقة المكثف الصناعي E711 (Condenser Specifications):</div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">وسم المعدة / Equipment Tag:</span><b style="color:#ffffff;">E711</b></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">الوصف الهندسي / Description:</span><span>${eq.name}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">ربط مياه التبريد / CW Connections:</span><span>${cEq.coolingWaterInletOutlet || 'Inlet from P-A/B, Outlet to Cooling Tower'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">حرارة الدخول والخروج / Temps:</span><span>${cEq.inletOutletTemps || 'Data not provided'}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#94a3b8;">التدفق والضغط / Flow & Pressure:</span><span>Data not provided</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#fbbf24;">حالة التوثيق / Documentation:</span><b style="color:#fbbf24;">${cEq.pAndIdStatus || 'Awaiting P&ID verification'}</b></div>
+        `;
+      }
+      specHtml += `</div>`;
+      desc.innerHTML = `<p>${eq.description}</p>${specHtml}`;
+    } else {
+      desc.textContent = eq.description;
+    }
     card.style.display = 'block';
 
     if (actBtn) {
@@ -2406,8 +3112,66 @@ function showEquipmentCard(eq: EquipmentInfo) {
       };
     }
 
-    if (eq.id === 'unit400_master_pfd_board') {
+    const examCardBtn = document.getElementById('v3d-card-exam-btn');
+    if (examCardBtn) {
+      const isSec4 = eq.id.startsWith('r-401') || eq.id.startsWith('k-401') || eq.id.startsWith('e-40') || eq.id.startsWith('e-41') || eq.id.startsWith('v-40') || eq.id.startsWith('p-40') || eq.id.includes('400') || eq.id === 'v-451b' || eq.id.startsWith('unit400') || eq.sectionNumber === 6 || eq.sectionNumber === 7;
+      const isSec3 = eq.id.startsWith('k-301') || eq.id.startsWith('e-30') || eq.id.startsWith('v-30') || eq.id.includes('300') || eq.sectionNumber === 5;
+      const isSec1 = eq.id.startsWith('r-101') || eq.id.startsWith('r-103') || eq.id.startsWith('r-104') || eq.id.startsWith('r-105') || eq.id.startsWith('e-10') || eq.sectionNumber === 2;
+      const isSec2 = eq.id.startsWith('t-20') || eq.id.startsWith('p-20') || eq.id.startsWith('e-20') || eq.id.startsWith('v-20') || eq.sectionNumber === 3;
+
+      if (isSec4) {
+        examCardBtn.style.display = 'block';
+        examCardBtn.style.background = 'rgba(168, 85, 247, 0.18)';
+        examCardBtn.style.borderColor = '#a855f7';
+        examCardBtn.style.color = '#d8b4fe';
+        examCardBtn.textContent = '❄️ بنك الـ 100 سؤال (القسم 4 و K-401)';
+        examCardBtn.onclick = () => {
+          plantAudio.playClick();
+          section400ExamCenter.open('exam');
+        };
+      } else if (isSec3) {
+        examCardBtn.style.display = 'block';
+        examCardBtn.style.background = 'rgba(255, 235, 59, 0.18)';
+        examCardBtn.style.borderColor = '#ffeb3b';
+        examCardBtn.style.color = '#fef08a';
+        examCardBtn.textContent = '⚡ بنك الـ 100 سؤال (ضاغط K-301)';
+        examCardBtn.onclick = () => {
+          plantAudio.playClick();
+          section300ExamCenter.open('exam');
+        };
+      } else if (isSec2) {
+        examCardBtn.style.display = 'block';
+        examCardBtn.style.background = 'rgba(0, 229, 170, 0.18)';
+        examCardBtn.style.borderColor = '#00e5aa';
+        examCardBtn.style.color = '#00e5aa';
+        examCardBtn.textContent = '🧪 بنك الـ 100 سؤال (القسم 200 - كاتاكارب)';
+        examCardBtn.onclick = () => {
+          plantAudio.playClick();
+          section200ExamCenter.open('exam');
+        };
+      } else if (isSec1) {
+        examCardBtn.style.display = 'block';
+        examCardBtn.style.background = 'rgba(245, 158, 11, 0.18)';
+        examCardBtn.style.borderColor = '#f59e0b';
+        examCardBtn.style.color = '#fbbf24';
+        examCardBtn.textContent = '🔥 بنك الـ 100 سؤال (القسم 100 - الإصلاح)';
+        examCardBtn.onclick = () => {
+          plantAudio.playClick();
+          section100ExamCenter.open('exam');
+        };
+      } else {
+        examCardBtn.style.display = 'none';
+      }
+    }
+
+    if (eq.id === 'unit300_master_pfd_board') {
+      section300ExamCenter.open('exam');
+    } else if (eq.id === 'unit400_master_pfd_board') {
       openSec400PfdModal();
+    } else if (eq.id === 'dcs_reforming_100_screen') {
+      section100ExamCenter.open('exam');
+    } else if (eq.id === 'unit200_master_dcs_screen') {
+      section200ExamCenter.open('exam');
     }
   }
 }
@@ -2820,7 +3584,7 @@ export function open3D(initialMode: ViewMode3D = 'plant_overview', initialSectio
 }
 
 export function openSection3D(sec: string = 'sec_reformer', isSplash: boolean = true) {
-  open3D('plant_overview', sec);
+  open3D('plant_overview', isSplash ? undefined : sec);
   setTimeout(() => {
     const stepCurrentTitle = document.getElementById('v3d-step-current-title');
     const stepBadge = document.getElementById('v3d-step-badge');
@@ -2834,11 +3598,13 @@ export function openSection3D(sec: string = 'sec_reformer', isSplash: boolean = 
       sec_reformer: { icon: '🔥', title: 'وضع مجسم قسم تحويل الغاز 3D (360° Reforming Unit - معزول)', color: '#ff9800' },
       sec_co2: { icon: '🌀', title: 'وضع مجسم قسم إزالة CO₂ كاتاكارب 3D (360° Catacarb - معزول)', color: '#00e5aa' },
       sec_k301: { icon: '⚡', title: 'وضع مجسم قسم ضاغط غاز التخليق K-301 والتوربين ومبرداته 3D (معزول)', color: '#ffeb3b' },
+      sec_compressor: { icon: '⚡', title: 'وضع مجسم قسم ضاغط غاز التخليق K-301 والتوربين ومبرداته 3D (معزول)', color: '#ffeb3b' },
       sec_synloop: { icon: '⚛️', title: 'وضع مجسم برج وحلقة تخليق الأمونيا R-401 ثلاثي الأبعاد 3D (معزول)', color: '#00c8ef' },
       sec_refrigeration: { icon: '❄️', title: 'وضع مجسم منظومة التثليج والتبريد ومكثفات الأمونيا 3D (معزول)', color: '#00e5aa' },
       sec_steam: { icon: '💨', title: 'وضع مجسم شبكة ومجمعات البخار ومحطات التخفيض PRDS المعزولة بالكامل 3D', color: '#38bdf8' },
       sec_storage: { icon: '🛢️', title: 'وضع مجسم خزانات الأمونيا الكروية F-401 ومحطة الشحن 3D', color: '#00c8ef' },
       sec_desulf: { icon: '💨', title: 'وضع مجسم قسم إزالة الكبريت وضغط الغاز الطبيعي K-303 ثلاثي الأبعاد 3D', color: '#ff9800' },
+      sec_cooling_tower: { icon: '🌊', title: 'وضع مجسم برج التبريد الصناعي ومضخات P-A..J والمكثف E711 ثلاثي الأبعاد 3D', color: '#38bdf8' },
     };
 
     const info = secTitles[sec] || secTitles.sec_reformer;
@@ -2862,20 +3628,34 @@ export function openSection3D(sec: string = 'sec_reformer', isSplash: boolean = 
       toggleIsoBtn.style.background = 'rgba(0,229,170,0.15)';
     }
 
-    if (isSplash && engine3D) {
-      engine3D.startSection360Splash(sec, (stepInfo: any) => {
-        if (stepCurrentTitle) stepCurrentTitle.textContent = stepInfo.title;
-        if (stepBadge) stepBadge.textContent = `${stepInfo.stepIndex + 1} / ${stepInfo.totalSteps || 15}`;
-        if (stepInfo.equipment) {
-          showEquipmentCard(stepInfo.equipment);
-        }
-      });
+    if (engine3D) {
+      if (isSplash) {
+        engine3D.startSection360Splash(sec, (stepInfo: any) => {
+          if (stepCurrentTitle) stepCurrentTitle.textContent = stepInfo.title;
+          if (stepBadge) stepBadge.textContent = `${stepInfo.stepIndex + 1} / ${stepInfo.totalSteps || 15}`;
+          if (stepInfo.equipment) {
+            showEquipmentCard(stepInfo.equipment);
+          }
+        });
+      } else {
+        engine3D.focusSection(sec, (stepInfo: any) => {
+          if (stepCurrentTitle) stepCurrentTitle.textContent = stepInfo.title;
+          if (stepBadge) stepBadge.textContent = `${stepInfo.stepIndex + 1} / ${stepInfo.totalSteps || 15}`;
+          if (stepInfo.equipment) {
+            showEquipmentCard(stepInfo.equipment);
+          }
+        });
+      }
     }
-  }, 120);
+  }, 80);
 }
 
 export function openCO2Section3D(isSplash: boolean = true) {
   openSection3D('sec_co2', isSplash);
+}
+
+export function openReformingSection3D(isSplash: boolean = true) {
+  openSection3D('sec_reformer', isSplash);
 }
 
 export function openControlRoom3D() {
@@ -3024,6 +3804,8 @@ export function openSection2D(sheetId: string) {
 
 (window as any).openCO2Section3D = openCO2Section3D;
 (window as any)._tsOpenCO2Section3D = openCO2Section3D;
+(window as any).openReformingSection3D = openReformingSection3D;
+(window as any)._tsOpenReformingSection3D = openReformingSection3D;
 export function toggleSidebar(force?: boolean) {
   const sidebar = document.getElementById('app-sidebar');
   const backdrop = document.getElementById('app-sidebar-backdrop');
@@ -3062,11 +3844,72 @@ export function toggleSidebar(force?: boolean) {
 (window as any)._tsOpenPlant3D = openPlant3D;
 (window as any).close3D = close3D;
 (window as any)._tsClose3D = close3D;
+(window as any).openUnitOps = openUnitOps;
+(window as any).openOpsLab = openOpsLab;
+(window as any).openPlantDiagram2D = openPlantDiagram2D;
+(window as any)._tsOpenPlantDiagram2D = openPlantDiagram2D;
+export function openSection100Exam(tab?: 'exam' | 'manual' | 'stats') {
+  section100ExamCenter.open(tab);
+}
+export function openSection200Exam(tab?: 'exam' | 'manual' | 'stats') {
+  section200ExamCenter.open(tab);
+}
+export function openSection300Exam(tab?: 'exam' | 'manual' | 'stats') {
+  section300ExamCenter.open(tab);
+}
+export function openSection400Exam(tab?: 'exam' | 'manual' | 'stats', questionIndex?: number) {
+  section400ExamCenter.open(tab, questionIndex);
+}
+export { openK302Exam, openK303Exam };
+
+(window as any).openSection100Exam = openSection100Exam;
+(window as any)._tsOpenSection100Exam = openSection100Exam;
+(window as any).openSection200Exam = openSection200Exam;
+(window as any)._tsOpenSection200Exam = openSection200Exam;
+(window as any).openSection300Exam = openSection300Exam;
+(window as any)._tsOpenSection300Exam = openSection300Exam;
+(window as any).openSection400Exam = openSection400Exam;
+(window as any)._tsOpenSection400Exam = openSection400Exam;
+(window as any).openK302Exam = openK302Exam;
+(window as any)._tsOpenK302Exam = openK302Exam;
+(window as any).openK303Exam = openK303Exam;
+(window as any)._tsOpenK303Exam = openK303Exam;
+(window as any).compressorsK302K303ExamCenter = compressorsK302K303ExamCenter;
 (window as any).unitOpsManager = unitOpsManager;
 (window as any).unitOpsEngine = unitOpsEngine;
 (window as any).plantOpsLab = plantOpsLab;
 (window as any)._uopsInit = () => openUnitOps();
 (window as any)._opslabInit = () => openOpsLab();
+
+// Drain any navigation calls made before module initialization
+if (Array.isArray((window as any)._pendingNavCalls) && (window as any)._pendingNavCalls.length > 0) {
+  const pendingCalls = (window as any)._pendingNavCalls.slice();
+  (window as any)._pendingNavCalls = [];
+  setTimeout(() => {
+    pendingCalls.forEach((call: any) => {
+      try {
+        if (call.fn === 'openSection3D') openSection3D(call.args[0], call.args[1]);
+        else if (call.fn === 'openSection2D') openSection2D(call.args[0]);
+        else if (call.fn === 'open3D') open3D(call.args[0], call.args[1]);
+        else if (call.fn === 'openPlant3D') openPlant3D();
+        else if (call.fn === 'openControlRoom3D') openControlRoom3D();
+        else if (call.fn === 'close3D') close3D();
+        else if (call.fn === 'closeAllOverlaysAndGoHome') closeAllOverlaysAndGoHome();
+        else if (call.fn === 'openOpsLab') openOpsLab();
+        else if (call.fn === 'openUnitOps') openUnitOps();
+        else if (call.fn === 'openPlantDiagram2D') openPlantDiagram2D();
+        else if (call.fn === 'openSection100Exam') section100ExamCenter.open(call.args?.[0]);
+        else if (call.fn === 'openSection200Exam') section200ExamCenter.open(call.args?.[0]);
+        else if (call.fn === 'openSection300Exam') section300ExamCenter.open(call.args?.[0]);
+        else if (call.fn === 'openSection400Exam') section400ExamCenter.open(call.args?.[0], call.args?.[1]);
+        else if (call.fn === 'openK302Exam') openK302Exam(call.args?.[0], call.args?.[1]);
+        else if (call.fn === 'openK303Exam') openK303Exam(call.args?.[0], call.args?.[1]);
+      } catch (err) {
+        console.error('Error executing pending nav call:', call, err);
+      }
+    });
+  }, 10);
+}
 
 function wire3DButtons() {
   const toggleBtn = document.getElementById('sidebar-toggle-btn');
@@ -3130,9 +3973,112 @@ function wire3DButtons() {
   };
 }
 
+function initSidebarSearch() {
+  const searchInput = document.getElementById('sidebar-search-input') as HTMLInputElement | null;
+  const clearBtn = document.getElementById('sidebar-search-clear') as HTMLButtonElement | null;
+  const countEl = document.getElementById('sidebar-search-count') as HTMLElement | null;
+  const noResultsEl = document.getElementById('sidebar-no-results') as HTMLElement | null;
+  const sidebar = document.getElementById('app-sidebar');
+
+  if (!searchInput || !sidebar) return;
+
+  function normalizeText(text: string): string {
+    return text
+      .toLowerCase()
+      .replace(/[أإآآ]/g, 'ا')
+      .replace(/ة/g, 'ه')
+      .replace(/ى/g, 'ي')
+      .replace(/[\u064B-\u0652]/g, '')
+      .trim();
+  }
+
+  function filterSidebar() {
+    const rawQuery = searchInput.value;
+    const query = normalizeText(rawQuery);
+
+    if (clearBtn) {
+      clearBtn.style.display = rawQuery.length > 0 ? 'block' : 'none';
+    }
+
+    const sectionTitles = Array.from(sidebar.querySelectorAll('.sb-section-title')) as HTMLElement[];
+    const buttons = Array.from(sidebar.querySelectorAll('.sb-btn')) as HTMLElement[];
+
+    if (!query) {
+      buttons.forEach(btn => (btn.style.display = ''));
+      sectionTitles.forEach(title => (title.style.display = ''));
+      if (countEl) countEl.style.display = 'none';
+      if (noResultsEl) noResultsEl.style.display = 'none';
+      return;
+    }
+
+    let totalMatches = 0;
+
+    sectionTitles.forEach(titleEl => {
+      const titleText = normalizeText(titleEl.textContent || '');
+      const titleMatches = titleText.includes(query);
+
+      let currNext = titleEl.nextElementSibling;
+      let sectionMatchesCount = 0;
+
+      while (currNext && !currNext.classList.contains('sb-section-title') && currNext.id !== 'sidebar-no-results') {
+        if (currNext.classList.contains('sb-btn')) {
+          const btnEl = currNext as HTMLElement;
+          const btnText = normalizeText(btnEl.textContent || '');
+          const isMatch = titleMatches || btnText.includes(query);
+
+          if (isMatch) {
+            btnEl.style.display = '';
+            sectionMatchesCount++;
+            totalMatches++;
+          } else {
+            btnEl.style.display = 'none';
+          }
+        }
+        currNext = currNext.nextElementSibling;
+      }
+
+      if (sectionMatchesCount > 0 || titleMatches) {
+        titleEl.style.display = '';
+      } else {
+        titleEl.style.display = 'none';
+      }
+    });
+
+    if (countEl) {
+      countEl.style.display = 'block';
+      countEl.textContent = `تم العثور على ${totalMatches} نتيجة`;
+    }
+
+    if (noResultsEl) {
+      noResultsEl.style.display = totalMatches === 0 ? 'block' : 'none';
+    }
+  }
+
+  searchInput.addEventListener('input', filterSidebar);
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      filterSidebar();
+      searchInput.focus();
+    });
+  }
+
+  searchInput.addEventListener('focus', () => {
+    searchInput.style.borderColor = 'var(--accent)';
+    searchInput.style.boxShadow = '0 0 8px rgba(56, 189, 248, 0.3)';
+  });
+  searchInput.addEventListener('blur', () => {
+    searchInput.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+    searchInput.style.boxShadow = 'none';
+  });
+}
+
 function initApp() {
   init3DOverlay();
   wire3DButtons();
+  initSidebarSearch();
+  firebaseAuthWidget.init();
 }
 
 if (document.readyState === 'loading') {
@@ -3140,3 +4086,4 @@ if (document.readyState === 'loading') {
 } else {
   initApp();
 }
+

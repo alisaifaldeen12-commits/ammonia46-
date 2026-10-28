@@ -182,19 +182,22 @@ export function renderReform100SVG(showParticles: boolean): string {
 
         <!-- 8. Secondary Reformer Effluent (Stream 3, 980°C) -> E-108 Reformed Gas WH Boiler -->
         <path d="M 855 450 L 855 490 L 980 490 L 980 332" fill="none" stroke="#dc2626" stroke-width="4" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
-        <path d="M 1030 275 L 1128 275" fill="none" stroke="#ef4444" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
+        <!-- E-108 Cooled Effluent -> R-104 HTS Top Inlet (دخول الغاز من القمة - فرق الكثافة) -->
+        <path d="M 1030 275 L 1090 275 L 1090 165 L 1150 165 L 1150 190" fill="none" stroke="#ef4444" stroke-width="3.5" marker-end="url(#pfdArrowRed)" class="${isAnim}"/>
 
-        <!-- 9. HTS R-104 Effluent (Stream 4, 433°C) -> E-109 WH Boiler & E-107 Heat Exchanger -->
-        <path d="M 1190 435 L 1190 480 L 1300 480 L 1300 240 L 1328 240" fill="none" stroke="#ea580c" stroke-width="3.5" marker-end="url(#pfdArrowOrange)" class="${isAnim}"/>
+        <!-- 9. HTS R-104 Effluent from Top (Stream 4, 433°C) -> E-109 WH Boiler & E-107 Heat Exchanger -->
+        <path d="M 1195 190 L 1195 155 L 1300 155 L 1300 240 L 1328 240" fill="none" stroke="#ea580c" stroke-width="3.5" marker-end="url(#pfdArrowOrange)" class="${isAnim}"/>
         <!-- Split to E-107 -->
         <path d="M 1300 350 L 1328 350" fill="none" stroke="#ea580c" stroke-width="3" marker-end="url(#pfdArrowOrange)" class="${isAnim}"/>
 
-        <!-- 10. Effluent from E-109 and E-107 -> E-110 LP Boiler -->
-        <path d="M 1420 240 L 1460 240 L 1460 250 L 1488 250" fill="none" stroke="#d97706" stroke-width="3.5" marker-end="url(#pfdArrowYellow)" class="${isAnim}"/>
-        <path d="M 1420 350 L 1460 350 L 1460 250" fill="none" stroke="#d97706" stroke-width="3" class="${isAnim}"/>
+        <!-- 10. Effluent from E-109 and E-107 Tubes -> Mixing Manifold -> E-110 LP Boiler Tubes -->
+        <path d="M 1435 228 L 1465 228 L 1465 239 L 1488 239" fill="none" stroke="#d97706" stroke-width="3.5" marker-end="url(#pfdArrowYellow)" class="${isAnim}"/>
+        <path d="M 1435 338 L 1465 338 L 1465 239" fill="none" stroke="#d97706" stroke-width="3" class="${isAnim}"/>
+        <circle cx="1465" cy="239" r="4.5" fill="#d97706" stroke="#ffffff" stroke-width="1.5"/>
+        <text x="1465" y="218" fill="#d97706" font-size="8.5" font-weight="bold" font-family="'Cairo', sans-serif" text-anchor="middle">مشعب الجمع</text>
 
-        <!-- 11. Effluent from E-110 (128°C) -> V-101 Knock Out Separator -->
-        <path d="M 1585 250 L 1658 250" fill="none" stroke="#0284c7" stroke-width="3.5" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
+        <!-- 11. Effluent from E-110 Tubes (128°C) -> V-101 Knock Out Separator Side Inlet -->
+        <path d="M 1600 239 L 1658 239" fill="none" stroke="#0284c7" stroke-width="3.5" marker-end="url(#pfdArrowBlue)" class="${isAnim}"/>
 
         <!-- 12. V-101 Condensate Drain (Bottoms) -->
         <path d="M 1705 320 L 1705 390 L 1758 390" fill="none" stroke="#00c8ef" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#pfdArrowCyan)"/>
@@ -287,8 +290,8 @@ export function renderReform100SVG(showParticles: boolean): string {
           <text x="8" y="28" fill="#fbbf24" font-size="8.5" text-anchor="middle">365 °C</text>
         </g>
 
-        <!-- Stream 4: Exit HTS R-104 -->
-        <g class="pfd-stream-flag" data-stream="4" transform="translate(1240, 455)">
+        <!-- Stream 4: Exit HTS R-104 Top Outlet -->
+        <g class="pfd-stream-flag" data-stream="4" transform="translate(1240, 135)">
           <polygon points="0,8 8,0 16,8 8,16" fill="#ea580c" stroke="#fb923c" stroke-width="1.5"/>
           <text x="8" y="11" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">4</text>
           <rect x="-18" y="18" width="52" height="14" rx="2" fill="#0f2942" stroke="#ea580c" stroke-width="0.8"/>
